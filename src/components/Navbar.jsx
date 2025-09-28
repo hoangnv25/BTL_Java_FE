@@ -1,11 +1,17 @@
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import '../assets/style/Navbar.css'
+import Brand from './Brand'
 
 function Navbar() {
+  const navigate = useNavigate()
+
   return (
     <header className="navbar-header">
       <nav className="navbar">
-        <Link to="/" className="navbar-brand">LOK SHOP</Link>
+        <div className="navbar-brand" onClick={() => navigate('/')}>
+          <Brand />
+        </div>
 
         <ul className="navbar-menu">
           <li><Link to="/" className="navbar-link">Trang chủ</Link></li>
