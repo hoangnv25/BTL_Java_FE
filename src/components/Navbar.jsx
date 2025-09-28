@@ -13,6 +13,7 @@ function Navbar() {
           <li><Link to="/categories" className="navbar-link">Danh mục</Link></li>
           <li><Link to="/login" className="navbar-link">Đăng nhập</Link></li>
           <li><Link to="/register" className="signup-btn">Đăng ký</Link></li>
+          <li><Link to="/user" className="navbar-link">Tài khoản</Link></li>
         </ul>
 
       </nav>
