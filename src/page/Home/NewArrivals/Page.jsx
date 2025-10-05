@@ -12,7 +12,19 @@ const response = [
     thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
     description: "Description 1",
     createdAt: "2025-01-01",
-    updatedAt: "2025-01-01"
+    updatedAt: "2025-01-01",
+    list_product_variation: [
+      {
+        id_variation: 1,
+        product_id: 1,
+        thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+      },
+      {
+        id_variation: 2,
+        product_id: 1,
+        thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+      }
+    ]
   },
   {
     id: 2,
@@ -22,7 +34,19 @@ const response = [
     thumbnail: "https://lh3.googleusercontent.com/8yeWX5QuojHYCVsAURA-JeADXEVT4_wR9XETeqx7-KRGHp-MpY_z6dN3LWjmDRQcE8JJktnK-T5eMtwDVvsZ7cnHWXeCLQzRgIk6I6rkfzeadq_7rdiFxxSi8dgrRNesUzJaN-sP9B-l7CJfcr6d_mdPvtGWAMXn33rcWe3ycjnOMZrz52WO1ihQ_9WeV-3kCb6BJYyKeNIrfJeowr35hchtjnIP03Qz4sPZp9Hr-2rNpk04cr-BkvbQPhutgRpGLw-pmLBkrNY8DrkPspksOeXept3vfArWfCGMQuPc6PDLOGfx8jwUWz6ay5ldzufsu0dk1inlmx_HkXacWInK8R1grl0I-xQqHnpWgRNK-mE-gkDL92Z6dj1-4ljNym03GFz3UnQF6NL_U-XosRxHnTyOqhgGjmHhDBXb2VMuufngSnVHdp57JqPGSVgDOShCj2eKz4TBx52x8TkSJWY9Uc3dy6wRrdY6I0fAJZQpPYoQSIQbGMbLeWzHeHu71ykxAudnJVTLeeAZLN8Y5oJCHHfTOGJlwA_nM5gE5NMSX9UbFICqsb7xLX_9O173prqbQNIhKFbbh8BoOy_9sSzQeWRdg5ZObxmR7spcKch85ywXykcwuvBnBUWWaMOjrYU6WTVTLB5VUz8-GIpiRZquoY03ZIq7mcxtzicR92o8m4nzNV0dkp_oOqhZoHTxAc6A8Uf5vFscEEVvjzcfrO5h1rT8=w1606-h903-no",
     description: "Description 2",
     createdAt: "2025-01-01",
-    updatedAt: "2025-01-01"
+    updatedAt: "2025-01-01",
+    list_product_variation: [
+      {
+        id_variation: 3,
+        product_id: 2,
+        thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+      },
+      {
+        id_variation: 4,
+        product_id: 2,
+        thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+      }
+    ]
   },
   {
     id: 3,
@@ -32,7 +56,14 @@ const response = [
     thumbnail: "https://lh3.googleusercontent.com/8yeWX5QuojHYCVsAURA-JeADXEVT4_wR9XETeqx7-KRGHp-MpY_z6dN3LWjmDRQcE8JJktnK-T5eMtwDVvsZ7cnHWXeCLQzRgIk6I6rkfzeadq_7rdiFxxSi8dgrRNesUzJaN-sP9B-l7CJfcr6d_mdPvtGWAMXn33rcWe3ycjnOMZrz52WO1ihQ_9WeV-3kCb6BJYyKeNIrfJeowr35hchtjnIP03Qz4sPZp9Hr-2rNpk04cr-BkvbQPhutgRpGLw-pmLBkrNY8DrkPspksOeXept3vfArWfCGMQuPc6PDLOGfx8jwUWz6ay5ldzufsu0dk1inlmx_HkXacWInK8R1grl0I-xQqHnpWgRNK-mE-gkDL92Z6dj1-4ljNym03GFz3UnQF6NL_U-XosRxHnTyOqhgGjmHhDBXb2VMuufngSnVHdp57JqPGSVgDOShCj2eKz4TBx52x8TkSJWY9Uc3dy6wRrdY6I0fAJZQpPYoQSIQbGMbLeWzHeHu71ykxAudnJVTLeeAZLN8Y5oJCHHfTOGJlwA_nM5gE5NMSX9UbFICqsb7xLX_9O173prqbQNIhKFbbh8BoOy_9sSzQeWRdg5ZObxmR7spcKch85ywXykcwuvBnBUWWaMOjrYU6WTVTLB5VUz8-GIpiRZquoY03ZIq7mcxtzicR92o8m4nzNV0dkp_oOqhZoHTxAc6A8Uf5vFscEEVvjzcfrO5h1rT8=w1606-h903-no",
     description: "Description 3",
     createdAt: "2025-01-01",
-    updatedAt: "2025-01-01"
+    updatedAt: "2025-01-01",
+    list_product_variation: [
+      {
+        id_variation: 5,
+        product_id: 3,
+        thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+      }
+    ]
   },
   {
     id: 4,
@@ -42,10 +73,23 @@ const response = [
     thumbnail: "https://lh3.googleusercontent.com/8yeWX5QuojHYCVsAURA-JeADXEVT4_wR9XETeqx7-KRGHp-MpY_z6dN3LWjmDRQcE8JJktnK-T5eMtwDVvsZ7cnHWXeCLQzRgIk6I6rkfzeadq_7rdiFxxSi8dgrRNesUzJaN-sP9B-l7CJfcr6d_mdPvtGWAMXn33rcWe3ycjnOMZrz52WO1ihQ_9WeV-3kCb6BJYyKeNIrfJeowr35hchtjnIP03Qz4sPZp9Hr-2rNpk04cr-BkvbQPhutgRpGLw-pmLBkrNY8DrkPspksOeXept3vfArWfCGMQuPc6PDLOGfx8jwUWz6ay5ldzufsu0dk1inlmx_HkXacWInK8R1grl0I-xQqHnpWgRNK-mE-gkDL92Z6dj1-4ljNym03GFz3UnQF6NL_U-XosRxHnTyOqhgGjmHhDBXb2VMuufngSnVHdp57JqPGSVgDOShCj2eKz4TBx52x8TkSJWY9Uc3dy6wRrdY6I0fAJZQpPYoQSIQbGMbLeWzHeHu71ykxAudnJVTLeeAZLN8Y5oJCHHfTOGJlwA_nM5gE5NMSX9UbFICqsb7xLX_9O173prqbQNIhKFbbh8BoOy_9sSzQeWRdg5ZObxmR7spcKch85ywXykcwuvBnBUWWaMOjrYU6WTVTLB5VUz8-GIpiRZquoY03ZIq7mcxtzicR92o8m4nzNV0dkp_oOqhZoHTxAc6A8Uf5vFscEEVvjzcfrO5h1rT8=w1606-h903-no",
     description: "Description 4",
     createdAt: "2025-01-01",
-    updatedAt: "2025-01-01"
+    updatedAt: "2025-01-01",
+    list_product_variation: [
+      {
+        id_variation: 6,
+        product_id: 4,
+        thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+      },
+      {
+        id_variation: 7,
+        product_id: 4,
+        thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+      }
+    ]
   }
 ]
 
 export default function Page() {
   return <div>NewArrivals Code ở đây</div>;
+  // for 1 trong 4 prod, mỗi prod thì render ra một ProductCard (viết ProductCard.jsx ở Components)
 }
