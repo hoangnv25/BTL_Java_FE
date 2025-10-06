@@ -1,4 +1,4 @@
-import NewArrivals from "./NewArrivals/Page";
+import NewArrivals from "./NewArrivals/NAinPage";
 import Review from "./Review/Page";
 export default function HomePage() {
     return (
