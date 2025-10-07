@@ -98,13 +98,19 @@ const response = [
   }
 ];
 
+import ProductCard from "../../../components/ProductCard";
+import "./NewArrivals.css";
+
 export default function NAinPage() {
   return (
-    <div>
-      {response.map((product) => (
-        <div key={product.id}>{product.title}</div>
-      ))}
-    </div>
+    <section className="na-section">
+      <h2 className="na-title">New Arrivals</h2>
+      <p className="na-desc">Các sản phẩm mới nhất dành cho bạn</p>
+      <div className="na-grid">
+        {response.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    </section>
   );
-  // for 1 trong 4 prod, mỗi prod thì render ra một ProductCard (viết ProductCard.jsx ở Components)
 }
