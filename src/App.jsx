@@ -1,5 +1,5 @@
 import './App.css'
-import { Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from './components/Navbar.jsx'
 import HomePage from './page/Home/HomePage.jsx'
 import Login from './page/Auth/Login.jsx'
@@ -8,6 +8,7 @@ import Information from './page/Profile/Information.jsx'
 import ChangeInfo from './page/Profile/ChangeInfo.jsx'
 import Change_Password from './page/Profile/Change_Password.jsx'
 import NAinPage from './page/Home/NewArrivals/NAinPage.jsx'
+import ProductDetail from './page/ProductDetail/ProductDetail.jsx'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/user" element={<Information />} />
           <Route path="/user/info" element={<ChangeInfo />} />
           <Route path="/user/password" element={<Change_Password />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
         </Routes>
       </main>
     </>
