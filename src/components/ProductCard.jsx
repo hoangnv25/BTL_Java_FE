@@ -1,5 +1,6 @@
 import "../assets/style/ProductCard.css";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductCard({ product }) {
 	// Tính toán giá sau giảm (nếu có). Dùng Math.round để làm tròn số tiền hiển thị.
@@ -22,9 +23,14 @@ export default function ProductCard({ product }) {
 			: [];
 		return [mainItem, ...others].filter(v => Boolean(v.thumbnail));
 	}, [product.thumbnail, product.list_product_variation]);
+	
+	const navigate = useNavigate();
+	const gotoProductDetail = (id) => {
+		navigate(`/product/${id}`);
+	}
 
 	return (
-		<div className="product-card">
+		<div className="product-card" onClick={() => { gotoProductDetail(product.id); }}>
 			<div className="product-thumb">
 				{/* Ảnh sản phẩm theo biến thể đang chọn */}
 				<img src={currentImage} alt={product.title} />
