@@ -1,9 +1,14 @@
-import NewArrivals from "./NewArrivals/Page";
+import NewArrivals from "./NewArrivals/NAinPage";
 import Review from "./Review/Page";
+import Sale from "./Sale/Sale";
+import homeimg from "../../assets/image/homeimg.png";
+import "./HomePage.css";
+
 export default function HomePage() {
     return (
-        <div>
-            <h1>Home Page code ở đâyyyyyyyyyy</h1>
+        <div className="home-page">
+            <img className="homeimg" src={homeimg} alt="homeimg" />
+            <Sale />
             <NewArrivals />
             <Review />
         </div>
