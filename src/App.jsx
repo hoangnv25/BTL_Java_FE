@@ -9,6 +9,8 @@ import ChangeInfo from './page/Profile/ChangeInfo.jsx'
 import Change_Password from './page/Profile/Change_Password.jsx'
 import NAinPage from './page/Home/NewArrivals/NAinPage.jsx'
 import ProductDetail from './page/ProductDetail/ProductDetail.jsx'
+import Cart from './page/Cart/Cart.jsx'
+import FloatingCartLink from './components/FloatingCartLink.jsx'
 
 function App() {
   return (
@@ -25,8 +27,10 @@ function App() {
           <Route path="/user/info" element={<ChangeInfo />} />
           <Route path="/user/password" element={<Change_Password />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
         </Routes>
       </main>
+      <FloatingCartLink />
     </>
   )
 }
