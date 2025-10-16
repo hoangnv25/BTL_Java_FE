@@ -9,7 +9,9 @@ export default function CategoryProduct() {
 
     const response = {
         "message": "abc",
-        "data" : [
+        "category_name": "Áo thun nam",
+        "image_category": "https://nhaantoan.com/wp-content/uploads/2022/08/Banner-WEB-Slider-KM-Tang-Ao-Thun-Team-02-scaled.jpg",
+        "list_product" : [
             {
                 prod_id: 1,
                 title: "Áo abc",
@@ -41,8 +43,9 @@ export default function CategoryProduct() {
     return (
         <div>
             <h1>{state?.name || 'Danh mục sản phẩm'}</h1>
+            <img className="na-image-category" src={response.image_category} alt={response.category_name} />
             <div className="na-grid">
-                {response.data.map((product) => (
+                {response.list_product.map((product) => (
                 <ProductCard key={product.prod_id} product={product} />
                 ))}
             </div>
