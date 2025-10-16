@@ -29,8 +29,9 @@ export default function ProductCard({ product }) {
 		navigate(`/product/${id}`);
 	}
 
+	let product_id = product.prod_id || product.id;
 	return (
-		<div className="product-card" onClick={() => { gotoProductDetail(product.id); }}>
+		<div className="product-card" onClick={() => { gotoProductDetail(product_id); }}>
 			<div className="product-thumb">
 				{/* Ảnh sản phẩm theo biến thể đang chọn */}
 				<img src={currentImage} alt={product.title} />

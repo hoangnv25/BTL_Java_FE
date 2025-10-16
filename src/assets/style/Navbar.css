@@ -51,3 +51,56 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
+/* Dropdown for Danh mục */
+.navbar-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.navbar-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 12px 16px;
+  min-width: 220px;
+  display: none;
+}
+
+.navbar-dropdown:hover .navbar-dropdown-menu {
+  display: block;
+}
+
+.navbar-dropdown-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-dropdown-menu li {
+  padding: 8px 0;
+  color: #444444;
+  white-space: nowrap;
+}
+
+.navbar-dropdown-menu li:hover {
+  color: #000000;
+}
+
+
+
+/* Icon alignment inside navbar-dropdown */
+.navbar-dropdown-icon {
+  display: block;
+  margin-left: 6px;
+}
+
+/* Indent child categories */
+.navbar-dropdown-menu li.is-child {
+  padding-left: 16px;
+}
+
