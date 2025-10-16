@@ -14,16 +14,16 @@ export default function CategoryProduct() {
                 prod_id: 1,
                 title: "Áo abc",
                 price: 400000,
-                thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+                thumbnail: "https://bizweb.dktcdn.net/100/415/697/products/mc1-0224920e-c953-4129-a4b3-d79b600e15fa.jpg?v=1637916532137",
                 description: "Đây là mô tả mô tả mô tả mô tả mô tả mô tả mô tả",
                 rate: 3.5,
                 discount: 0,
                 list_product_variation: [
                   {
-                    thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+                    thumbnail: "https://bizweb.dktcdn.net/100/415/697/products/mc1-0224920e-c953-4129-a4b3-d79b600e15fa.jpg?v=1637916532137",
                   },
                   {
-                    thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+                    thumbnail: "https://bizweb.dktcdn.net/100/415/697/products/mc1-0224920e-c953-4129-a4b3-d79b600e15fa.jpg?v=1637916532137",
                   }
                 ]
             },
@@ -31,7 +31,7 @@ export default function CategoryProduct() {
                 prod_id: 2,
                 title: "Áo abc",
                 price: 400000,
-                thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
+                thumbnail: "https://bizweb.dktcdn.net/100/415/697/products/mc1-0224920e-c953-4129-a4b3-d79b600e15fa.jpg?v=1637916532137",
                 description: "Đây là mô tả mô tả mô tả mô tả mô tả mô tả mô tả",
                 rate: 3.5,
                 discount: 0,
