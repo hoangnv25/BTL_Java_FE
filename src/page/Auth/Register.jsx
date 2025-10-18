@@ -11,10 +11,19 @@ export default function Register() {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
-        phone: '',
         password: '',
-        confirmPassword: ''
+        phoneNumber: '',
+        roles: ["USER1"]
     });
+
+    // {
+    //     "fullName":"user",
+    //     "email":"tuan1234444@gmail.com",
+    //     "password":"user",
+    //     "phoneNumber":"098192492311",
+    //     "roles":["USER1"]
+    // }
+
     const navigate = useNavigate();
 
     const handleInputChange = (e) => {
