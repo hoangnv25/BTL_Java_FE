@@ -4,11 +4,46 @@ import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axios from 'axios';
+import { base } from '../../service/Base';
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        fullName: '',
+        password: ''
+    });
+
+    const handleInputChange = (e) => {
+        const target = e.target;
+        const { name, value } = target;
+        if (!name) return; // ignore changes from elements without a name
+        setFormData(prev => {
+            const next = { ...prev, [name]: value };
+            if (Object.prototype.hasOwnProperty.call(next, '')) {
+                delete next[''];
+            }
+            return next;
+        });
+    };
     
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        const payload = { fullName: formData.fullName, password: formData.password };
+        console.log(payload);
+        
+        const response = await axios.post(`${base}/auth/token`, payload);
+        console.log(response);
+        if (response.status === 200) {
+            toast.success('Đăng nhập thành công');
+            localStorage.setItem('token', response.data.result.token);
+            navigate('/');
+        } else {
+            toast.error('Đăng nhập thất bại');
+        }
+    }
+
     return (
         <div className="login-container">
             {/* Left side - Image */}
@@ -22,20 +57,26 @@ export default function Login() {
                     <h1 className="brand-name">LOK SHOP</h1>
                     <h2 className="login-title">Đăng nhập</h2>        
                     
-                    <form className="login-form-element">
+                    <form className="login-form-element" onSubmit={handleLogin}>
                         <div className="login-input-group">
                             <input 
-                                type="email" 
-                                placeholder="Email" 
+                                type="text" 
+                                name="fullName"
+                                placeholder="Fullname" 
                                 className="login-form-input"
+                                value={formData.fullName}
+                                onChange={handleInputChange}
                             />
                         </div>
                         
                         <div className="login-input-group login-password-group">
                             <input 
                                 type={showPassword ? "text" : "password"} 
+                                name="password"
                                 placeholder="Password" 
                                 className="login-form-input login-password-input"
+                                value={formData.password}
+                                onChange={handleInputChange}
                             />
                             <button 
                                 type="button" 
