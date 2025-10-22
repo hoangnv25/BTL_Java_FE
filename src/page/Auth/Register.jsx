@@ -4,6 +4,8 @@ import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axios from 'axios';
+import { base } from '../../service/Base';
 
 export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
@@ -34,15 +36,29 @@ export default function Register() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
             alert('Mật khẩu xác nhận không khớp!');
             return;
         }
-        // Handle registration logic here
-        console.log('Registration data:', formData);
-        toast.success('Đăng ký thành công!');
+        const payload = {
+            fullName: formData.fullName,
+            email: formData.email,
+            password: formData.password,
+            phoneNumber: formData.phoneNumber,
+            roles: ["USER1"]
+        }
+
+        console.log(payload);
+
+        const response = await axios.post(`${base}/users`, payload);
+        if (response.status === 200) {
+            toast.success('Đăng ký thành công!');
+            navigate('/login');
+        } else {
+            toast.error('Đăng ký thất bại!');
+        }
     };
 
     return (
@@ -86,10 +102,10 @@ export default function Register() {
                         <div className="register-input-group">
                             <input 
                                 type="tel" 
-                                name="phone"
+                                name="phoneNumber"
                                 placeholder="Số điện thoại" 
                                 className="register-form-input"
-                                value={formData.phone}
+                                value={formData.phoneNumber}
                                 onChange={handleInputChange}
                                 required
                             />
