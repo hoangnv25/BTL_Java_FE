@@ -27,6 +27,7 @@ function Navbar() {
           </li> 
           <li><Link to="/login" className="navbar-link">Đăng nhập</Link></li>
           <li><Link to="/register" className="signup-btn">Đăng ký</Link></li>
+          <li><Link to="/admin" className="signup-btn">Quản trị</Link></li>
           <li><Link to="/user" className="navbar-link" aria-label="Tài khoản" title="Tài khoản"><User size={22} strokeWidth={2} /></Link></li>
           <li><Link to="/cart" className="navbar-link" aria-label="Giỏ hàng" title="Giỏ hàng"><ShoppingCart size={22} strokeWidth={2} /></Link></li>
         </ul>

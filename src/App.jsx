@@ -10,6 +10,7 @@ import ProductDetail from './page/ProductDetail/ProductDetail.jsx'
 import Cart from './page/Cart/Cart.jsx'
 import FloatingCartLink from './components/FloatingCartLink.jsx'
 import CategoryProduct from './page/Category/CategoryProduct.jsx'
+import Admin from './page/Admin/Admin.jsx'
 
 function App() {
   return (
@@ -26,6 +27,8 @@ function App() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/category/:id" element={<CategoryProduct />} />
           <Route path="/cart" element={<Cart />} />
+
+          <Route path="/admin/*" element={<Admin />} />
         </Routes>
       </main>
       <FloatingCartLink />
