@@ -73,13 +73,301 @@ const response_product = {
     ]
 };
 
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Trash2 } from "lucide-react";
+import "./Cart.css";
+
 export default function Cart() {
-  return <div>
+    const [cartItems, setCartItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [orderNote, setOrderNote] = useState("");
+    const [selectedItems, setSelectedItems] = useState(new Set());
+    const navigate = useNavigate();
+
+    // Fetch cart data theo yêu cầu
+    useEffect(() => {
+        const fetchCartData = async () => {
+            try {
+                setLoading(true);
+                // TODO: Thay thế bằng API call thực tế
+                // const response = await fetch('/cart');
+                // const cartData = await response.json();
+                
+                // Mock: Giả sử fetch cart data thành công
+                const cartData = response_cart;
+                
+                if (cartData.message === "success") {
+                    // Với mỗi cái trong result, lấy prod_id ra và fetch tiếp api product/prod_id
+                    const itemsWithDetails = await Promise.all(
+                        cartData.result.map(async (item) => {
+                            // TODO: Thay thế bằng API call thực tế
+                            // const productResponse = await fetch(`/product/${item.product_id}`);
+                            // const productData = await productResponse.json();
+                            
+                            // Mock: Giả sử mỗi lần fetch trả về response_product như trên
+                            const productData = response_product;
+                            
+                            // Tìm variation tương ứng
+                            const selectedVariation = findVariationById(productData, item.product_variation_id);
+                            
+                            return {
+                                ...item,
+                                product: productData,
+                                selectedVariation: selectedVariation
+                            };
+                        })
+                    );
+                    
+                    setCartItems(itemsWithDetails);
+                }
+            } catch (error) {
+                console.error("Error fetching cart data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCartData();
+    }, []);
+
+    // Helper function để tìm variation theo ID
+    const findVariationById = (product, variationId) => {
+        for (const colorGroup of product.list_prod_variation) {
+            for (const variation of colorGroup.list) {
+                if (variation.id_variation === variationId) {
+                    return {
+                        ...variation,
+                        color: colorGroup.color,
+                        image: colorGroup.image
+                    };
+                }
+            }
+        }
+        return null;
+    };
+
+    // Tính tổng tiền chỉ cho những item được chọn
+    const calculateTotal = () => {
+        return cartItems.reduce((total, item) => {
+            const itemKey = `${item.product_id}-${item.product_variation_id}`;
+            if (selectedItems.has(itemKey)) {
+                const price = item.product.price;
+                const discount = item.product.discount || 0;
+                const finalPrice = price * (1 - discount / 100);
+                return total + (finalPrice * item.quantity);
+            }
+            return total;
+        }, 0);
+    };
+
+    // Toggle chọn/bỏ chọn item
+    const toggleItemSelection = (productId, variationId) => {
+        const itemKey = `${productId}-${variationId}`;
+        setSelectedItems(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(itemKey)) {
+                newSet.delete(itemKey);
+            } else {
+                newSet.add(itemKey);
+            }
+            return newSet;
+        });
+    };
+
+    // Chọn tất cả
+    const selectAll = () => {
+        const allKeys = cartItems.map(item => `${item.product_id}-${item.product_variation_id}`);
+        setSelectedItems(new Set(allKeys));
+    };
+
+    // Bỏ chọn tất cả
+    const deselectAll = () => {
+        setSelectedItems(new Set());
+    };
+
+    // Cập nhật số lượng
+    const updateQuantity = (productId, variationId, newQuantity) => {
+        if (newQuantity < 1) return;
+        
+        setCartItems(prev => 
+            prev.map(item => 
+                item.product_id === productId && item.product_variation_id === variationId
+                    ? { ...item, quantity: newQuantity }
+                    : item
+            )
+        );
+    };
+
+    // Xóa item khỏi cart
+    const removeItem = (productId, variationId) => {
+        setCartItems(prev => 
+            prev.filter(item => 
+                !(item.product_id === productId && item.product_variation_id === variationId)
+            )
+        );
+    };
+
+    // Xử lý checkout (tạm thôi, sau bổ sung sau)
+    const handleCheckout = () => {
+        const selectedItemsList = cartItems.filter(item => {
+            const itemKey = `${item.product_id}-${item.product_variation_id}`;
+            return selectedItems.has(itemKey);
+        });
+        
+        if (selectedItemsList.length === 0) {
+            alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
+            return;
+        }
+        
+        console.log("Checkout with selected items:", selectedItemsList);
+        console.log("Order note:", orderNote);
+        alert("Tính năng thanh toán đang được phát triển!");
+    };
+
+    if (loading) {
+        return (
+            <div className="cart-container">
+                <div className="loading">Đang tải giỏ hàng...</div>
+            </div>
+        );
+    }
+
+    if (cartItems.length === 0) {
+        return (
+            <div className="cart-container">
+                <div className="empty-cart">
+                    <div className="empty-cart-icon">
+                        <div className="shopping-bag">🛍️</div>
+                        <div className="empty-x">❌</div>
+                    </div>
+                    <h2>Giỏ Hàng Của Bạn Đang Trống</h2>
+                    <p>Mua Sắm Ngay tại trang chủ nhé!!!</p>
+                    <button 
+                        className="shop-now-btn"
+                        onClick={() => navigate('/')}
+                    >
+                        Mua sắm ngay
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="cart-container">
             <h1>Giỏ hàng</h1>
-            <p>Giả sử khi vào đây, mình sẽ fetch api GET tới /cart để lấy dữ liệu trả về là response_cart như trên</p>
-            <p>Với mỗi cái {} trong result ấy, mình sẽ lấy prod_id ra và fetch tiếp api product/prod_id giống ichan lấy data ở phần product detail ấy.</p>
-            <p>GIả sử mỗi lần fetch đó trả về như trên (tạm thời coi như /product/prod_id nào cũng trả về response_product như trên) </p>
-            <p>Với mỗi response như trên, lấy đúng vari và hiện ra giao diện</p>
-            <h2>Làm luôn phần có nút thanh toán nhé(xử lý tạm thôi, sau bổ sung sau)</h2>
-        </div>;
+            
+            <div className="cart-content">
+                <div className="cart-items">
+                    {/* Select All Controls */}
+                    <div className="select-all-controls">
+                        <button onClick={selectAll} className="select-all-btn">
+                            Chọn tất cả
+                        </button>
+                        <button onClick={deselectAll} className="deselect-all-btn">
+                            Bỏ chọn tất cả
+                        </button>
+                    </div>
+                    
+                    {cartItems.map((item) => {
+                        const itemKey = `${item.product_id}-${item.product_variation_id}`;
+                        const isSelected = selectedItems.has(itemKey);
+                        
+                        return (
+                            <div key={itemKey} className={`cart-item ${isSelected ? 'selected' : ''}`}>
+                                <div className="item-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => toggleItemSelection(item.product_id, item.product_variation_id)}
+                                    />
+                                </div>
+                                
+                                <button 
+                                    className="remove-item"
+                                    onClick={() => removeItem(item.product_id, item.product_variation_id)}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            
+                            <div className="product-image">
+                                <img 
+                                    src={item.selectedVariation?.image || item.product.thumbnail} 
+                                    alt={item.product.title}
+                                    onError={(e) => {
+                                        e.target.src = item.product.thumbnail;
+                                    }}
+                                />
+                            </div>
+                            
+                            <div className="product-info">
+                                <h3 className="product-title">{item.product.title}</h3>
+                                <div className="product-variant">
+                                    {item.selectedVariation?.color} / {item.selectedVariation?.size}
+                                </div>
+                                <div className="product-price">
+                                    {item.product.discount ? (
+                                        <>
+                                            <span className="price-old">
+                                                {item.product.price.toLocaleString()}₫
+                                            </span>
+                                            <span className="price-now">
+                                                {Math.round(item.product.price * (1 - item.product.discount / 100)).toLocaleString()}₫
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <span className="price-normal">
+                                            {item.product.price.toLocaleString()}₫
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <div className="quantity-controls">
+                                <button 
+                                    onClick={() => updateQuantity(item.product_id, item.product_variation_id, item.quantity - 1)}
+                                    disabled={item.quantity <= 1}
+                                >
+                                    -
+                                </button>
+                                <span className="quantity">{item.quantity}</span>
+                                <button 
+                                    onClick={() => updateQuantity(item.product_id, item.product_variation_id, item.quantity + 1)}
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+                        );
+                    })}
+                    
+                    <div className="order-notes">
+                        <h3>Ghi chú đơn hàng</h3>
+                        <textarea
+                            value={orderNote}
+                            onChange={(e) => setOrderNote(e.target.value)}
+                            placeholder="Nhập ghi chú cho đơn hàng..."
+                        />
+                    </div>
+                </div>
+                
+                <div className="order-summary">
+                    <div className="total-section">
+                        <h3>TỔNG CỘNG</h3>
+                        <div className="total-amount">
+                            {calculateTotal().toLocaleString()}₫
+                        </div>
+                    </div>
+                    
+                    <button 
+                        className="checkout-btn"
+                        onClick={handleCheckout}
+                    >
+                        Thanh Toán
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 }

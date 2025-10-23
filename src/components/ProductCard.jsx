@@ -92,7 +92,11 @@ export default function ProductCard({ product }) {
 									key={v.key}
 									className={"variant-thumb" + (isActive ? " active" : "")}
 									aria-label="Chọn biến thể"
-									onClick={() => { setCurrentImage(v.thumbnail); setSelectedKey(v.key); }}
+									onClick={(e) => { 
+										e.stopPropagation(); // Ngăn chặn event bubbling
+										setCurrentImage(v.thumbnail); 
+										setSelectedKey(v.key); 
+									}}
 									type="button"
 								>
 									<img src={v.thumbnail} alt="variation" />
