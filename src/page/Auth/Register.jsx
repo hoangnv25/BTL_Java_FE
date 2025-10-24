@@ -3,11 +3,12 @@ import anhTheLC from '../../assets/image/anh_the_LC.jpg';
 import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import axios from 'axios';
 import { base } from '../../service/Base';
+import { App } from 'antd';
 
 export default function Register() {
+    const { message } = App.useApp();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState({
@@ -39,7 +40,7 @@ export default function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
-            alert('Mật khẩu xác nhận không khớp!');
+            message.error('Mật khẩu xác nhận không khớp!');
             return;
         }
         const payload = {
@@ -50,14 +51,18 @@ export default function Register() {
             roles: ["USER1"]
         }
 
-        console.log(payload);
+        // console.log(payload);
 
-        const response = await axios.post(`${base}/users`, payload);
-        if (response.status === 200) {
-            toast.success('Đăng ký thành công!');
-            navigate('/login');
-        } else {
-            toast.error('Đăng ký thất bại!');
+        try {
+            const response = await axios.post(`${base}/users`, payload);
+            if (response.status === 200) {
+                message.success('Đăng ký thành công!');
+                navigate('/login');
+                return;
+            }
+            message.error('Đăng ký thất bại!');
+        } catch (error) {
+            message.error(error?.response?.data?.message || 'Đăng ký thất bại!');
         }
     };
 

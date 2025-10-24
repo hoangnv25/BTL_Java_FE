@@ -3,11 +3,12 @@ import anhTheLC from '../../assets/image/anh_the_LC.jpg';
 import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import axios from 'axios';
 import { base } from '../../service/Base';
+import { App } from 'antd';
 
 export default function Login() {
+    const { message } = App.useApp();
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -31,16 +32,17 @@ export default function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         const payload = { fullName: formData.fullName, password: formData.password };
-        console.log(payload);
-        
-        const response = await axios.post(`${base}/auth/token`, payload);
-        console.log(response);
-        if (response.status === 200) {
-            toast.success('Đăng nhập thành công');
-            localStorage.setItem('token', response.data.result.token);
-            navigate('/');
-        } else {
-            toast.error('Đăng nhập thất bại');
+        try {
+            const response = await axios.post(`${base}/auth/token`, payload);
+            if (response.status === 200) {
+                message.success('Đăng nhập thành công');
+                localStorage.setItem('token', response.data.result.token);
+                navigate('/');
+                return;
+            }
+            message.error('Đăng nhập thất bại');
+        } catch (error) {
+            message.error(error?.response?.data?.message || 'Đăng nhập thất bại');
         }
     }
 

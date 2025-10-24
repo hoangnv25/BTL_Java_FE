@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { base } from '../../../service/Base'
-import { toast } from 'react-toastify'
+import { App } from 'antd'
 
 export default function Modal({ open = false, onClose, parentIdDefault = 0, onCreated, onUpdated, mode = 'create', category = null }) {
     const [categoryName, setCategoryName] = useState('')
@@ -9,6 +9,8 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
     const [imageFile, setImageFile] = useState(null)
     const [previewUrl, setPreviewUrl] = useState('')
     const [submitting, setSubmitting] = useState(false)
+
+    const { message } = App.useApp();
 
     useEffect(() => {
 		setPerentId(parentIdDefault ?? 0)
@@ -89,14 +91,14 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
 			})
 
             if (response.status === 200) {
-                toast.success('Tạo danh mục thành công')
+                message.success('Tạo danh mục thành công')
                 if (typeof onCreated === 'function') onCreated(response.data?.result)
                 if (typeof onClose === 'function') onClose()
                 return
             }
-            toast.error(response.data?.message || 'Tạo danh mục thất bại')
+            message.error(response.data?.message || 'Tạo danh mục thất bại')
         } catch (err) {
-            toast.error(err?.response?.data?.message || 'Có lỗi khi tạo danh mục')
+            message.error(err?.response?.data?.message || 'Có lỗi khi tạo danh mục')
         } finally {
             setSubmitting(false)
         }
@@ -119,14 +121,14 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
 			})
 
 			if (response.status === 200) {
-				toast.success(response.data?.message || 'Cập nhật danh mục thành công')
+				message.success(response.data?.message || 'Cập nhật danh mục thành công')
 				if (typeof onUpdated === 'function') onUpdated(response.data?.result)
 				if (typeof onClose === 'function') onClose()
 				return
 			}
-			toast.error(response.data?.message || 'Cập nhật danh mục thất bại')
+			message.error(response.data?.message || 'Cập nhật danh mục thất bại')
 		} catch (err) {
-			toast.error(err?.response?.data?.message || 'Có lỗi khi cập nhật danh mục')
+			message.error(err?.response?.data?.message || 'Có lỗi khi cập nhật danh mục')
 		} finally {
 			setSubmitting(false)
 		}

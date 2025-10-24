@@ -2,11 +2,11 @@ import './AdminCategory.css'
 import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 import { base } from '../../../service/Base'
-import { toast } from 'react-toastify'
 import Modal from './Modal'
-import { X, Plus, Edit, Trash } from 'lucide-react'
-
+import { Edit, Trash } from 'lucide-react'
+import { App } from 'antd'
 export default function AdminCategory() {
+    const { message } = App.useApp();
     const [categories, setCategories] = useState([])
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [modalParentId, setModalParentId] = useState(0)
@@ -14,14 +14,15 @@ export default function AdminCategory() {
     const [editingCategory, setEditingCategory] = useState(null)
 
     const fetchCategories = async () => {
-        const response = await axios.get(`${base}/category`)
-        if (response.status === 200) {
-            setCategories(response.data.result)
-            // toast.success(response.data.message)
-            return
-        }
-        else {
-            toast.error(response.data.message)
+        try {
+            const response = await axios.get(`${base}/category`)
+            if (response.status === 200) {
+                setCategories(response.data.result)
+                return
+            }
+            message.error(response.data?.message || 'Không thể tải danh mục')
+        } catch (error) {
+            message.error(error?.response?.data?.message || 'Không thể tải danh mục')
         }
     }
 
@@ -45,13 +46,13 @@ export default function AdminCategory() {
                 }
             })
             if (response.status === 200) {
-                toast.success("Xóa danh mục thành công!")
+                message.success("Xóa danh mục thành công!")
                 fetchCategories()
                 return
             }
-            toast.error(response.data.message)
+            message.error(response.data.message)
         } catch (error) {
-            toast.error(error.response.data.message || 'Có lỗi khi xóa danh mục')
+            message.error(error.response?.data?.message || 'Có lỗi khi xóa danh mục')
         }
     }
 
