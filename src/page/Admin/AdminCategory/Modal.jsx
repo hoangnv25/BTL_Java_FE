@@ -89,7 +89,7 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
 			})
 
             if (response.status === 200) {
-                toast.success(response.data?.message || 'Tạo danh mục thành công')
+                toast.success('Tạo danh mục thành công')
                 if (typeof onCreated === 'function') onCreated(response.data?.result)
                 if (typeof onClose === 'function') onClose()
                 return

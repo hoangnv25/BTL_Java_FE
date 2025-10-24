@@ -161,7 +161,13 @@ export default function AdminCategory() {
             {categoryTree && categoryTree.length > 0 ? (
                 renderTree(categoryTree)
             ) : (
-                <p>Không có danh mục.</p>
+                <div className="admin-category-empty">
+                    <p>Không có danh mục.</p>
+                    <button type="button" className="category-add-row add-parent" onClick={() => handleAddParent()}>
+                        <span className="add-icon" aria-hidden="true">+</span>
+                        Thêm danh mục cha
+                    </button>
+                </div>
             )}
 
             <Modal
