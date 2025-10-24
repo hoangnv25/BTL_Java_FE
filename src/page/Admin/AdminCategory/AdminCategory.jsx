@@ -3,15 +3,21 @@ import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 import { base } from '../../../service/Base'
 import { toast } from 'react-toastify'
+import Modal from './Modal'
+import { X, Plus, Edit, Trash } from 'lucide-react'
 
 export default function AdminCategory() {
     const [categories, setCategories] = useState([])
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [modalParentId, setModalParentId] = useState(0)
+    const [modalMode, setModalMode] = useState('create')
+    const [editingCategory, setEditingCategory] = useState(null)
 
     const fetchCategories = async () => {
         const response = await axios.get(`${base}/category`)
         if (response.status === 200) {
             setCategories(response.data.result)
-            toast.success(response.data.message)
+            // toast.success(response.data.message)
             return
         }
         else {
@@ -24,19 +30,43 @@ export default function AdminCategory() {
     }, [])
 
     const handleEditCategory = (category) => {
-        toast.info(`Sửa: ${category.categoryName}`)
+        setEditingCategory(category)
+        const pid = category.parentId ?? category.perentId ?? 0
+        setModalParentId(pid)
+        setModalMode('edit')
+        setIsModalOpen(true)
     }
 
-    const handleDeleteCategory = (category) => {
-        toast.info(`Xóa: ${category.categoryName}`)
+    const handleDeleteCategory = async (category) => {
+        try {
+            const response = await axios.delete(`${base}/category/${category.categoryId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            if (response.status === 200) {
+                toast.success("Xóa danh mục thành công!")
+                fetchCategories()
+                return
+            }
+            toast.error(response.data.message)
+        } catch (error) {
+            toast.error(error.response.data.message || 'Có lỗi khi xóa danh mục')
+        }
     }
 
     const handleAddParent = () => {
-        toast.info('Thêm danh mục cha')
+        setModalParentId(0)
+        setEditingCategory(null)
+        setModalMode('create')
+        setIsModalOpen(true)
     }
 
     const handleAddChild = (parentCategory) => {
-        toast.info(`Thêm danh mục con cho: ${parentCategory.categoryName}`)
+        setModalParentId(parentCategory.categoryId)
+        setEditingCategory(null)
+        setModalMode('create')
+        setIsModalOpen(true)
     }
 
     const buildCategoryTree = (flatCategories) => {
@@ -81,8 +111,8 @@ export default function AdminCategory() {
                                     <span className="category-count">{node.productCount}</span>
                                 )}
                                 <div className="category-actions">
-                                    <button className="btn btn-edit" onClick={() => handleEditCategory(node)}>Sửa</button>
-                                    <button className="btn btn-delete" onClick={() => handleDeleteCategory(node)}>Xóa</button>
+                                    <button className="btn btn-edit" onClick={() => handleEditCategory(node)}><Edit /></button>
+                                    <button className="btn btn-delete" onClick={() => handleDeleteCategory(node)}><Trash /></button>
                                 </div>
                             </div>
                         </div>
@@ -96,8 +126,8 @@ export default function AdminCategory() {
                                                 <span className="category-count">{child.productCount}</span>
                                             )}
                                             <div className="category-actions">
-                                                <button className="btn btn-edit" onClick={() => handleEditCategory(child)}>Sửa</button>
-                                                <button className="btn btn-delete" onClick={() => handleDeleteCategory(child)}>Xóa</button>
+                                                <button className="btn btn-edit" onClick={() => handleEditCategory(child)}><Edit /></button>
+                                                <button className="btn btn-delete" onClick={() => handleDeleteCategory(child)}><Trash /></button>
                                             </div>
                                         </div>
                                     </div>
@@ -126,13 +156,23 @@ export default function AdminCategory() {
         <div className="admin-category-container">
             <h1 className="admin-category-title">Danh mục</h1>
             <div className="admin-category-actions">
-                
+
             </div>
             {categoryTree && categoryTree.length > 0 ? (
                 renderTree(categoryTree)
             ) : (
                 <p>Không có danh mục.</p>
             )}
+
+            <Modal
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                parentIdDefault={modalParentId}
+                onCreated={fetchCategories}
+                onUpdated={fetchCategories}
+                mode={modalMode}
+                category={editingCategory}
+            />
         </div>
     )
 }
