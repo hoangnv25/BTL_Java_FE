@@ -2,6 +2,7 @@ import AdminNavbar from './Components/Navbar'
 import './Admin.css'
 import { Route, Routes, Outlet } from 'react-router-dom'
 import AdminCategory from './AdminCategory/AdminCategory'
+import AdminSale from './AdminSale/AdminSale'
 
 export default function Admin() {
     return (
@@ -12,7 +13,7 @@ export default function Admin() {
                     <Route index element={<div>Dashboard</div>} />
                     <Route path="users" element={<div>Users</div>} />
                     <Route path="products" element={<div>Products</div>} />
-                    <Route path="sales" element={<div>Sales</div>} />
+                    <Route path="sales" element={<AdminSale />} />
                     <Route path="cart" element={<div>Cart</div>} />
                     <Route path="orders" element={<div>Orders</div>} />
                     <Route path="categories" element={<AdminCategory />} />
