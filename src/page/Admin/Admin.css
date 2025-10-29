@@ -1,8 +1,8 @@
 /* Layout for admin page with left sidebar */
 .admin-page {
     display: flex;
-    gap: 16px;
-    padding: 16px;
+    gap: 12px;
+    padding: 8px;
 }
 
 .admin-sidebar {
@@ -43,5 +43,6 @@
 .admin-main {
     flex: 1;
     min-width: 0;
+    overflow: visible;
 }
 
