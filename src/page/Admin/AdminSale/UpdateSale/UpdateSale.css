@@ -1,0 +1,115 @@
+/* Update Modal - wider than create modal */
+.update-modal {
+    max-width: 700px;
+}
+
+/* Search Box */
+.search-box {
+    position: relative;
+    margin-bottom: 0.8rem;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.6rem 0.8rem 0.6rem 2.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.search-input::placeholder {
+    color: #adb5bd;
+}
+
+/* Products with Value Input */
+.products-list-with-value {
+    padding: 0.5rem;
+}
+
+.product-value-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem;
+    margin-bottom: 0.3rem;
+    border-radius: 4px;
+    transition: background 0.15s ease;
+    gap: 1rem;
+}
+
+.product-value-item:hover {
+    background: #f8f9fa;
+}
+
+.product-value-item:last-child {
+    margin-bottom: 0;
+}
+
+.product-checkbox-inline {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    cursor: pointer;
+}
+
+.product-checkbox-inline input[type="checkbox"] {
+    margin: 0;
+    margin-right: 0.8rem;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+.product-name-inline {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.value-input {
+    width: 150px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+}
+
+.value-input:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .update-modal {
+        width: 95%;
+    }
+
+    .product-value-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .value-input {
+        width: 100%;
+    }
+}
+
