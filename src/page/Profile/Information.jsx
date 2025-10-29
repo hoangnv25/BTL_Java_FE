@@ -2,11 +2,17 @@ import './Information.css'
 import axios from 'axios';
 import { base } from '../../service/Base';
 import { useEffect, useState } from 'react';
+import NotLoggedIn from '../../components/NotLoggedIn';
 
 export default function Information() {
+    const token = localStorage.getItem('token')
+    if (!token) {
+        return <NotLoggedIn />
+    }
+
+    
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const token = localStorage.getItem('token');
     const getUserInfo = async () => {
         const response = await axios.get(`${base}/users/myInfor`, {
         headers: {

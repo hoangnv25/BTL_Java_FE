@@ -11,6 +11,7 @@ import Cart from './page/Cart/Cart.jsx'
 import FloatingCartLink from './components/FloatingCartLink.jsx'
 import CategoryProduct from './page/Category/CategoryProduct.jsx'
 import Admin from './page/Admin/Admin.jsx'
+import Chat from './page/Chat/Chat.jsx'
 
 function App() {
   return (
@@ -20,13 +21,15 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/newArrivals" element={<NAinPage />} /> {/*tạm để ở đây*/}
-          <Route path="/categories" element={<div>Chỗ này đợi BE để xổ list danh mục xuống</div>} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/user" element={<Information />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/category/:id" element={<CategoryProduct />} />
+
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          
+          <Route path="/user" element={<Information />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/chat" element={<Chat />} />
 
           <Route path="/admin/*" element={<Admin />} />
         </Routes>
