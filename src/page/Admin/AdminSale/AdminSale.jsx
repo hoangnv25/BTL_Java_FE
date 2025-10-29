@@ -197,6 +197,7 @@ export default function AdminSale() {
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onCreated={handleSaleCreated}
+                existingSales={_sales}
             />
 
             <UpdateSaleModal 
@@ -204,6 +205,7 @@ export default function AdminSale() {
                 onClose={() => setIsUpdateModalOpen(false)}
                 onUpdated={handleSaleUpdated}
                 sale={selectedSale}
+                existingSales={_sales}
             />
 
             <ConfirmDialog

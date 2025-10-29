@@ -5,7 +5,7 @@ import { App } from 'antd'
 import { Search } from 'lucide-react'
 import './NewSale.css'
 
-export default function NewSaleModal({ open = false, onClose, onCreated }) {
+export default function NewSaleModal({ open = false, onClose, onCreated, existingSales = [] }) {
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
     const [stDate, setStDate] = useState('')
@@ -17,6 +17,27 @@ export default function NewSaleModal({ open = false, onClose, onCreated }) {
     const [submitting, setSubmitting] = useState(false)
 
     const { message } = App.useApp();
+
+    // Hàm kiểm tra trùng lặp thời gian
+    const checkTimeOverlap = (newStart, newEnd) => {
+        const newStartDate = new Date(newStart)
+        const newEndDate = new Date(newEnd)
+        
+        for (const sale of existingSales) {
+            const saleStart = new Date(sale.stDate)
+            const saleEnd = new Date(sale.endDate)
+            
+            // Kiểm tra trùng lặp: hai khoảng thời gian trùng nhau nếu:
+            // newStart <= saleEnd && newEnd >= saleStart
+            if (newStartDate <= saleEnd && newEndDate >= saleStart) {
+                return {
+                    overlap: true,
+                    conflictSale: sale
+                }
+            }
+        }
+        return { overlap: false }
+    }
 
     useEffect(() => {
         if (open) {
@@ -88,6 +109,27 @@ export default function NewSaleModal({ open = false, onClose, onCreated }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (disabled) return
+        
+        // Validate dates
+        const start = new Date(stDate)
+        const end = new Date(endDate)
+        
+        if (start >= end) {
+            message.error('Ngày bắt đầu phải nhỏ hơn ngày kết thúc')
+            return
+        }
+        
+        // Check time overlap
+        const overlapCheck = checkTimeOverlap(stDate, endDate)
+        if (overlapCheck.overlap) {
+            const conflictSale = overlapCheck.conflictSale
+            const conflictStart = new Date(conflictSale.stDate).toLocaleString('vi-VN')
+            const conflictEnd = new Date(conflictSale.endDate).toLocaleString('vi-VN')
+            message.error(
+                `Khoảng thời gian bị trùng với khuyến mãi "${conflictSale.name}" (${conflictStart} - ${conflictEnd}). Chỉ được có một khuyến mãi hoạt động trong cùng thời điểm.`
+            )
+            return
+        }
         
         setSubmitting(true)
         try {
