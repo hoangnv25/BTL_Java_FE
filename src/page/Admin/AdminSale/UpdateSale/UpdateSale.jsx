@@ -2,21 +2,42 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { base } from '../../../../service/Base'
 import { App } from 'antd'
-import { Search } from 'lucide-react'
+import { Search, Package, Eye } from 'lucide-react'
 import './UpdateSale.css'
 
-export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale }) {
+export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale, existingSales = [] }) {
     const [stDate, setStDate] = useState('')
     const [endDate, setEndDate] = useState('')
-    const [removeProductIds, setRemoveProductIds] = useState([])
-    const [addProducts, setAddProducts] = useState([])
+    const [selectedProducts, setSelectedProducts] = useState([])
     const [allProducts, setAllProducts] = useState([])
-    const [searchRemoveQuery, setSearchRemoveQuery] = useState('')
-    const [searchAddQuery, setSearchAddQuery] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
     const [loadingProducts, setLoadingProducts] = useState(false)
     const [submitting, setSubmitting] = useState(false)
 
     const { message } = App.useApp();
+
+    // Hàm kiểm tra trùng lặp thời gian (trừ sale đang sửa)
+    const checkTimeOverlap = (newStart, newEnd, currentSaleId) => {
+        const newStartDate = new Date(newStart)
+        const newEndDate = new Date(newEnd)
+        
+        for (const existingSale of existingSales) {
+            // Bỏ qua sale đang được sửa
+            if (existingSale.id === currentSaleId) continue
+            
+            const saleStart = new Date(existingSale.stDate)
+            const saleEnd = new Date(existingSale.endDate)
+            
+            // Kiểm tra trùng lặp
+            if (newStartDate <= saleEnd && newEndDate >= saleStart) {
+                return {
+                    overlap: true,
+                    conflictSale: existingSale
+                }
+            }
+        }
+        return { overlap: false }
+    }
 
     useEffect(() => {
         if (open && sale) {
@@ -25,31 +46,26 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
             const endDateFormatted = formatDateForInput(sale.endDate)
             setStDate(stDateFormatted)
             setEndDate(endDateFormatted)
-            setRemoveProductIds([])
-            setAddProducts([])
-            setSearchRemoveQuery('')
-            setSearchAddQuery('')
+            
+            // Pre-fill selectedProducts từ sale.list_product
+            const currentProducts = sale.list_product || []
+            const preselected = currentProducts.map(p => ({
+                productId: p.id || p.productId,
+                value: p.value || ''
+            }))
+            setSelectedProducts(preselected)
+            
+            setSearchQuery('')
             // Fetch all products
             fetchProducts()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, sale])
 
-    // Get current product IDs in the sale
-    const currentProducts = sale?.list_product || []
-    const currentProductIds = currentProducts.map(p => p.productId || p.id)
-    
-    // Filter current products for remove section
-    const filteredRemoveProducts = currentProducts.filter(product => {
-        const productName = (product.productName || product.name || '').toLowerCase()
-        return productName.includes(searchRemoveQuery.toLowerCase())
-    })
-    
-    // Filter available products for add section
-    const availableProducts = allProducts.filter(p => !currentProductIds.includes(p.productId))
-    const filteredAddProducts = availableProducts.filter(product => {
-        const productName = (product.productName || product.name || '').toLowerCase()
-        return productName.includes(searchAddQuery.toLowerCase())
+    // Filter all products based on search
+    const filteredProducts = allProducts.filter(product => {
+        const productName = (product.title || product.productName || product.name || '').toLowerCase()
+        return productName.includes(searchQuery.toLowerCase())
     })
 
     const formatDateForInput = (dateString) => {
@@ -66,7 +82,11 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
     const fetchProducts = async () => {
         setLoadingProducts(true)
         try {
-            const response = await axios.get(`${base}/product`)
+            const response = await axios.get(`${base}/products`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
             if (response.status === 200) {
                 setAllProducts(response.data.result || [])
             }
@@ -78,30 +98,22 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
         }
     }
 
-    const toggleRemoveProduct = (productId) => {
-        setRemoveProductIds(prev => {
-            if (prev.includes(productId)) {
-                return prev.filter(id => id !== productId)
-            } else {
-                return [...prev, productId]
-            }
-        })
-    }
-
-    const handleAddProductToggle = (productId) => {
-        setAddProducts(prev => {
+    const handleProductToggle = (productId) => {
+        setSelectedProducts(prev => {
             const exists = prev.find(p => p.productId === productId)
             if (exists) {
+                // Bỏ tick - xóa khỏi danh sách
                 return prev.filter(p => p.productId !== productId)
             } else {
-                return [...prev, { productId, value: 0 }]
+                // Tick - thêm vào danh sách với value rỗng
+                return [...prev, { productId, value: '' }]
             }
         })
     }
 
     const handleValueChange = (productId, value) => {
-        setAddProducts(prev => 
-            prev.map(p => p.productId === productId ? { ...p, value: parseFloat(value) || 0 } : p)
+        setSelectedProducts(prev => 
+            prev.map(p => p.productId === productId ? { ...p, value: value } : p)
         )
     }
 
@@ -116,10 +128,57 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
         e.preventDefault()
         if (disabled || !sale) return
         
+        // Validate selectedProducts với value
+        if (selectedProducts.length > 0) {
+            const invalidProducts = selectedProducts.filter(p => {
+                const value = parseFloat(p.value)
+                return !p.value || isNaN(value) || value <= 0 || value > 1
+            })
+            if (invalidProducts.length > 0) {
+                message.error('Vui lòng nhập giá trị giảm giá hợp lệ (0.01 - 1.0) cho tất cả sản phẩm')
+                return
+            }
+        }
+        
+        // Validate dates
+        const start = new Date(stDate)
+        const end = new Date(endDate)
+        
+        if (start >= end) {
+            message.error('Ngày bắt đầu phải nhỏ hơn ngày kết thúc')
+            return
+        }
+        
+        // Check time overlap
+        const overlapCheck = checkTimeOverlap(stDate, endDate, sale.id)
+        if (overlapCheck.overlap) {
+            const conflictSale = overlapCheck.conflictSale
+            const conflictStart = new Date(conflictSale.stDate).toLocaleString('vi-VN')
+            const conflictEnd = new Date(conflictSale.endDate).toLocaleString('vi-VN')
+            message.error(
+                `Khoảng thời gian bị trùng với khuyến mãi "${conflictSale.name}" (${conflictStart} - ${conflictEnd}). Chỉ được có một khuyến mãi hoạt động trong cùng thời điểm.`
+            )
+            return
+        }
+        
         setSubmitting(true)
         try {
             const formattedStDate = new Date(stDate).toISOString()
             const formattedEndDate = new Date(endDate).toISOString()
+            
+            // So sánh current products vs selected products
+            const currentProducts = sale.list_product || []
+            const currentProductIds = currentProducts.map(p => p.id || p.productId)
+            const selectedProductIds = selectedProducts.map(p => p.productId)
+            
+            // Products to remove: có trong current nhưng không có trong selected
+            const removeProductIds = currentProductIds.filter(id => !selectedProductIds.includes(id))
+            
+            // Products to add/update: có trong selected
+            const addProducts = selectedProducts.map(p => ({
+                productId: p.productId,
+                value: parseFloat(p.value)
+            }))
 
             const payload = {
                 stDate: formattedStDate,
@@ -127,6 +186,12 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
                 removeProductIds: removeProductIds,
                 addProducts: addProducts
             }
+            
+            console.log('Update Sale Payload:', payload)
+            console.log('Current products:', currentProductIds)
+            console.log('Selected products:', selectedProductIds)
+            console.log('Remove:', removeProductIds)
+            console.log('Add/Update:', addProducts)
 
             const response = await axios.put(`${base}/sales/${sale.id}`, payload, {
                 headers: { 
@@ -134,10 +199,13 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             })
+            
+            console.log('Update Sale Response:', response.data)
 
             if (response.status === 200 || response.status === 201) {
                 message.success('Cập nhật khuyến mãi thành công')
-                if (typeof onUpdated === 'function') onUpdated(response.data?.result || sale)
+                // Chờ reload danh sách từ server
+                if (typeof onUpdated === 'function') await onUpdated(response.data?.result || sale)
                 if (typeof onClose === 'function') onClose()
                 return
             }
@@ -184,50 +252,8 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
                         </div>
                     </div>
 
-                    {/* Remove Products Section */}
-                    {currentProducts.length > 0 && (
-                        <div className="form-group">
-                            <label>Xóa sản phẩm khỏi khuyến mãi ({removeProductIds.length} sẽ xóa)</label>
-                            
-                            <div className="search-box">
-                                <Search size={18} className="search-icon" />
-                                <input
-                                    type="text"
-                                    className="search-input"
-                                    placeholder="Tìm kiếm sản phẩm..."
-                                    value={searchRemoveQuery}
-                                    onChange={(e) => setSearchRemoveQuery(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="products-container">
-                                {filteredRemoveProducts.length === 0 ? (
-                                    <div className="products-empty">
-                                        {searchRemoveQuery ? 'Không tìm thấy sản phẩm nào' : 'Không có sản phẩm nào'}
-                                    </div>
-                                ) : (
-                                    <div className="products-list-checkbox">
-                                        {filteredRemoveProducts.map((product) => (
-                                            <label key={product.productId || product.id} className="product-checkbox-item">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={removeProductIds.includes(product.productId || product.id)}
-                                                    onChange={() => toggleRemoveProduct(product.productId || product.id)}
-                                                />
-                                                <span className="product-checkbox-label">
-                                                    {product.productName || product.name}
-                                                </span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Add Products Section */}
                     <div className="form-group">
-                        <label>Thêm sản phẩm vào khuyến mãi ({addProducts.length} sẽ thêm)</label>
+                        <label>Chọn sản phẩm cho khuyến mãi ({selectedProducts.length} đã chọn)</label>
                         
                         <div className="search-box">
                             <Search size={18} className="search-icon" />
@@ -235,46 +261,80 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
                                 type="text"
                                 className="search-input"
                                 placeholder="Tìm kiếm sản phẩm..."
-                                value={searchAddQuery}
-                                onChange={(e) => setSearchAddQuery(e.target.value)}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
 
                         <div className="products-container">
                             {loadingProducts ? (
                                 <div className="products-loading">Đang tải sản phẩm...</div>
-                            ) : filteredAddProducts.length === 0 ? (
+                            ) : filteredProducts.length === 0 ? (
                                 <div className="products-empty">
-                                    {searchAddQuery ? 'Không tìm thấy sản phẩm nào' : (availableProducts.length === 0 ? 'Không có sản phẩm mới để thêm' : 'Không tìm thấy sản phẩm nào')}
+                                    {searchQuery ? 'Không tìm thấy sản phẩm nào' : 'Không có sản phẩm nào'}
                                 </div>
                             ) : (
-                                <div className="products-list-with-value">
-                                    {filteredAddProducts.map((product) => {
-                                        const addedProduct = addProducts.find(p => p.productId === product.productId)
+                                <div className="products-grid-sale">
+                                    {filteredProducts.map((product) => {
+                                        const selected = selectedProducts.find(p => p.productId === product.productId)
                                         return (
-                                            <div key={product.productId} className="product-value-item">
-                                                <label className="product-checkbox-inline">
+                                            <div key={product.productId} className="product-card-sale">
+                                                <div className="product-checkbox-wrapper">
                                                     <input
                                                         type="checkbox"
-                                                        checked={!!addedProduct}
-                                                        onChange={() => handleAddProductToggle(product.productId)}
+                                                        checked={!!selected}
+                                                        onChange={() => handleProductToggle(product.productId)}
+                                                        className="product-checkbox-input"
                                                     />
-                                                    <span className="product-name-inline">
-                                                        {product.productName || product.name}
-                                                    </span>
-                                                </label>
-                                                {addedProduct && (
-                                                    <input
-                                                        type="number"
-                                                        className="value-input"
-                                                        placeholder="Giá trị giảm (0-1)"
-                                                        min="0"
-                                                        max="1"
-                                                        step="0.01"
-                                                        value={addedProduct.value}
-                                                        onChange={(e) => handleValueChange(product.productId, e.target.value)}
-                                                    />
-                                                )}
+                                                </div>
+                                                <div className="product-image-sale">
+                                                    {product.image ? (
+                                                        <img src={product.image} alt={product.title} />
+                                                    ) : (
+                                                        <div className="product-image-placeholder-sale">
+                                                            <Package size={32} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="product-info-sale">
+                                                    <h4 className="product-title-sale">{product.title || product.productName || product.name}</h4>
+                                                    <p className="product-price-sale">
+                                                        {new Intl.NumberFormat('vi-VN', {
+                                                            style: 'currency',
+                                                            currency: 'VND'
+                                                        }).format(product.price)}
+                                                    </p>
+                                                    {product.description && (
+                                                        <p className="product-desc-sale">{product.description}</p>
+                                                    )}
+                                                    {selected && (
+                                                        <div className="value-input-wrapper">
+                                                            <label className="value-label">Giảm giá:</label>
+                                                            <input
+                                                                type="number"
+                                                                className="value-input-inline"
+                                                                placeholder="0.0 - 1.0"
+                                                                min="0"
+                                                                max="1"
+                                                                step="0.01"
+                                                                value={selected.value}
+                                                                onChange={(e) => handleValueChange(product.productId, e.target.value)}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    className="btn-view-product-sale"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        window.open(`/product/${product.productId}`, '_blank')
+                                                    }}
+                                                    title="Xem chi tiết"
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
                                             </div>
                                         )
                                     })}
