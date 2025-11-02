@@ -165,43 +165,58 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
             return
         }
 
-        // Build FormData with only changed fields
+        // Build FormData with exactly 5 fields: image, title, description, price, categoryId
         const formData = new FormData()
         let hasProductChanges = false
 
-        // Check if title changed
-        if (title.trim() && title.trim() !== product.title) {
+        // 1. Title
+        if (title.trim() && title.trim() !== (product.title || '')) {
             formData.append('title', title.trim())
             hasProductChanges = true
+        } else {
+            formData.append('title', '')
         }
 
-        // Check if description changed
-        if (description.trim() !== (product.description || '')) {
+        // 2. Description
+        if (description.trim() && description.trim() !== (product.description || '')) {
             formData.append('description', description.trim())
             hasProductChanges = true
+        } else {
+            formData.append('description', '')
         }
 
-        // Check if price changed
-        if (price && parseFloat(price) !== product.price) {
-            if (parseFloat(price) <= 0) {
-                message.error('Giá phải lớn hơn 0')
+        // 3. Price
+        if (price && price.trim() !== '') {
+            const priceValue = parseFloat(price)
+            if (isNaN(priceValue) || priceValue <= 0) {
+                message.error('Giá phải là số lớn hơn 0')
                 return
             }
-            formData.append('price', parseFloat(price))
-            hasProductChanges = true
+            if (priceValue !== product.price) {
+                formData.append('price', priceValue)
+                hasProductChanges = true
+            } else {
+                formData.append('price', '')
+            }
+        } else {
+            formData.append('price', '')
         }
 
-        // Check if categoryId changed
+        // 4. CategoryId
         const newCategoryId = categoryId ? parseInt(categoryId) : null
         const oldCategoryId = product.categoryId || null
         if (newCategoryId !== oldCategoryId) {
             if (newCategoryId) {
                 formData.append('categoryId', newCategoryId)
+            } else {
+                formData.append('categoryId', '')
             }
             hasProductChanges = true
+        } else {
+            formData.append('categoryId', '')
         }
 
-        // Check if image changed (new file selected or removed)
+        // 5. Image
         if (imageFile) {
             formData.append('image', imageFile)
             hasProductChanges = true
@@ -209,6 +224,9 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
             // User wants to remove the existing image
             formData.append('image', '')
             hasProductChanges = true
+        } else {
+            // No image change, append empty string (no file)
+            formData.append('image', '')
         }
 
         // Check if there are new variations to add
