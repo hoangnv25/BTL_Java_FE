@@ -1,67 +1,108 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import axios from "axios";
+import { base } from "../../service/Base.jsx";
 import ProductFeedback from "./ProductFeedback";
 import "./ProductDetail.css";
 
 export default function ProductDetail() {
 	const { id } = useParams();
+	const [product, setProduct] = useState(null);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
 
-	const RESPONSE = {
-		id: 219,
-		title: "Ao sai đẹp giếu",
-		description: "Đây là mô tả của áo Sai đẹp giếu",
-		price: 450000,
-		thumbnail: "https://onoff.vn/blog/wp-content/uploads/2024/11/cac-kieu-ao-khoac-nu-mua-dong-1.jpg",
-		rate: 3.5,
-		discount: 10,
-		list_prod_variation: [
-			{
-				product_id: 219,
-				image: "https://onoff.vn/blog/wp-content/uploads/2024/11/cac-kieu-ao-khoac-nu-mua-dong-3.jpg",
-				color: "Be",
-				list: [
-					{
-						id_variation: 1,
-						size: "XL",
-						stock_quantity: 12
+	// Fetch product data from API
+	useEffect(() => {
+		const fetchProduct = async () => {
+			if (!id) {
+				setError("Không tìm thấy ID sản phẩm");
+				setLoading(false);
+				return;
+			}
 
-					},
-					{
-						id_variation: 2,
-						size: "L",
-						stock_quantity: 10
-					}
-				]
-			},
-			{
-				product_id: 219,
-				image: "https://onoff.vn/blog/wp-content/uploads/2024/11/cac-kieu-ao-khoac-nu-mua-dong-4.jpg",
-				color: "Lam",
-				list: [
-					{
-						id_variation: 3,
-						size: "XL",
-						stock_quantity: 12
+			try {
+				setLoading(true);
+				setError(null);
+				const response = await axios.get(`${base}/products/${id}`);
 
-					},
-					{
-						id_variation: 4,
-						size: "L",
-						stock_quantity: 0
-					},
-					{
-						id_variation: 5,
-						size: "M",
-						stock_quantity: 5
-					}
-				]
-			}			
-		]
-	};
+				if (response.data && response.data.code === 1000 && response.data.result) {
+					const productData = response.data.result;
+					setProduct(productData);
+				} else {
+					setError("Không thể tải thông tin sản phẩm");
+				}
+			} catch (err) {
+				console.error("Error fetching product:", err);
+				setError(err?.response?.data?.message || "Có lỗi khi tải thông tin sản phẩm");
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchProduct();
+	}, [id]);
+
+	// Transform API data to component format
+	const RESPONSE = useMemo(() => {
+		if (!product) return null;
+
+		// API có thể trả về "listVariations" (đã nhóm sẵn theo màu) hoặc "variations" (array phẳng)
+		let list_prod_variation = [];
+		
+		if (product.listVariations && Array.isArray(product.listVariations)) {
+			// Format mới: listVariations đã được nhóm sẵn theo màu sắc
+			list_prod_variation = product.listVariations.map((group) => ({
+				product_id: group.productId || product.productId,
+				image: group.image || product.image,
+				color: group.color,
+				list: (group.list || []).map((item) => ({
+					id_variation: item.idVariation || item.id,
+					size: item.size,
+					stock_quantity: item.stockQuantity || 0
+				}))
+			}));
+		} else if (product.variations && Array.isArray(product.variations)) {
+			// Format cũ: variations là array phẳng, cần group theo màu
+			const variationsByColor = {};
+			
+			product.variations.forEach((variation) => {
+				if (!variation.color) return;
+				
+				if (!variationsByColor[variation.color]) {
+					variationsByColor[variation.color] = {
+						product_id: product.productId,
+						image: variation.image || product.image,
+						color: variation.color,
+						list: []
+					};
+				}
+				
+				variationsByColor[variation.color].list.push({
+					id_variation: variation.id,
+					size: variation.size,
+					stock_quantity: variation.stockQuantity || 0
+				});
+			});
+			
+			list_prod_variation = Object.values(variationsByColor);
+		}
+
+		return {
+			id: product.productId,
+			title: product.title || "",
+			description: product.description || "",
+			price: product.price || 0,
+			thumbnail: product.image || "",
+			rate: 0, // API không trả về rate, mặc định 0
+			discount: product.saleValue ? Math.round(product.saleValue * 100) : 0, // Convert 0.90 to 90
+			list_prod_variation: list_prod_variation
+		};
+	}, [product]);
 
 	// Tạo gallery ảnh (ảnh chính + ảnh các biến thể) – mỗi entry có key riêng để
 	// không gộp lại dù trùng URL ảnh
     const galleryEntries = useMemo(() => {
+		if (!RESPONSE) return [];
 		const entries = [];
 		if (RESPONSE.thumbnail) {
 			entries.push({ key: "main", src: RESPONSE.thumbnail });
@@ -70,20 +111,37 @@ export default function ProductDetail() {
             if (group && group.image) entries.push({ key: `color-${idx}`, src: group.image, variation: group });
 		});
 		return entries;
-	}, [RESPONSE.thumbnail, RESPONSE.list_prod_variation]);
+	}, [RESPONSE]);
 
-    const [activeKey, setActiveKey] = useState(galleryEntries[0]?.key);
-	const activeEntry = useMemo(() => (
-		galleryEntries.find(e => e.key === activeKey)
-	), [activeKey, galleryEntries]);
+    const [activeKey, setActiveKey] = useState(null);
+	const activeEntry = useMemo(() => {
+		if (!activeKey) return null;
+		return galleryEntries.find(e => e.key === activeKey);
+	}, [activeKey, galleryEntries]);
+	
+	// Set initial activeKey when galleryEntries changes
+	useEffect(() => {
+		if (galleryEntries.length > 0 && !activeKey) {
+			setActiveKey(galleryEntries[0]?.key);
+		}
+	}, [galleryEntries, activeKey]);
+
 	const activeImg = activeEntry?.src || "";
-    const firstColorGroup = RESPONSE.list_prod_variation?.[0];
-    const [selectedSize, setSelectedSize] = useState(firstColorGroup?.list?.[0]?.size || "");
-    const [selectedColor, setSelectedColor] = useState(firstColorGroup?.color || "");
+    const firstColorGroup = RESPONSE?.list_prod_variation?.[0];
+    const [selectedSize, setSelectedSize] = useState("");
+    const [selectedColor, setSelectedColor] = useState("");
 	const [qty, setQty] = useState(1);
 
-	const hasDiscount = RESPONSE.discount && RESPONSE.discount > 0;
-	const finalPrice = hasDiscount ? Math.round(RESPONSE.price * (1 - RESPONSE.discount / 100)) : RESPONSE.price;
+	// Initialize selectedSize and selectedColor when firstColorGroup is available
+	useEffect(() => {
+		if (firstColorGroup && !selectedSize && !selectedColor) {
+			setSelectedSize(firstColorGroup.list?.[0]?.size || "");
+			setSelectedColor(firstColorGroup.color || "");
+		}
+	}, [firstColorGroup, selectedSize, selectedColor]);
+
+	const hasDiscount = RESPONSE?.discount && RESPONSE.discount > 0;
+	const finalPrice = RESPONSE ? (hasDiscount ? Math.round(RESPONSE.price * (1 - RESPONSE.discount / 100)) : RESPONSE.price) : 0;
 
     const selectedVariation = activeEntry?.variation; // nhóm theo màu hiện tại
     const sizes = useMemo(() => {
@@ -101,9 +159,66 @@ export default function ProductDetail() {
         }
 	}, [selectedVariation, selectedSize]);
 
-	const full = Math.floor(RESPONSE.rate || 0);
-	const hasHalf = (RESPONSE.rate || 0) - full >= 0.5;
+	const full = Math.floor(RESPONSE?.rate || 0);
+	const hasHalf = (RESPONSE?.rate || 0) - full >= 0.5;
 	const empty = 5 - full - (hasHalf ? 1 : 0);
+
+	// Loading state - Skeleton loading
+	if (loading) {
+		return (
+			<div className="pd-container">
+				{/* Gallery skeleton */}
+				<div className="pd-gallery">
+					<div className="pd-main skeleton-image">
+						<div className="skeleton-placeholder"></div>
+					</div>
+				</div>
+
+				{/* Info skeleton */}
+				<div className="skeleton-content">
+					<div className="skeleton-line skeleton-meta"></div>
+					<div className="skeleton-line skeleton-title"></div>
+					<div className="skeleton-line skeleton-rating"></div>
+					<div className="skeleton-line skeleton-price"></div>
+					<div className="skeleton-line skeleton-description"></div>
+					<div className="skeleton-line skeleton-description-short"></div>
+					
+					<div className="skeleton-options">
+						<div className="skeleton-line skeleton-option-label"></div>
+						<div className="skeleton-dots">
+							<div className="skeleton-dot"></div>
+							<div className="skeleton-dot"></div>
+						</div>
+					</div>
+					
+					<div className="skeleton-options">
+						<div className="skeleton-line skeleton-option-label"></div>
+						<div className="skeleton-chips">
+							<div className="skeleton-chip"></div>
+							<div className="skeleton-chip"></div>
+							<div className="skeleton-chip"></div>
+						</div>
+					</div>
+					
+					<div className="skeleton-actions">
+						<div className="skeleton-button"></div>
+						<div className="skeleton-button secondary"></div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// Error state
+	if (error || !RESPONSE) {
+		return (
+			<div className="pd-container">
+				<div style={{ textAlign: "center", padding: "40px", color: "#d32f2f" }}>
+					<p>{error || "Không tìm thấy sản phẩm"}</p>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="pd-container">
@@ -193,7 +308,6 @@ export default function ProductDetail() {
 					<button className="btn secondary" type="button">Buy now</button>
 				</div>
 
-				<div className="pd-note">ID sản phẩm: {id}</div>
 				<ProductFeedback />
 			</div>
 		</div>
