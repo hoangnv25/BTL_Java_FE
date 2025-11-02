@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { base } from '../../../../service/Base'
 import { App, Select } from 'antd'
-import { Upload, X, Search } from 'lucide-react'
+import { Upload, X, Plus, Trash2 } from 'lucide-react'
 import './UpdateProduct.css'
 
 export default function UpdateProductModal({ open = false, onClose, onUpdated, product }) {
@@ -16,6 +16,8 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
     const [submitting, setSubmitting] = useState(false)
     const [categories, setCategories] = useState([])
     const [loadingCategories, setLoadingCategories] = useState(false)
+    const [existingVariations, setExistingVariations] = useState([])
+    const [newVariations, setNewVariations] = useState([])
 
     const { message } = App.useApp()
 
@@ -55,6 +57,8 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
             setImagePreview(product.image || null)
             setImageFile(null)
             setRemoveImage(false)
+            setExistingVariations(product.variations || [])
+            setNewVariations([])
         }
     }, [product])
 
@@ -95,6 +99,62 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
         setImageFile(null)
         setImagePreview(null)
         setRemoveImage(false)
+        setExistingVariations([])
+        setNewVariations([])
+    }
+
+    // New variation management
+    const handleAddNewVariation = () => {
+        setNewVariations([...newVariations, {
+            id: Date.now(), // temporary ID
+            size: '',
+            color: '',
+            stockQuantity: '',
+            imageFile: null,
+            imagePreview: null
+        }])
+    }
+
+    const handleRemoveNewVariation = (id) => {
+        setNewVariations(newVariations.filter(v => v.id !== id))
+    }
+
+    const handleNewVariationChange = (id, field, value) => {
+        setNewVariations(newVariations.map(v => {
+            if (v.id === id) {
+                return { ...v, [field]: value }
+            }
+            return v
+        }))
+    }
+
+    const handleNewVariationImageChange = (id, e) => {
+        const file = e.target.files[0]
+        if (file) {
+            if (!file.type.startsWith('image/')) {
+                message.error('Vui lòng chọn file ảnh')
+                return
+            }
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setNewVariations(newVariations.map(v => {
+                    if (v.id === id) {
+                        return { ...v, imageFile: file, imagePreview: reader.result }
+                    }
+                    return v
+                }))
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const handleRemoveNewVariationImage = (id) => {
+        setNewVariations(newVariations.map(v => {
+            if (v.id === id) {
+                return { ...v, imageFile: null, imagePreview: null }
+            }
+            return v
+        }))
     }
 
     const handleSubmit = async (e) => {
@@ -107,18 +167,18 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
 
         // Build FormData with only changed fields
         const formData = new FormData()
-        let hasChanges = false
+        let hasProductChanges = false
 
         // Check if title changed
         if (title.trim() && title.trim() !== product.title) {
             formData.append('title', title.trim())
-            hasChanges = true
+            hasProductChanges = true
         }
 
         // Check if description changed
         if (description.trim() !== (product.description || '')) {
             formData.append('description', description.trim())
-            hasChanges = true
+            hasProductChanges = true
         }
 
         // Check if price changed
@@ -128,7 +188,7 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
                 return
             }
             formData.append('price', parseFloat(price))
-            hasChanges = true
+            hasProductChanges = true
         }
 
         // Check if categoryId changed
@@ -138,18 +198,25 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
             if (newCategoryId) {
                 formData.append('categoryId', newCategoryId)
             }
-            hasChanges = true
+            hasProductChanges = true
         }
 
         // Check if image changed (new file selected or removed)
         if (imageFile) {
             formData.append('image', imageFile)
-            hasChanges = true
+            hasProductChanges = true
         } else if (removeImage && product.image) {
             // User wants to remove the existing image
             formData.append('image', '')
-            hasChanges = true
+            hasProductChanges = true
         }
+
+        // Check if there are new variations to add
+        const hasNewVariations = newVariations.length > 0 && 
+            newVariations.some(v => v.size && v.color && v.stockQuantity)
+        
+        // Overall changes: either product changes or new variations
+        const hasChanges = hasProductChanges || hasNewVariations
 
         if (!hasChanges) {
             message.warning('Không có thay đổi nào để cập nhật')
@@ -158,21 +225,130 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
 
         setSubmitting(true)
         try {
-            const response = await axios.put(`${base}/products/${product.productId}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            })
+            // Only send PUT request if there are changes to product info
+            if (hasProductChanges) {
+                const response = await axios.put(`${base}/products/${product.productId}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                })
 
-            if (response.status === 200 || response.status === 201) {
-                message.success('Cập nhật sản phẩm thành công')
-                resetForm()
-                if (typeof onUpdated === 'function') onUpdated(response.data?.result)
-                if (typeof onClose === 'function') onClose()
-                return
+                if (response.status !== 200 && response.status !== 201) {
+                    message.error(response.data?.message || 'Cập nhật sản phẩm thất bại')
+                    setSubmitting(false)
+                    return
+                }
             }
-            message.error(response.data?.message || 'Cập nhật sản phẩm thất bại')
+
+            // Create new variations if any
+            if (hasNewVariations && product.productId) {
+                try {
+                    const validVariations = newVariations.filter(v => v.size && v.color && v.stockQuantity)
+                    
+                    if (validVariations.length === 0) {
+                        message.warning('Vui lòng điền đầy đủ thông tin cho biến thể (Size, Color, Số lượng)')
+                        setSubmitting(false)
+                        return
+                    }
+
+                    console.log('📦 Creating variations:', validVariations.length)
+                    
+                    const variationPromises = validVariations.map(async (variation, index) => {
+                        try {
+                            const variationFormData = new FormData()
+                            variationFormData.append('productId', product.productId)
+                            variationFormData.append('size', variation.size.trim())
+                            variationFormData.append('color', variation.color.trim())
+                            variationFormData.append('stockQuantity', parseInt(variation.stockQuantity))
+                            
+                            if (variation.imageFile) {
+                                variationFormData.append('image', variation.imageFile)
+                            }
+
+                            console.log(`📤 Creating variation ${index + 1}/${validVariations.length}:`, {
+                                productId: product.productId,
+                                size: variation.size.trim(),
+                                color: variation.color.trim(),
+                                stockQuantity: parseInt(variation.stockQuantity),
+                                hasImage: !!variation.imageFile
+                            })
+
+                            const response = await axios.post(`${base}/variations`, variationFormData, {
+                                headers: {
+                                    'Content-Type': 'multipart/form-data',
+                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                }
+                            })
+
+                            console.log(`✅ Variation ${index + 1} created:`, response.data)
+                            return { success: true, variation, response: response.data }
+                        } catch (err) {
+                            console.error(`❌ Error creating variation ${index + 1}:`, {
+                                variation,
+                                error: err.response?.data || err.message,
+                                status: err.response?.status
+                            })
+                            return { 
+                                success: false, 
+                                variation, 
+                                error: err.response?.data || { message: err.message } 
+                            }
+                        }
+                    })
+
+                    const results = await Promise.all(variationPromises)
+                    const successCount = results.filter(r => r.success).length
+                    const failCount = results.filter(r => !r.success).length
+
+                    if (failCount === 0) {
+                        if (hasProductChanges) {
+                            message.success(`Cập nhật sản phẩm và thêm ${successCount} biến thể thành công`)
+                        } else {
+                            message.success(`Thêm ${successCount} biến thể thành công`)
+                        }
+                    } else {
+                        // Show detailed error messages
+                        results.forEach((result, index) => {
+                            if (!result.success) {
+                                const errorMsg = result.error?.message || result.error?.result?.message || 'Không xác định'
+                                message.error(`Biến thể ${index + 1} (${result.variation.size}/${result.variation.color}): ${errorMsg}`)
+                            }
+                        })
+                        
+                        if (successCount > 0) {
+                            message.warning(`${successCount} biến thể thành công, ${failCount} biến thể thất bại`)
+                        } else {
+                            message.error(`Không thể thêm biến thể: ${results[0]?.error?.message || results[0]?.error?.result?.message || 'Vui lòng kiểm tra lại'}`)
+                        }
+                    }
+                } catch (variationError) {
+                    console.error('❌ Unexpected error creating variations:', variationError)
+                    const errorMsg = variationError?.response?.data?.message || 
+                                   variationError?.response?.data?.result?.message ||
+                                   variationError?.message || 
+                                   'Vui lòng thử lại'
+                    message.error(`Có lỗi khi thêm biến thể: ${errorMsg}`)
+                }
+            } else if (hasProductChanges) {
+                message.success('Cập nhật sản phẩm thành công')
+            }
+
+            resetForm()
+            // Refresh product data - call onUpdated if available
+            if (typeof onUpdated === 'function') {
+                // If we have response from PUT, use it, otherwise just trigger refresh
+                if (hasProductChanges) {
+                    // We need to get the updated product, but since we don't have response here,
+                    // we'll just trigger the callback to refresh
+                    onUpdated(null)
+                } else {
+                    // Only variations added, still trigger refresh
+                    onUpdated(null)
+                }
+            }
+            if (typeof onClose === 'function') onClose()
+            return
         } catch (err) {
             console.error('Error updating product:', err)
             message.error(err?.response?.data?.message || 'Có lỗi khi cập nhật sản phẩm')
@@ -384,6 +560,142 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
 
                     <div className="update-note">
                         💡 <strong>Lưu ý:</strong> Chỉ cần điền vào các trường muốn thay đổi
+                    </div>
+
+                    {/* Variations Section */}
+                    <div className="variations-section">
+                        {/* Existing Variations */}
+                        {existingVariations.length > 0 && (
+                            <div className="existing-variations">
+                                <div className="variations-header">
+                                    <label>Biến thể hiện có ({existingVariations.length})</label>
+                                </div>
+                                <div className="existing-variations-list">
+                                    {existingVariations.map((variation) => (
+                                        <div key={variation.id} className="existing-variation-item">
+                                            {variation.image && (
+                                                <img src={variation.image} alt={`${variation.size} - ${variation.color}`} className="existing-variation-image" />
+                                            )}
+                                            <div className="existing-variation-details">
+                                                <div><strong>Size:</strong> {variation.size}</div>
+                                                <div><strong>Màu:</strong> {variation.color}</div>
+                                                <div><strong>Tồn kho:</strong> {variation.stockQuantity}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Add New Variations */}
+                        <div className="new-variations">
+                            <div className="variations-header">
+                                <label>Thêm biến thể mới (Tùy chọn)</label>
+                                <button
+                                    type="button"
+                                    className="btn-add-variation"
+                                    onClick={handleAddNewVariation}
+                                    disabled={submitting}
+                                >
+                                    <Plus size={16} />
+                                    Thêm biến thể
+                                </button>
+                            </div>
+                            
+                            {newVariations.length > 0 && (
+                                <div className="variations-list">
+                                    {newVariations.map((variation, index) => (
+                                        <div key={variation.id} className="variation-item">
+                                            <div className="variation-header-item">
+                                                <h4>Biến thể mới #{index + 1}</h4>
+                                                <button
+                                                    type="button"
+                                                    className="btn-remove-variation"
+                                                    onClick={() => handleRemoveNewVariation(variation.id)}
+                                                    disabled={submitting}
+                                                    title="Xóa biến thể"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            
+                                            <div className="variation-form-grid">
+                                                <div className="form-group">
+                                                    <label htmlFor={`new-size-${variation.id}`}>Size <span className="required">*</span></label>
+                                                    <input
+                                                        id={`new-size-${variation.id}`}
+                                                        className="form-control"
+                                                        type="text"
+                                                        value={variation.size}
+                                                        onChange={(e) => handleNewVariationChange(variation.id, 'size', e.target.value)}
+                                                        placeholder="VD: M, L, XL"
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label htmlFor={`new-color-${variation.id}`}>Màu sắc <span className="required">*</span></label>
+                                                    <input
+                                                        id={`new-color-${variation.id}`}
+                                                        className="form-control"
+                                                        type="text"
+                                                        value={variation.color}
+                                                        onChange={(e) => handleNewVariationChange(variation.id, 'color', e.target.value)}
+                                                        placeholder="VD: Đen, Trắng"
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label htmlFor={`new-stock-${variation.id}`}>Số lượng tồn kho <span className="required">*</span></label>
+                                                    <input
+                                                        id={`new-stock-${variation.id}`}
+                                                        className="form-control"
+                                                        type="number"
+                                                        value={variation.stockQuantity}
+                                                        onChange={(e) => handleNewVariationChange(variation.id, 'stockQuantity', e.target.value)}
+                                                        placeholder="Nhập số lượng"
+                                                        min="0"
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label htmlFor={`new-variation-image-${variation.id}`}>Hình ảnh biến thể</label>
+                                                    {!variation.imagePreview ? (
+                                                        <div className="variation-image-upload-area">
+                                                            <input
+                                                                id={`new-variation-image-${variation.id}`}
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={(e) => handleNewVariationImageChange(variation.id, e)}
+                                                                className="image-input"
+                                                            />
+                                                            <label htmlFor={`new-variation-image-${variation.id}`} className="variation-image-upload-label">
+                                                                <Upload size={20} />
+                                                                <span>Chọn ảnh</span>
+                                                            </label>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="variation-image-preview-container">
+                                                            <img src={variation.imagePreview} alt="Variation preview" className="variation-image-preview" />
+                                                            <button
+                                                                type="button"
+                                                                className="btn-remove-image"
+                                                                onClick={() => handleRemoveNewVariationImage(variation.id)}
+                                                                title="Xóa ảnh"
+                                                            >
+                                                                <X size={14} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="modal-footer">

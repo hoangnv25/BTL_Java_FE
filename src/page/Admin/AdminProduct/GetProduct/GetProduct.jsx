@@ -2,9 +2,11 @@ import { useEffect, useState, useMemo } from 'react'
 import axios from 'axios'
 import { base } from '../../../../service/Base'
 import { App } from 'antd'
-import { Eye, Package, Plus, Search, Pencil, Layers, Tag } from 'lucide-react'
+import { Eye, Package, Plus, Search, Pencil, Layers, Tag, Upload, Trash2 } from 'lucide-react'
 import CreateProductModal from '../CreateProduct/CreateProduct'
 import UpdateProductModal from '../UpdateProduct/UpdateProduct'
+import UpdateVariationModal from '../UpdateVariation/UpdateVariation'
+import DeleteProductModal from '../DeleteProduct/DeleteProduct'
 import './GetProduct.css'
 
 export default function GetProduct() {
@@ -16,6 +18,12 @@ export default function GetProduct() {
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
     const [productToUpdate, setProductToUpdate] = useState(null)
     const [activeSales, setActiveSales] = useState([])
+    const [selectedVariation, setSelectedVariation] = useState(null)
+    const [loadingVariationId, setLoadingVariationId] = useState(null)
+    const [isUpdateVariationModalOpen, setIsUpdateVariationModalOpen] = useState(false)
+    const [variationToUpdate, setVariationToUpdate] = useState(null)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [productToDelete, setProductToDelete] = useState(null)
     const { message } = App.useApp()
 
     // Filter products based on search query
@@ -123,6 +131,84 @@ export default function GetProduct() {
 
     const handleCloseModal = () => {
         setSelectedProduct(null)
+        setSelectedVariation(null)
+    }
+
+    const handleVariationImageClick = async (variationId, e) => {
+        e.stopPropagation()
+        
+        if (!variationId) {
+            message.warning('Không tìm thấy ID của biến thể')
+            return
+        }
+
+        setLoadingVariationId(variationId)
+        try {
+            const response = await axios.get(`${base}/variations/${variationId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+
+            if (response.status === 200 && response.data?.result) {
+                setSelectedVariation(response.data.result)
+                console.log('✅ Variation detail loaded:', response.data.result)
+            } else {
+                message.error('Không thể tải thông tin chi tiết biến thể')
+            }
+        } catch (error) {
+            console.error('❌ Error fetching variation detail:', error)
+            message.error(error?.response?.data?.message || 'Có lỗi khi tải thông tin biến thể')
+        } finally {
+            setLoadingVariationId(null)
+        }
+    }
+
+    const handleCloseVariationModal = () => {
+        setSelectedVariation(null)
+        setVariationToUpdate(null)
+        setIsUpdateVariationModalOpen(false)
+    }
+
+    const handleEditVariationClick = () => {
+        if (selectedVariation) {
+            setVariationToUpdate(selectedVariation)
+            setIsUpdateVariationModalOpen(true)
+        }
+    }
+
+    const handleVariationUpdated = (updatedVariation) => {
+        // Refresh the selected variation
+        if (updatedVariation && selectedVariation?.id === updatedVariation.id) {
+            setSelectedVariation(updatedVariation)
+        }
+        // Refresh product list to reflect changes
+        const controller = new AbortController()
+        axios.get(`${base}/products`, {
+            signal: controller.signal,
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        .then(response => {
+            if (response.status === 200) {
+                setProducts(response.data.result || [])
+                // Update selectedProduct if it has the same productId
+                if (selectedProduct) {
+                    const updatedProduct = response.data.result?.find(
+                        p => p.productId === selectedProduct.productId
+                    )
+                    if (updatedProduct) {
+                        setSelectedProduct(updatedProduct)
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            if (error.name !== 'CanceledError') {
+                console.error('Error refreshing products:', error)
+            }
+        })
     }
 
     const handleProductCreated = (newProduct) => {
@@ -154,6 +240,24 @@ export default function GetProduct() {
         e.stopPropagation()
         setProductToUpdate(product)
         setIsUpdateModalOpen(true)
+    }
+
+    const handleDeleteClick = (product, e) => {
+        e?.stopPropagation()
+        setProductToDelete(product)
+        setIsDeleteModalOpen(true)
+    }
+
+    const handleProductDeleted = (deletedProduct) => {
+        if (deletedProduct) {
+            setProducts(prev => prev.filter(p => p.productId !== deletedProduct.productId))
+            
+            // Close detail modal if the deleted product was being viewed
+            if (selectedProduct?.productId === deletedProduct.productId) {
+                setSelectedProduct(null)
+            }
+        }
+        setProductToDelete(null)
     }
 
     const handleProductUpdated = (updatedProduct) => {
@@ -331,6 +435,74 @@ export default function GetProduct() {
                 </div>
             )}
 
+            {/* Variation Detail Modal */}
+            {selectedVariation && (
+                <div className="modal-overlay" onClick={handleCloseVariationModal} style={{ zIndex: 1001 }}>
+                    <div className="modal variation-detail-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Chi tiết biến thể</h2>
+                            <button className="btn-close" onClick={handleCloseVariationModal}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="variation-detail-content">
+                                <div className="variation-detail-image">
+                                    {selectedVariation.image ? (
+                                        <img src={selectedVariation.image} alt={`${selectedVariation.size} - ${selectedVariation.color}`} />
+                                    ) : (
+                                        <div className="product-image-placeholder-large">
+                                            <Package size={120} />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="variation-detail-info">
+                                    <div className="detail-row">
+                                        <label className="detail-label">ID:</label>
+                                        <span className="detail-value">{selectedVariation.id}</span>
+                                    </div>
+                                    <div className="detail-row">
+                                        <label className="detail-label">Product ID:</label>
+                                        <span className="detail-value">{selectedVariation.productId}</span>
+                                    </div>
+                                    <div className="detail-row">
+                                        <label className="detail-label">Size:</label>
+                                        <span className="detail-value">{selectedVariation.size}</span>
+                                    </div>
+                                    <div className="detail-row">
+                                        <label className="detail-label">Màu sắc:</label>
+                                        <span className="detail-value">{selectedVariation.color}</span>
+                                    </div>
+                                    <div className="detail-row">
+                                        <label className="detail-label">Số lượng tồn kho:</label>
+                                        <span className={`detail-value ${selectedVariation.stockQuantity <= 5 ? 'low-stock-text' : ''}`}>
+                                            {selectedVariation.stockQuantity}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-secondary" onClick={handleCloseVariationModal}>Đóng</button>
+                            <button className="btn-primary" onClick={handleEditVariationClick}>
+                                <Pencil size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                                Sửa biến thể
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Update Variation Modal */}
+            {isUpdateVariationModalOpen && variationToUpdate && (
+                <UpdateVariationModal
+                    variation={variationToUpdate}
+                    onClose={() => {
+                        setIsUpdateVariationModalOpen(false)
+                        setVariationToUpdate(null)
+                    }}
+                    onUpdated={handleVariationUpdated}
+                />
+            )}
+
             {/* Product Detail Modal */}
             {selectedProduct && (
                 <div className="modal-overlay" onClick={handleCloseModal}>
@@ -402,8 +574,17 @@ export default function GetProduct() {
                                                 {selectedProduct.variations.map((variation) => (
                                                     <div key={variation.id} className="variation-card">
                                                         {variation.image && (
-                                                            <div className="variation-image">
+                                                            <div 
+                                                                className="variation-image clickable" 
+                                                                onClick={(e) => handleVariationImageClick(variation.id, e)}
+                                                                title="Click để xem chi tiết"
+                                                            >
                                                                 <img src={variation.image} alt={`${variation.size} - ${variation.color}`} />
+                                                                {loadingVariationId === variation.id && (
+                                                                    <div className="variation-image-loading">
+                                                                        <span>Đang tải...</span>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         )}
                                                         <div className="variation-details">
@@ -441,6 +622,23 @@ export default function GetProduct() {
                         </div>
                         <div className="modal-footer">
                             <button className="btn-secondary" onClick={handleCloseModal}>Đóng</button>
+                            <button 
+                                className="btn-danger" 
+                                onClick={(e) => handleDeleteClick(selectedProduct, e)}
+                            >
+                                <Trash2 size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                                Xóa sản phẩm
+                            </button>
+                            <button 
+                                className="btn-primary" 
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleEditClick(selectedProduct, e)
+                                }}
+                            >
+                                <Pencil size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                                Cập nhật sản phẩm
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -460,6 +658,16 @@ export default function GetProduct() {
                 }}
                 onUpdated={handleProductUpdated}
                 product={productToUpdate}
+            />
+
+            <DeleteProductModal 
+                open={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false)
+                    setProductToDelete(null)
+                }}
+                onDeleted={handleProductDeleted}
+                product={productToDelete}
             />
         </div>
     )

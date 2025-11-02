@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { base } from '../../../../service/Base'
 import { App, Select } from 'antd'
-import { Upload, X } from 'lucide-react'
+import { Upload, X, Plus, Trash2 } from 'lucide-react'
 import './CreateProduct.css'
 
 export default function CreateProductModal({ open = false, onClose, onCreated }) {
@@ -15,6 +15,7 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
     const [submitting, setSubmitting] = useState(false)
     const [categories, setCategories] = useState([])
     const [loadingCategories, setLoadingCategories] = useState(false)
+    const [variations, setVariations] = useState([])
 
     const { message } = App.useApp()
 
@@ -78,6 +79,61 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
         setCategoryId(null)
         setImageFile(null)
         setImagePreview(null)
+        setVariations([])
+    }
+
+    // Variation management
+    const handleAddVariation = () => {
+        setVariations([...variations, {
+            id: Date.now(), // temporary ID
+            size: '',
+            color: '',
+            stockQuantity: '',
+            imageFile: null,
+            imagePreview: null
+        }])
+    }
+
+    const handleRemoveVariation = (id) => {
+        setVariations(variations.filter(v => v.id !== id))
+    }
+
+    const handleVariationChange = (id, field, value) => {
+        setVariations(variations.map(v => {
+            if (v.id === id) {
+                return { ...v, [field]: value }
+            }
+            return v
+        }))
+    }
+
+    const handleVariationImageChange = (id, e) => {
+        const file = e.target.files[0]
+        if (file) {
+            if (!file.type.startsWith('image/')) {
+                message.error('Vui lòng chọn file ảnh')
+                return
+            }
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setVariations(variations.map(v => {
+                    if (v.id === id) {
+                        return { ...v, imageFile: file, imagePreview: reader.result }
+                    }
+                    return v
+                }))
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const handleRemoveVariationImage = (id) => {
+        setVariations(variations.map(v => {
+            if (v.id === id) {
+                return { ...v, imageFile: null, imagePreview: null }
+            }
+            return v
+        }))
     }
 
     const handleSubmit = async (e) => {
@@ -116,9 +172,99 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
             })
 
             if (response.status === 200 || response.status === 201) {
-                message.success('Tạo sản phẩm thành công')
+                const createdProduct = response.data?.result
+                const productId = createdProduct?.productId || createdProduct?.id
+
+                // Create variations if any
+                if (variations.length > 0 && productId) {
+                    try {
+                        const validVariations = variations.filter(v => v.size && v.color && v.stockQuantity)
+                        
+                        if (validVariations.length === 0) {
+                            message.warning('Vui lòng điền đầy đủ thông tin cho biến thể (Size, Color, Số lượng)')
+                            return
+                        }
+
+                        console.log('📦 Creating variations:', validVariations.length)
+                        
+                        const variationPromises = validVariations.map(async (variation, index) => {
+                            try {
+                                const variationFormData = new FormData()
+                                variationFormData.append('productId', productId)
+                                variationFormData.append('size', variation.size.trim())
+                                variationFormData.append('color', variation.color.trim())
+                                variationFormData.append('stockQuantity', parseInt(variation.stockQuantity))
+                                
+                                if (variation.imageFile) {
+                                    variationFormData.append('image', variation.imageFile)
+                                }
+
+                                console.log(`📤 Creating variation ${index + 1}/${validVariations.length}:`, {
+                                    productId,
+                                    size: variation.size.trim(),
+                                    color: variation.color.trim(),
+                                    stockQuantity: parseInt(variation.stockQuantity),
+                                    hasImage: !!variation.imageFile
+                                })
+
+                                const response = await axios.post(`${base}/variations`, variationFormData, {
+                                    headers: {
+                                        'Content-Type': 'multipart/form-data',
+                                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                    }
+                                })
+
+                                console.log(`✅ Variation ${index + 1} created:`, response.data)
+                                return { success: true, variation, response: response.data }
+                            } catch (err) {
+                                console.error(`❌ Error creating variation ${index + 1}:`, {
+                                    variation,
+                                    error: err.response?.data || err.message,
+                                    status: err.response?.status
+                                })
+                                return { 
+                                    success: false, 
+                                    variation, 
+                                    error: err.response?.data || { message: err.message } 
+                                }
+                            }
+                        })
+
+                        const results = await Promise.all(variationPromises)
+                        const successCount = results.filter(r => r.success).length
+                        const failCount = results.filter(r => !r.success).length
+
+                        if (failCount === 0) {
+                            message.success(`Tạo sản phẩm và ${successCount} biến thể thành công`)
+                        } else {
+                            // Show detailed error messages
+                            results.forEach((result, index) => {
+                                if (!result.success) {
+                                    const errorMsg = result.error?.message || result.error?.result?.message || 'Không xác định'
+                                    message.error(`Biến thể ${index + 1} (${result.variation.size}/${result.variation.color}): ${errorMsg}`)
+                                }
+                            })
+                            
+                            if (successCount > 0) {
+                                message.warning(`Tạo sản phẩm thành công. ${successCount} biến thể thành công, ${failCount} biến thể thất bại`)
+                            } else {
+                                message.error(`Tạo sản phẩm thành công nhưng không thể tạo biến thể: ${results[0]?.error?.message || results[0]?.error?.result?.message || 'Vui lòng kiểm tra lại'}`)
+                            }
+                        }
+                    } catch (variationError) {
+                        console.error('❌ Unexpected error creating variations:', variationError)
+                        const errorMsg = variationError?.response?.data?.message || 
+                                       variationError?.response?.data?.result?.message ||
+                                       variationError?.message || 
+                                       'Vui lòng thử lại'
+                        message.warning(`Tạo sản phẩm thành công nhưng có lỗi khi tạo biến thể: ${errorMsg}`)
+                    }
+                } else {
+                    message.success('Tạo sản phẩm thành công')
+                }
+
                 resetForm()
-                if (typeof onCreated === 'function') onCreated(response.data?.result)
+                if (typeof onCreated === 'function') onCreated(createdProduct)
                 if (typeof onClose === 'function') onClose()
                 return
             }
@@ -288,6 +434,116 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                                 >
                                     <X size={16} />
                                 </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Variations Section */}
+                    <div className="variations-section">
+                        <div className="variations-header">
+                            <label>Biến thể sản phẩm (Tùy chọn)</label>
+                            <button
+                                type="button"
+                                className="btn-add-variation"
+                                onClick={handleAddVariation}
+                                disabled={submitting}
+                            >
+                                <Plus size={16} />
+                                Thêm biến thể
+                            </button>
+                        </div>
+                        
+                        {variations.length > 0 && (
+                            <div className="variations-list">
+                                {variations.map((variation, index) => (
+                                    <div key={variation.id} className="variation-item">
+                                        <div className="variation-header-item">
+                                            <h4>Biến thể #{index + 1}</h4>
+                                            <button
+                                                type="button"
+                                                className="btn-remove-variation"
+                                                onClick={() => handleRemoveVariation(variation.id)}
+                                                disabled={submitting}
+                                                title="Xóa biến thể"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                        
+                                        <div className="variation-form-grid">
+                                            <div className="form-group">
+                                                <label htmlFor={`size-${variation.id}`}>Size <span className="required">*</span></label>
+                                                <input
+                                                    id={`size-${variation.id}`}
+                                                    className="form-control"
+                                                    type="text"
+                                                    value={variation.size}
+                                                    onChange={(e) => handleVariationChange(variation.id, 'size', e.target.value)}
+                                                    placeholder="VD: M, L, XL"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div className="form-group">
+                                                <label htmlFor={`color-${variation.id}`}>Màu sắc <span className="required">*</span></label>
+                                                <input
+                                                    id={`color-${variation.id}`}
+                                                    className="form-control"
+                                                    type="text"
+                                                    value={variation.color}
+                                                    onChange={(e) => handleVariationChange(variation.id, 'color', e.target.value)}
+                                                    placeholder="VD: Đen, Trắng"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div className="form-group">
+                                                <label htmlFor={`stock-${variation.id}`}>Số lượng tồn kho <span className="required">*</span></label>
+                                                <input
+                                                    id={`stock-${variation.id}`}
+                                                    className="form-control"
+                                                    type="number"
+                                                    value={variation.stockQuantity}
+                                                    onChange={(e) => handleVariationChange(variation.id, 'stockQuantity', e.target.value)}
+                                                    placeholder="Nhập số lượng"
+                                                    min="0"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div className="form-group">
+                                                <label htmlFor={`variation-image-${variation.id}`}>Hình ảnh biến thể</label>
+                                                {!variation.imagePreview ? (
+                                                    <div className="variation-image-upload-area">
+                                                        <input
+                                                            id={`variation-image-${variation.id}`}
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => handleVariationImageChange(variation.id, e)}
+                                                            className="image-input"
+                                                        />
+                                                        <label htmlFor={`variation-image-${variation.id}`} className="variation-image-upload-label">
+                                                            <Upload size={20} />
+                                                            <span>Chọn ảnh</span>
+                                                        </label>
+                                                    </div>
+                                                ) : (
+                                                    <div className="variation-image-preview-container">
+                                                        <img src={variation.imagePreview} alt="Variation preview" className="variation-image-preview" />
+                                                        <button
+                                                            type="button"
+                                                            className="btn-remove-image"
+                                                            onClick={() => handleRemoveVariationImage(variation.id)}
+                                                            title="Xóa ảnh"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
