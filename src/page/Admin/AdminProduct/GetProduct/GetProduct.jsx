@@ -7,6 +7,7 @@ import CreateProductModal from '../CreateProduct/CreateProduct'
 import UpdateProductModal from '../UpdateProduct/UpdateProduct'
 import UpdateVariationModal from '../UpdateVariation/UpdateVariation'
 import DeleteProductModal from '../DeleteProduct/DeleteProduct'
+import DeleteVariationModal from '../DeleteVariation/DeleteVariation'
 import './GetProduct.css'
 
 export default function GetProduct() {
@@ -24,6 +25,8 @@ export default function GetProduct() {
     const [variationToUpdate, setVariationToUpdate] = useState(null)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [productToDelete, setProductToDelete] = useState(null)
+    const [isDeleteVariationModalOpen, setIsDeleteVariationModalOpen] = useState(false)
+    const [variationToDelete, setVariationToDelete] = useState(null)
     const { message } = App.useApp()
 
     // Filter products based on search query
@@ -175,6 +178,49 @@ export default function GetProduct() {
             setVariationToUpdate(selectedVariation)
             setIsUpdateVariationModalOpen(true)
         }
+    }
+
+    const handleDeleteVariationClick = (e) => {
+        e.stopPropagation()
+        if (selectedVariation) {
+            console.log('🗑️ Opening delete variation modal for:', selectedVariation)
+            setVariationToDelete(selectedVariation)
+            setIsDeleteVariationModalOpen(true)
+        } else {
+            console.warn('⚠️ No selected variation to delete')
+        }
+    }
+
+    const handleVariationDeleted = () => {
+        // Close variation detail modal
+        setSelectedVariation(null)
+        // Refresh product list to reflect changes
+        const controller = new AbortController()
+        axios.get(`${base}/products`, {
+            signal: controller.signal,
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        .then(response => {
+            if (response.status === 200) {
+                setProducts(response.data.result || [])
+                // Update selectedProduct if it has the same productId
+                if (selectedProduct) {
+                    const updatedProduct = response.data.result?.find(
+                        p => p.productId === selectedProduct.productId
+                    )
+                    if (updatedProduct) {
+                        setSelectedProduct(updatedProduct)
+                    }
+                }
+            }
+        })
+        .catch(err => {
+            if (err.name !== 'AbortError') {
+                console.error('Error refreshing products:', err)
+            }
+        })
     }
 
     const handleVariationUpdated = (updatedVariation) => {
@@ -482,6 +528,14 @@ export default function GetProduct() {
                         </div>
                         <div className="modal-footer">
                             <button className="btn-secondary" onClick={handleCloseVariationModal}>Đóng</button>
+                            <button 
+                                className="btn-danger" 
+                                onClick={handleDeleteVariationClick}
+                                type="button"
+                            >
+                                <Trash2 size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                                Xóa biến thể
+                            </button>
                             <button className="btn-primary" onClick={handleEditVariationClick}>
                                 <Pencil size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
                                 Sửa biến thể
@@ -502,6 +556,17 @@ export default function GetProduct() {
                     onUpdated={handleVariationUpdated}
                 />
             )}
+
+            {/* Delete Variation Modal */}
+            <DeleteVariationModal
+                open={isDeleteVariationModalOpen}
+                variation={variationToDelete}
+                onClose={() => {
+                    setIsDeleteVariationModalOpen(false)
+                    setVariationToDelete(null)
+                }}
+                onDeleted={handleVariationDeleted}
+            />
 
             {/* Product Detail Modal */}
             {selectedProduct && (
