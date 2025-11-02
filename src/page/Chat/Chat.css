@@ -1,0 +1,9 @@
+.chat-container {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 146px);
+    margin: -20px;
+    padding: 0;
+    max-width: 1200px;
+    /* width: calc(100vw - 40px); */
+}
