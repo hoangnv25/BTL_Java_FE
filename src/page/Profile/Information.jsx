@@ -38,7 +38,7 @@ export default function Information() {
                     <img src="/ava_user.webp" alt="User avatar" />
                 </div>
                 <div className="user-details">
-                    <div className="user-name">{userData.fullName}</div>
+                    <div className="user-name">{userData.userName}</div>
                     <div className="user-email">{userData.email}</div>
                     <div className="user-phone">{userData.phoneNumber}</div>
                     

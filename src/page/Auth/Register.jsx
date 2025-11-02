@@ -58,14 +58,13 @@ export default function Register() {
             message.error('Mật khẩu xác nhận không khớp!');
             return;
         }
-        const payload = {
-            fullName: formData.fullName,
-            email: formData.email,
-            password: formData.password,
-            phoneNumber: formData.phoneNumber,
-            roles: ["USER1"]
-        }
 
+        const payload = new FormData();
+        payload.append("username", formData.fullName);
+        payload.append("email", formData.email);
+        payload.append("password", formData.password);
+        payload.append("phoneNumber", formData.phoneNumber);
+        // payload.append("roles", ["USER"]);
 
         try {
             const response = await axios.post(`${base}/users`, payload);
@@ -98,7 +97,7 @@ export default function Register() {
                             <input 
                                 type="text" 
                                 name="fullName"
-                                placeholder="Họ và tên" 
+                                placeholder="Tên tài khoản" 
                                 className="register-form-input"
                                 value={formData.fullName}
                                 onChange={handleInputChange}
