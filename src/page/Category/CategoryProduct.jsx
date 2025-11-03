@@ -1,11 +1,19 @@
 import { useLocation, useParams } from 'react-router-dom'
 import ProductCard from '../../components/ProductCard'
+import Breadcrumb from '../../components/Breadcrumb'
 import './CategoryProduct.css'
 
 export default function CategoryProduct() {
     const location = useLocation()
     const { state } = location
     const { id } = useParams()
+
+    // Breadcrumb items
+    const breadcrumbItems = [
+        { label: "Trang chủ", path: "/" },
+        { label: "Danh mục", path: "/" }, // Can link to category list if available
+        { label: state?.name || "Sản phẩm" }
+    ];
 
     const response = {
         "message": "abc",
@@ -41,14 +49,17 @@ export default function CategoryProduct() {
         ]
     }
     return (
-        <div>
-            <h1>{state?.name || 'Danh mục sản phẩm'}</h1>
+        <>
+            <Breadcrumb items={breadcrumbItems} />
+            <div>
+                <h1>{state?.name || 'Danh mục sản phẩm'}</h1>
             <img className="na-image-category" src={response.image_category} alt={response.category_name} />
             <div className="na-grid">
                 {response.list_product.map((product) => (
                 <ProductCard key={product.prod_id} product={product} />
                 ))}
             </div>
-        </div>
+            </div>
+        </>
     )
 }

@@ -76,6 +76,7 @@ const response_product = {
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
+import Breadcrumb from "../../components/Breadcrumb";
 import "./Cart.css";
 
 export default function Cart() {
@@ -84,6 +85,12 @@ export default function Cart() {
     const [orderNote, setOrderNote] = useState("");
     const [selectedItems, setSelectedItems] = useState(new Set());
     const navigate = useNavigate();
+
+    // Breadcrumb items
+    const breadcrumbItems = [
+        { label: "Trang chủ", path: "/" },
+        { label: "Giỏ hàng" }
+    ];
 
     // Fetch cart data theo yêu cầu
     useEffect(() => {
@@ -227,15 +234,20 @@ export default function Cart() {
 
     if (loading) {
         return (
-            <div className="cart-container">
-                <div className="loading">Đang tải giỏ hàng...</div>
-            </div>
+            <>
+                <Breadcrumb items={breadcrumbItems} />
+                <div className="cart-container">
+                    <div className="loading">Đang tải giỏ hàng...</div>
+                </div>
+            </>
         );
     }
 
     if (cartItems.length === 0) {
         return (
-            <div className="cart-container">
+            <>
+                <Breadcrumb items={breadcrumbItems} />
+                <div className="cart-container">
                 <div className="empty-cart">
                     <div className="empty-cart-icon">
                         <div className="shopping-bag">🛍️</div>
@@ -251,11 +263,14 @@ export default function Cart() {
                     </button>
                 </div>
             </div>
+            </>
         );
     }
 
     return (
-        <div className="cart-container">
+        <>
+            <Breadcrumb items={breadcrumbItems} />
+            <div className="cart-container">
             <h1>Giỏ hàng</h1>
             
             <div className="cart-content">
@@ -369,5 +384,6 @@ export default function Cart() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

@@ -1,16 +1,21 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { base } from "../../../service/Base.jsx";
 import ProductCard from "../../../components/ProductCard";
+import Breadcrumb from "../../../components/Breadcrumb";
 import "./NewArrivals.css";
 
 export default function NAinPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeSales, setActiveSales] = useState([]);
+  
+  // Chỉ hiện breadcrumb khi ở trang /newArrivals (không phải trang chủ)
+  const showBreadcrumb = location.pathname === '/newArrivals';
 
   // Fetch active sales để tính discount
   useEffect(() => {
@@ -184,7 +189,14 @@ export default function NAinPage() {
     });
   }, [products, getProductDiscount, groupVariationsByColor]);
 
+  const breadcrumbItems = [
+    { label: "Trang chủ", path: "/" },
+    { label: "NEW ARRIVALS" }
+  ];
+
   return (
+    <>
+      {showBreadcrumb && <Breadcrumb items={breadcrumbItems} />}
     <section className="na-section">
       <h2 className="na-title">New Arrivals</h2>
       <p className="na-desc">Các sản phẩm mới nhất dành cho bạn</p>
@@ -197,11 +209,11 @@ export default function NAinPage() {
         <div className="na-empty">Chưa có sản phẩm mới trong 10 ngày qua</div>
       ) : (
         <>
-          <div className="na-grid">
+      <div className="na-grid">
             {newArrivalsProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
           {newArrivalsProducts.length > 0 && (
             <div className="na-view-more-container">
               <button 
@@ -215,5 +227,6 @@ export default function NAinPage() {
         </>
       )}
     </section>
+    </>
   );
 }

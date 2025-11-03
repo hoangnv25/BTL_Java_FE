@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { base } from "../../service/Base.jsx";
 import ProductFeedback from "./ProductFeedback";
+import Breadcrumb from "../../components/Breadcrumb";
 import "./ProductDetail.css";
 
 export default function ProductDetail() {
@@ -163,10 +164,25 @@ export default function ProductDetail() {
 	const hasHalf = (RESPONSE?.rate || 0) - full >= 0.5;
 	const empty = 5 - full - (hasHalf ? 1 : 0);
 
+	// Breadcrumb items
+	const breadcrumbItems = useMemo(() => {
+		const items = [{ label: "Trang chủ", path: "/" }];
+		
+		if (product && product.title) {
+			items.push({ label: product.title });
+		} else {
+			items.push({ label: "Chi tiết sản phẩm" });
+		}
+		
+		return items;
+	}, [product]);
+
 	// Loading state - Skeleton loading
 	if (loading) {
 		return (
-			<div className="pd-container">
+			<>
+				<Breadcrumb items={[{ label: "Trang chủ", path: "/" }, { label: "Chi tiết sản phẩm" }]} />
+				<div className="pd-container">
 				{/* Gallery skeleton */}
 				<div className="pd-gallery">
 					<div className="pd-main skeleton-image">
@@ -206,22 +222,28 @@ export default function ProductDetail() {
 					</div>
 				</div>
 			</div>
+			</>
 		);
 	}
 
 	// Error state
 	if (error || !RESPONSE) {
 		return (
-			<div className="pd-container">
+			<>
+				<Breadcrumb items={breadcrumbItems} />
+				<div className="pd-container">
 				<div style={{ textAlign: "center", padding: "40px", color: "#d32f2f" }}>
 					<p>{error || "Không tìm thấy sản phẩm"}</p>
 				</div>
 			</div>
+			</>
 		);
 	}
 
 	return (
-		<div className="pd-container">
+		<>
+			<Breadcrumb items={breadcrumbItems} />
+			<div className="pd-container">
 			{/* Gallery trái */}
 			<div className="pd-gallery">
 				<div className="pd-main">
@@ -311,5 +333,6 @@ export default function ProductDetail() {
 				<ProductFeedback />
 			</div>
 		</div>
+		</>
 	);
 }

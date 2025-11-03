@@ -3,6 +3,7 @@ import axios from 'axios';
 import { base } from '../../service/Base';
 import { useEffect, useState } from 'react';
 import NotLoggedIn from '../../components/NotLoggedIn';
+import Breadcrumb from '../../components/Breadcrumb';
 
 export default function Information() {
     const token = localStorage.getItem('token')
@@ -28,11 +29,23 @@ export default function Information() {
     useEffect(() => {
         getUserInfo();
     }, []);
+
+    // Breadcrumb items
+    const breadcrumbItems = [
+        { label: "Trang chủ", path: "/" },
+        { label: "Thông tin cá nhân" }
+    ];
+
     return (
         loading ? (
-            <div>Loading...</div>
+            <>
+                <Breadcrumb items={breadcrumbItems} />
+                <div>Loading...</div>
+            </>
         ) : (
-        <div className="profile-container">
+        <>
+            <Breadcrumb items={breadcrumbItems} />
+            <div className="profile-container">
             <section className="user-info">
                 <div className="user-avatar">
                     <img src="/ava_user.webp" alt="User avatar" />
@@ -44,7 +57,7 @@ export default function Information() {
                     
                 </div>
             </section>
-        </div>
-       
+            </div>
+        </>
     ))
 }
