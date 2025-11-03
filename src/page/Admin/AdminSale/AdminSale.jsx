@@ -260,8 +260,8 @@ export default function AdminSale() {
                                         <div className="products-grid-expanded">
                                             {sale.list_product.map((product, index) => {
                                                 const productDetail = productsDetails[product.id];
-                                                
-                                                return (
+
+    return (
                                                     <div key={index} className="product-card-expanded">
                                                         <div className="product-image-expanded">
                                                             {product.image ? (

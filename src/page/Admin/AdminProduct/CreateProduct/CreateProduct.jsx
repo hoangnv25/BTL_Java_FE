@@ -139,13 +139,29 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
     const handleSubmit = async (e) => {
         e.preventDefault()
         
+        // Validation cho tất cả các trường bắt buộc
         if (!title.trim()) {
             message.error('Vui lòng nhập tên sản phẩm')
             return
         }
 
+        if (!description.trim()) {
+            message.error('Vui lòng nhập mô tả sản phẩm')
+            return
+        }
+
         if (!price || parseFloat(price) <= 0) {
-            message.error('Vui lòng nhập giá hợp lệ')
+            message.error('Vui lòng nhập giá hợp lệ (lớn hơn 0)')
+            return
+        }
+
+        if (!categoryId) {
+            message.error('Vui lòng chọn danh mục sản phẩm')
+            return
+        }
+
+        if (!imageFile) {
+            message.error('Vui lòng chọn hình ảnh sản phẩm')
             return
         }
 
@@ -155,14 +171,8 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
             formData.append('title', title.trim())
             formData.append('description', description.trim())
             formData.append('price', parseFloat(price))
-            
-            if (categoryId) {
-                formData.append('categoryId', parseInt(categoryId))
-            }
-            
-            if (imageFile) {
-                formData.append('image', imageFile)
-            }
+            formData.append('categoryId', parseInt(categoryId))
+            formData.append('image', imageFile)
 
             const response = await axios.post(`${base}/products`, formData, {
                 headers: {
@@ -301,7 +311,7 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="description">Mô tả</label>
+                        <label htmlFor="description">Mô tả <span className="required">*</span></label>
                         <textarea
                             id="description"
                             className="form-control"
@@ -309,6 +319,7 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Nhập mô tả sản phẩm"
                             rows="4"
+                            required
                         />
                     </div>
 
@@ -329,15 +340,15 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="categoryId">Danh mục</label>
+                            <label htmlFor="categoryId">Danh mục <span className="required">*</span></label>
                             <Select
                                 id="categoryId"
                                 className="category-select"
                                 value={categoryId}
                                 onChange={(value) => setCategoryId(value)}
-                                placeholder="Chọn danh mục (optional)"
+                                placeholder="Chọn danh mục"
                                 showSearch
-                                allowClear
+                                allowClear={false}
                                 loading={loadingCategories}
                                 filterOption={(input, option) =>
                                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -406,7 +417,7 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="image">Hình ảnh sản phẩm</label>
+                        <label htmlFor="image">Hình ảnh sản phẩm <span className="required">*</span></label>
                         
                         {!imagePreview ? (
                             <div className="image-upload-area">
@@ -416,6 +427,7 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                                     accept="image/*"
                                     onChange={handleImageChange}
                                     className="image-input"
+                                    required
                                 />
                                 <label htmlFor="image" className="image-upload-label">
                                     <Upload size={32} />
