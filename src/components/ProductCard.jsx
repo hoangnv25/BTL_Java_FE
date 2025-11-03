@@ -84,7 +84,9 @@ export default function ProductCard({ product }) {
 								<button
 									key={v.key}
 									className={"variant-thumb" + (isActive ? " active" : "")}
-									aria-label="Chọn biến thể"
+									aria-label={v.color ? `Màu ${v.color}` : "Chọn biến thể"}
+									title={v.color || ""}
+									data-color={v.color || ""}
 									onClick={(e) => { 
 										e.stopPropagation();
 										setCurrentImage(v.thumbnail); 
@@ -92,7 +94,7 @@ export default function ProductCard({ product }) {
 									}}
 									type="button"
 								>
-									<img src={v.thumbnail} alt="variation" />
+									<img src={v.thumbnail} alt={v.color || "variation"} />
 								</button>
 							);
 						})}
