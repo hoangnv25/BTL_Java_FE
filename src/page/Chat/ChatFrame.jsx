@@ -1,6 +1,6 @@
 import './ChatFrame.css'
 import { useParams } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { base } from '../../service/Base'
 import ChatSend from './ChatSend'
@@ -13,6 +13,7 @@ export default function ChatFrame() {
     const [isLoading, setIsLoading] = useState(false)
     const viewerId = localStorage.getItem('userId')
     const token = localStorage.getItem('token')
+    const messagesEndRef = useRef(null)
 
     const getMessages = async (showLoading = false) => {
         if (!conversationId) {
@@ -82,6 +83,12 @@ export default function ChatFrame() {
 
 
     const messages = messagesData.filter(m => String(m.conversationId) === String(conversationId))
+
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+        }
+    }, [messages.length, conversationId])
 
     const formatTime = (iso) => {
         try {
@@ -192,6 +199,7 @@ export default function ChatFrame() {
                         </div>
                     ))
                 )}
+                <div ref={messagesEndRef} />
             </div>
             {conversationId && <ChatSend key={conversationId} conversationId={conversationId} getMessages={getMessages} />}
         </div>
