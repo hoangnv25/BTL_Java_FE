@@ -274,7 +274,9 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                 }
 
                 resetForm()
-                if (typeof onCreated === 'function') onCreated(createdProduct)
+                // Gọi onCreated() không có tham số để force refresh toàn bộ danh sách
+                // (vì variations vừa tạo chưa có trong createdProduct)
+                if (typeof onCreated === 'function') onCreated()
                 if (typeof onClose === 'function') onClose()
                 return
             }
