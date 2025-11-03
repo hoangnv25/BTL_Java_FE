@@ -157,6 +157,12 @@
   font-weight: 700;
 }
 
+.pd-price .normal {
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 700;
+}
+
 .pd-badge {
   background: #fde68a;
   color: #7c2d12;

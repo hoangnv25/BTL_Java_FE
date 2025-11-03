@@ -183,7 +183,7 @@ export default function NAinPage() {
         price: product.price || 0,
         thumbnail: product.image || '',
         rate: 0, // API không trả về rate, mặc định 0
-        Discount: discount,
+        Discount: discount > 0 ? discount : undefined, // Chỉ set discount khi > 0
         list_product_variation: list_product_variation
       };
     });

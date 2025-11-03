@@ -95,7 +95,7 @@ export default function ProductDetail() {
 			price: product.price || 0,
 			thumbnail: product.image || "",
 			rate: 0, // API không trả về rate, mặc định 0
-			discount: product.saleValue ? Math.round(product.saleValue * 100) : 0, // Convert 0.90 to 90
+			discount: product.saleValue && product.saleValue > 0 ? Math.round(product.saleValue * 100) : undefined, // Convert 0.90 to 90, chỉ set khi > 0
 			list_prod_variation: list_prod_variation
 		};
 	}, [product]);
@@ -265,8 +265,8 @@ export default function ProductDetail() {
 				</div>
 				<div className="pd-price">
 					{hasDiscount && <span className="pd-badge">SAVE {RESPONSE.discount}%</span>}
-					{hasDiscount && <span className="old">{RESPONSE.price.toLocaleString()}₫</span>}
-					<span className="now">{finalPrice.toLocaleString()}₫</span>
+					{hasDiscount && <span className="old">{Math.round(RESPONSE.price).toLocaleString('vi-VN')}₫</span>}
+					<span className={hasDiscount ? "now" : "normal"}>{Math.round(finalPrice).toLocaleString('vi-VN')}₫</span>
 				</div>
 				<p>{RESPONSE.description}</p>
 

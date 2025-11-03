@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function ProductCard({ product }) {
 	// Tính toán giá sau giảm (nếu có)
+	// Chỉ có discount khi giá trị > 0 và !== null/undefined
 	const hasDiscount = product.Discount && product.Discount > 0;
 	const finalPrice = hasDiscount
 		? Math.round(product.price * (1 - product.Discount / 100))
