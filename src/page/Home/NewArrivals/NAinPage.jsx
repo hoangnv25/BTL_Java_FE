@@ -21,11 +21,7 @@ export default function NAinPage() {
   useEffect(() => {
     const fetchActiveSales = async () => {
       try {
-        const response = await axios.get(`${base}/sales`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await axios.get(`${base}/sales`);
 
         if (response.status === 200 && response.data?.result) {
           const sales = response.data.result || [];
@@ -49,17 +45,13 @@ export default function NAinPage() {
     fetchActiveSales();
   }, []);
 
-  // Fetch products từ API
+  // Fetch products từ API - Không cần authentication
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`${base}/products`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await axios.get(`${base}/products`);
 
         if (response.status === 200 && response.data?.result) {
           setProducts(response.data.result || []);

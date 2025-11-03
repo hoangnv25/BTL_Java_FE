@@ -61,18 +61,14 @@ export default function CategoryProduct() {
         fetchActiveSales();
     }, []);
 
-    // Fetch products from API
+    // Fetch products from API - Không cần authentication
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
             setError(null);
             
             try {
-                const response = await axios.get(`${base}/products`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                const response = await axios.get(`${base}/products`);
 
                 if (response.status === 200 && response.data?.result) {
                     // Filter products by categoryId

@@ -15,16 +15,12 @@ export default function Sale() {
     const [currentSlide, setCurrentSlide] = useState(0); // Slide hiện tại trong carousel
     const [salePhase, setSalePhase] = useState('ended'); // 'preparing', 'selling', hoặc 'ended'
 
-    // Fetch active sale from API
+    // Fetch active sale from API - Không cần authentication
     useEffect(() => {
         const fetchActiveSale = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${base}/sales`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                const response = await axios.get(`${base}/sales`);
 
                 if (response.status === 200 && response.data?.result) {
                     const sales = response.data.result || [];
@@ -46,11 +42,7 @@ export default function Sale() {
                             
                             if (productIds.length > 0) {
                                 const promises = productIds.map(id => 
-                                    axios.get(`${base}/products/${id}`, {
-                                        headers: {
-                                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                        }
-                                    }).catch(err => {
+                                    axios.get(`${base}/products/${id}`).catch(err => {
                                         console.log(`Error fetching product ${id}:`, err);
                                         return null;
                                     })
