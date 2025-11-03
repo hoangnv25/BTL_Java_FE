@@ -16,6 +16,7 @@ export default function NAinPage() {
   
   // Chỉ hiện breadcrumb khi ở trang /newArrivals (không phải trang chủ)
   const showBreadcrumb = location.pathname === '/newArrivals';
+  const showViewMoreButton = !showBreadcrumb; // Chỉ hiện nút "Xem thêm" ở homepage
 
   // Fetch active sales để tính discount
   useEffect(() => {
@@ -203,10 +204,14 @@ export default function NAinPage() {
         <>
       <div className="na-grid">
             {newArrivalsProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard 
+            key={product.id} 
+            product={product}
+            fromPage="newArrivals"
+          />
         ))}
       </div>
-          {newArrivalsProducts.length > 0 && (
+          {showViewMoreButton && newArrivalsProducts.length > 0 && (
             <div className="na-view-more-container">
               <button 
                 className="na-view-more-btn"

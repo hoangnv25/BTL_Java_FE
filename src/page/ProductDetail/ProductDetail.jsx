@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import { base } from "../../service/Base.jsx";
 import ProductFeedback from "./ProductFeedback";
@@ -8,6 +8,7 @@ import "./ProductDetail.css";
 
 export default function ProductDetail() {
 	const { id } = useParams();
+	const location = useLocation();
 	const [product, setProduct] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -168,6 +169,21 @@ export default function ProductDetail() {
 	const breadcrumbItems = useMemo(() => {
 		const items = [{ label: "Trang chủ", path: "/" }];
 		
+		// Thêm breadcrumb cho trang trước đó nếu có (NewArrivals hoặc Category)
+		const fromState = location.state;
+		if (fromState?.from === 'newArrivals') {
+			items.push({ 
+				label: fromState.fromLabel || 'New Arrivals', 
+				path: fromState.fromPath || '/newArrivals' 
+			});
+		} else if (fromState?.from === 'category') {
+			items.push({ 
+				label: fromState.fromLabel || 'Danh mục', 
+				path: fromState.fromPath 
+			});
+		}
+		
+		// Thêm tên sản phẩm hoặc "Chi tiết sản phẩm"
 		if (product && product.title) {
 			items.push({ label: product.title });
 		} else {
@@ -175,7 +191,7 @@ export default function ProductDetail() {
 		}
 		
 		return items;
-	}, [product]);
+	}, [product, location.state]);
 
 	// Loading state - Skeleton loading
 	if (loading) {

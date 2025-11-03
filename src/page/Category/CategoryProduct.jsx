@@ -215,7 +215,12 @@ export default function CategoryProduct() {
                 ) : (
                     <div className="na-grid">
                         {transformedProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                            <ProductCard 
+                                key={product.id} 
+                                product={product}
+                                fromPage="category"
+                                categoryName={categoryName}
+                            />
                         ))}
                     </div>
                 )}

@@ -1,8 +1,8 @@
 import "../assets/style/ProductCard.css";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, fromPage, categoryName }) {
 	// Tính toán giá sau giảm (nếu có)
 	// Chỉ có discount khi giá trị > 0 và !== null/undefined
 	const hasDiscount = product.Discount && product.Discount > 0;
@@ -48,8 +48,24 @@ export default function ProductCard({ product }) {
 	}, [product.thumbnail, product.list_product_variation]);
 	
 	const navigate = useNavigate();
+	const location = useLocation();
+	
 	const gotoProductDetail = (id) => {
-		navigate(`/product/${id}`);
+		// Truyền state để breadcrumb biết đang từ trang nào
+		const state = {};
+		
+		// Ưu tiên dùng prop fromPage nếu có, nếu không thì tự detect
+		if (fromPage === 'newArrivals' || location.pathname === '/newArrivals') {
+			state.from = 'newArrivals';
+			state.fromLabel = 'New Arrivals';
+			state.fromPath = '/newArrivals';
+		} else if (fromPage === 'category' || location.pathname.startsWith('/category/')) {
+			state.from = 'category';
+			state.fromLabel = categoryName || location.state?.categoryName || 'Danh mục';
+			state.fromPath = location.pathname;
+		}
+		
+		navigate(`/product/${id}`, { state });
 	}
 
 	const product_id = product.prod_id || product.id;
