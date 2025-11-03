@@ -23,6 +23,40 @@ export default function DeleteProductModal({ open = false, onClose, onDeleted, p
 
         setDeleting(true)
         try {
+            // Bước 1: Xóa tất cả variations trước (nếu có)
+            const variations = product.variations || []
+            
+            if (variations.length > 0) {
+                console.log(`🗑️ Đang xóa ${variations.length} variations trước...`)
+                
+                const deleteVariationPromises = variations.map(async (variation) => {
+                    try {
+                        const variationId = variation.id || variation.variationId
+                        await axios.delete(`${base}/variations/${variationId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            }
+                        })
+                        console.log(`✅ Đã xóa variation ID: ${variationId}`)
+                        return { success: true, id: variationId }
+                    } catch (err) {
+                        console.error(`❌ Lỗi xóa variation ID: ${variation.id}`, err)
+                        return { success: false, id: variation.id, error: err }
+                    }
+                })
+
+                const results = await Promise.all(deleteVariationPromises)
+                const failedCount = results.filter(r => !r.success).length
+                
+                if (failedCount > 0) {
+                    message.warning(`Đã xóa ${variations.length - failedCount}/${variations.length} biến thể. Tiếp tục xóa sản phẩm...`)
+                } else {
+                    console.log(`✅ Đã xóa thành công ${variations.length} variations`)
+                }
+            }
+
+            // Bước 2: Xóa product
+            console.log(`🗑️ Đang xóa sản phẩm ID: ${product.productId}...`)
             const response = await axios.delete(`${base}/products/${product.productId}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -30,7 +64,7 @@ export default function DeleteProductModal({ open = false, onClose, onDeleted, p
             })
 
             if (response.status === 200 || response.status === 204) {
-                message.success('Xóa sản phẩm thành công')
+                message.success('Xóa sản phẩm và tất cả biến thể thành công!')
                 if (typeof onDeleted === 'function') onDeleted(product)
                 if (typeof onClose === 'function') onClose()
                 return
@@ -62,7 +96,7 @@ export default function DeleteProductModal({ open = false, onClose, onDeleted, p
                             Bạn có chắc chắn muốn xóa sản phẩm <strong>"{product.title}"</strong>?
                         </p>
                         <p className="delete-confirm-subtext">
-                            Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến sản phẩm này sẽ bị xóa vĩnh viễn.
+                            Hành động này không thể hoàn tác. Tất cả <strong>{product.variations?.length || 0} biến thể</strong> và dữ liệu liên quan sẽ bị xóa vĩnh viễn.
                         </p>
                     </div>
                 </div>
