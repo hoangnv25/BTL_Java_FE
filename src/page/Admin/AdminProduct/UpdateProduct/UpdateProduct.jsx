@@ -165,27 +165,23 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
             return
         }
 
-        // Build FormData with exactly 5 fields: image, title, description, price, categoryId
+        // Build FormData - only append fields that have actual changes
         const formData = new FormData()
         let hasProductChanges = false
 
-        // 1. Title
+        // 1. Title - only append if changed
         if (title.trim() && title.trim() !== (product.title || '')) {
             formData.append('title', title.trim())
             hasProductChanges = true
-        } else {
-            formData.append('title', '')
         }
 
-        // 2. Description
+        // 2. Description - only append if changed
         if (description.trim() && description.trim() !== (product.description || '')) {
             formData.append('description', description.trim())
             hasProductChanges = true
-        } else {
-            formData.append('description', '')
         }
 
-        // 3. Price
+        // 3. Price - only append if changed
         if (price && price.trim() !== '') {
             const priceValue = parseFloat(price)
             if (isNaN(priceValue) || priceValue <= 0) {
@@ -195,38 +191,21 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
             if (priceValue !== product.price) {
                 formData.append('price', priceValue)
                 hasProductChanges = true
-            } else {
-                formData.append('price', '')
             }
-        } else {
-            formData.append('price', '')
         }
 
-        // 4. CategoryId
+        // 4. CategoryId - only append if changed
         const newCategoryId = categoryId ? parseInt(categoryId) : null
         const oldCategoryId = product.categoryId || null
-        if (newCategoryId !== oldCategoryId) {
-            if (newCategoryId) {
-                formData.append('categoryId', newCategoryId)
-            } else {
-                formData.append('categoryId', '')
-            }
+        if (newCategoryId !== oldCategoryId && newCategoryId) {
+            formData.append('categoryId', newCategoryId)
             hasProductChanges = true
-        } else {
-            formData.append('categoryId', '')
         }
 
-        // 5. Image
+        // 5. Image - only append if there's a new file
         if (imageFile) {
             formData.append('image', imageFile)
             hasProductChanges = true
-        } else if (removeImage && product.image) {
-            // User wants to remove the existing image
-            formData.append('image', '')
-            hasProductChanges = true
-        } else {
-            // No image change, append empty string (no file)
-            formData.append('image', '')
         }
 
         // Check if there are new variations to add
@@ -245,6 +224,12 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
         try {
             // Only send PUT request if there are changes to product info
             if (hasProductChanges) {
+                // Debug: Log FormData contents
+                console.log('🔍 FormData contents:')
+                for (let [key, value] of formData.entries()) {
+                    console.log(`  ${key}:`, value instanceof File ? `File: ${value.name}` : value)
+                }
+
                 const response = await axios.put(`${base}/products/${product.productId}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -368,8 +353,20 @@ export default function UpdateProductModal({ open = false, onClose, onUpdated, p
             if (typeof onClose === 'function') onClose()
             return
         } catch (err) {
-            console.error('Error updating product:', err)
-            message.error(err?.response?.data?.message || 'Có lỗi khi cập nhật sản phẩm')
+            console.error('❌ Error updating product:', {
+                message: err?.response?.data?.message,
+                result: err?.response?.data?.result,
+                status: err?.response?.status,
+                data: err?.response?.data,
+                fullError: err
+            })
+            
+            const errorMessage = err?.response?.data?.message || 
+                               err?.response?.data?.result?.message ||
+                               err?.message || 
+                               'Có lỗi khi cập nhật sản phẩm'
+            
+            message.error(errorMessage)
         } finally {
             setSubmitting(false)
         }
