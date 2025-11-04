@@ -356,7 +356,7 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                                 }
                                 options={(() => {
-                                    // Sort categories: parents first, then children grouped under their parents
+                                    // Hiển thị tất cả category, nhưng disable category cha (không cho chọn)
                                     const parents = categories.filter(cat => !cat.parentId || cat.parentId === 0)
                                     const children = categories.filter(cat => cat.parentId && cat.parentId !== 0)
                                     
@@ -377,11 +377,13 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                                     })
                                     
                                     parents.forEach(parent => {
+                                        // Add parent category (disabled - không cho chọn)
                                         sorted.push({
                                             value: parent.categoryId,
                                             label: parent.categoryName || parent.name,
                                             parentId: 0,
-                                            isParent: true
+                                            isParent: true,
+                                            disabled: true // Không cho chọn category cha
                                         })
                                         
                                         // Add children of this parent
@@ -403,11 +405,13 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                                 optionRender={(option) => {
                                     const isChild = !option.data.isParent
                                     const isOrphan = option.data.isOrphan
+                                    const isDisabled = option.data.disabled
                                     return (
                                         <div style={{ 
                                             paddingLeft: isChild ? '20px' : '0',
-                                            color: isOrphan ? '#d32f2f' : 'inherit',
-                                            fontWeight: isOrphan ? '600' : 'normal'
+                                            color: isOrphan ? '#d32f2f' : (isDisabled ? '#999' : 'inherit'),
+                                            fontWeight: isOrphan ? '600' : (isDisabled ? 'bold' : 'normal'),
+                                            cursor: isDisabled ? 'not-allowed' : 'pointer'
                                         }}>
                                             {isChild && !isOrphan && '└─ '}
                                             {option.data.label}
