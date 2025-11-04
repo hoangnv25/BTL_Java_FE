@@ -19,6 +19,12 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
 
     const { message } = App.useApp()
 
+    const createEmptySizeRow = () => ({
+        id: `size-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        size: '',
+        stockQuantity: ''
+    })
+
     // Fetch categories when modal opens
     useEffect(() => {
         const fetchCategories = async () => {
@@ -86,11 +92,10 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
     const handleAddVariation = () => {
         setVariations([...variations, {
             id: Date.now(), // temporary ID
-            size: '',
             color: '',
-            stockQuantity: '',
             imageFile: null,
-            imagePreview: null
+            imagePreview: null,
+            sizes: [createEmptySizeRow()]
         }])
     }
 
@@ -102,6 +107,46 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
         setVariations(variations.map(v => {
             if (v.id === id) {
                 return { ...v, [field]: value }
+            }
+            return v
+        }))
+    }
+
+    const handleAddSizeRow = (variationId) => {
+        setVariations(variations.map(v => {
+            if (v.id === variationId) {
+                const currentSizes = Array.isArray(v.sizes) ? v.sizes : []
+                return { ...v, sizes: [...currentSizes, createEmptySizeRow()] }
+            }
+            return v
+        }))
+    }
+
+    const handleRemoveSizeRow = (variationId, sizeId) => {
+        setVariations(variations.map(v => {
+            if (v.id === variationId) {
+                const currentSizes = Array.isArray(v.sizes) ? v.sizes : []
+                if (currentSizes.length <= 1) return { ...v, sizes: currentSizes }
+                return { ...v, sizes: currentSizes.filter(size => size.id !== sizeId) }
+            }
+            return v
+        }))
+    }
+
+    const handleSizeFieldChange = (variationId, sizeId, field, value) => {
+        setVariations(variations.map(v => {
+            if (v.id === variationId) {
+                const currentSizes = Array.isArray(v.sizes) ? v.sizes : []
+                const normalizedValue = field === 'size' ? value.toUpperCase() : value
+                return {
+                    ...v,
+                    sizes: currentSizes.map(size => {
+                        if (size.id === sizeId) {
+                            return { ...size, [field]: normalizedValue }
+                        }
+                        return size
+                    })
+                }
             }
             return v
         }))
@@ -188,33 +233,72 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                 // Create variations if any
                 if (variations.length > 0 && productId) {
                     try {
-                        const validVariations = variations.filter(v => v.size && v.color && v.stockQuantity)
-                        
-                        if (validVariations.length === 0) {
-                            message.warning('Vui lòng điền đầy đủ thông tin cho biến thể (Size, Color, Số lượng)')
+                        for (let i = 0; i < variations.length; i++) {
+                            const variation = variations[i]
+                            const sizeRows = Array.isArray(variation.sizes) ? variation.sizes : []
+
+                            if (!variation.color.trim()) {
+                                message.error(`Vui lòng nhập màu sắc cho biến thể #${i + 1}`)
+                                return
+                            }
+
+                            if (sizeRows.length === 0) {
+                                message.error(`Vui lòng thêm ít nhất một size cho biến thể #${i + 1}`)
+                                return
+                            }
+
+                            for (let j = 0; j < sizeRows.length; j++) {
+                                const sizeRow = sizeRows[j]
+                                const stockValue = parseInt(sizeRow.stockQuantity, 10)
+
+                                if (!sizeRow.size.trim()) {
+                                    message.error(`Vui lòng nhập tên size cho biến thể #${i + 1}, dòng #${j + 1}`)
+                                    return
+                                }
+
+                                if (sizeRow.stockQuantity === '' || Number.isNaN(stockValue) || stockValue < 0) {
+                                    message.error(`Số lượng tồn kho phải là số không âm cho biến thể #${i + 1}, size ${sizeRow.size}`)
+                                    return
+                                }
+                            }
+                        }
+
+                        const preparedVariations = variations.flatMap((variation, variationIndex) =>
+                            (Array.isArray(variation.sizes) ? variation.sizes : []).map((sizeRow, sizeIndex) => ({
+                                variationIndex,
+                                sizeIndex,
+                                color: variation.color.trim(),
+                                size: sizeRow.size.trim(),
+                                stockQuantity: parseInt(sizeRow.stockQuantity, 10),
+                                imageFile: variation.imageFile
+                            }))
+                        )
+
+                        if (preparedVariations.length === 0) {
+                            message.warning('Vui lòng điền đầy đủ thông tin cho biến thể (Màu sắc, Size, Số lượng)')
                             return
                         }
 
-                        console.log('📦 Creating variations:', validVariations.length)
-                        
-                        const variationPromises = validVariations.map(async (variation, index) => {
+                        console.log('📦 Creating variations:', preparedVariations.length)
+
+                        const variationPromises = preparedVariations.map(async (payload, index) => {
                             try {
                                 const variationFormData = new FormData()
                                 variationFormData.append('productId', productId)
-                                variationFormData.append('size', variation.size.trim())
-                                variationFormData.append('color', variation.color.trim())
-                                variationFormData.append('stockQuantity', parseInt(variation.stockQuantity))
-                                
-                                if (variation.imageFile) {
-                                    variationFormData.append('image', variation.imageFile)
+                                variationFormData.append('size', payload.size)
+                                variationFormData.append('color', payload.color)
+                                variationFormData.append('stockQuantity', payload.stockQuantity)
+
+                                if (payload.imageFile) {
+                                    variationFormData.append('image', payload.imageFile)
                                 }
 
-                                console.log(`📤 Creating variation ${index + 1}/${validVariations.length}:`, {
+                                console.log(`📤 Creating variation ${index + 1}/${preparedVariations.length}:`, {
                                     productId,
-                                    size: variation.size.trim(),
-                                    color: variation.color.trim(),
-                                    stockQuantity: parseInt(variation.stockQuantity),
-                                    hasImage: !!variation.imageFile
+                                    size: payload.size,
+                                    color: payload.color,
+                                    stockQuantity: payload.stockQuantity,
+                                    hasImage: !!payload.imageFile
                                 })
 
                                 const response = await axios.post(`${base}/variations`, variationFormData, {
@@ -225,17 +309,17 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                                 })
 
                                 console.log(`✅ Variation ${index + 1} created:`, response.data)
-                                return { success: true, variation, response: response.data }
+                                return { success: true, payload, response: response.data }
                             } catch (err) {
                                 console.error(`❌ Error creating variation ${index + 1}:`, {
-                                    variation,
+                                    payload,
                                     error: err.response?.data || err.message,
                                     status: err.response?.status
                                 })
-                                return { 
-                                    success: false, 
-                                    variation, 
-                                    error: err.response?.data || { message: err.message } 
+                                return {
+                                    success: false,
+                                    payload,
+                                    error: err.response?.data || { message: err.message }
                                 }
                             }
                         })
@@ -247,14 +331,13 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                         if (failCount === 0) {
                             message.success(`Tạo sản phẩm và ${successCount} biến thể thành công`)
                         } else {
-                            // Show detailed error messages
                             results.forEach((result, index) => {
                                 if (!result.success) {
                                     const errorMsg = result.error?.message || result.error?.result?.message || 'Không xác định'
-                                    message.error(`Biến thể ${index + 1} (${result.variation.size}/${result.variation.color}): ${errorMsg}`)
+                                    message.error(`Biến thể ${index + 1} (${result.payload.size}/${result.payload.color}): ${errorMsg}`)
                                 }
                             })
-                            
+
                             if (successCount > 0) {
                                 message.warning(`Tạo sản phẩm thành công. ${successCount} biến thể thành công, ${failCount} biến thể thất bại`)
                             } else {
@@ -460,15 +543,6 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                     <div className="variations-section">
                         <div className="variations-header">
                             <label>Biến thể sản phẩm (Tùy chọn)</label>
-                            <button
-                                type="button"
-                                className="btn-add-variation"
-                                onClick={handleAddVariation}
-                                disabled={submitting}
-                            >
-                                <Plus size={16} />
-                                Thêm biến thể
-                            </button>
                         </div>
                         
                         {variations.length > 0 && (
@@ -490,19 +564,6 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                                         
                                         <div className="variation-form-grid">
                                             <div className="form-group">
-                                                <label htmlFor={`size-${variation.id}`}>Size <span className="required">*</span></label>
-                                                <input
-                                                    id={`size-${variation.id}`}
-                                                    className="form-control"
-                                                    type="text"
-                                                    value={variation.size}
-                                                    onChange={(e) => handleVariationChange(variation.id, 'size', e.target.value)}
-                                                    placeholder="VD: M, L, XL"
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div className="form-group">
                                                 <label htmlFor={`color-${variation.id}`}>Màu sắc <span className="required">*</span></label>
                                                 <input
                                                     id={`color-${variation.id}`}
@@ -511,20 +572,6 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                                                     value={variation.color}
                                                     onChange={(e) => handleVariationChange(variation.id, 'color', e.target.value)}
                                                     placeholder="VD: Đen, Trắng"
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div className="form-group">
-                                                <label htmlFor={`stock-${variation.id}`}>Số lượng tồn kho <span className="required">*</span></label>
-                                                <input
-                                                    id={`stock-${variation.id}`}
-                                                    className="form-control"
-                                                    type="number"
-                                                    value={variation.stockQuantity}
-                                                    onChange={(e) => handleVariationChange(variation.id, 'stockQuantity', e.target.value)}
-                                                    placeholder="Nhập số lượng"
-                                                    min="0"
                                                     required
                                                 />
                                             </div>
@@ -560,10 +607,86 @@ export default function CreateProductModal({ open = false, onClose, onCreated })
                                                 )}
                                             </div>
                                         </div>
+
+                                        <div className="variation-sizes-section">
+                                            <div className="variation-sizes-header">
+                                                <label>Danh sách size & tồn kho <span className="required">*</span></label>
+                                                <button
+                                                    type="button"
+                                                    className="btn-add-size"
+                                                    onClick={() => handleAddSizeRow(variation.id)}
+                                                    disabled={submitting}
+                                                >
+                                                    <Plus size={14} />
+                                                    Thêm size
+                                                </button>
+                                            </div>
+
+                                            <div className="variation-size-list">
+                                                {(variation.sizes || []).map((sizeRow, sizeIndex) => (
+                                                    <div key={sizeRow.id} className="variation-size-row">
+                                                        <div className="form-group">
+                                                            <label htmlFor={`variation-${variation.id}-size-${sizeRow.id}`}>
+                                                                Size #{sizeIndex + 1} <span className="required">*</span>
+                                                            </label>
+                                                            <input
+                                                                id={`variation-${variation.id}-size-${sizeRow.id}`}
+                                                                className="form-control"
+                                                                type="text"
+                                                                value={sizeRow.size}
+                                                                onChange={(e) => handleSizeFieldChange(variation.id, sizeRow.id, 'size', e.target.value)}
+                                                                placeholder="VD: S, M, L, XL"
+                                                                required
+                                                            />
+                                                        </div>
+
+                                                        <div className="form-group">
+                                                            <label htmlFor={`variation-${variation.id}-stock-${sizeRow.id}`}>
+                                                                Tồn kho <span className="required">*</span>
+                                                            </label>
+                                                            <input
+                                                                id={`variation-${variation.id}-stock-${sizeRow.id}`}
+                                                                className="form-control"
+                                                                type="number"
+                                                                value={sizeRow.stockQuantity}
+                                                                onChange={(e) => handleSizeFieldChange(variation.id, sizeRow.id, 'stockQuantity', e.target.value)}
+                                                                placeholder="Nhập số lượng"
+                                                                min="0"
+                                                                required
+                                                            />
+                                                        </div>
+
+                                                        {((variation.sizes || []).length > 1) && (
+                                                            <button
+                                                                type="button"
+                                                                className="btn-remove-size"
+                                                                onClick={() => handleRemoveSizeRow(variation.id, sizeRow.id)}
+                                                                disabled={submitting}
+                                                                title="Xóa size này"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         )}
+
+                        <div className="variations-footer">
+                            <button
+                                type="button"
+                                className="btn-add-variation"
+                                onClick={handleAddVariation}
+                                disabled={submitting}
+                            >
+                                <Plus size={16} />
+                                Thêm biến thể
+                            </button>
+                        </div>
                     </div>
 
                     <div className="modal-footer">
