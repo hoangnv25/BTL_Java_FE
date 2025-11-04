@@ -275,6 +275,211 @@ textarea.form-control {
 }
 
 /* Responsive */
+/* Variations Section */
+.variations-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e0e0e0;
+}
+
+.variations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.variations-header label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+}
+
+.btn-add-variation {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-variation:hover:not(:disabled) {
+    background: #218838;
+}
+
+.btn-add-variation:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Existing Variations */
+.existing-variations {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.existing-variations-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.existing-variation-item {
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.existing-variation-image {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.existing-variation-details {
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.existing-variation-details div {
+    margin-bottom: 0.5rem;
+}
+
+.existing-variation-details strong {
+    color: #212529;
+}
+
+/* New Variations */
+.variations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.variation-item {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.variation-header-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.variation-header-item h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.btn-remove-variation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-remove-variation:hover:not(:disabled) {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+.btn-remove-variation:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.variation-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Variation Image Upload */
+.variation-image-upload-area {
+    border: 2px dashed #ced4da;
+    border-radius: 6px;
+    padding: 1rem;
+    text-align: center;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.variation-image-upload-area:hover {
+    border-color: #007bff;
+    background: #e7f3ff;
+}
+
+.variation-image-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.variation-image-upload-label svg {
+    color: #007bff;
+}
+
+.variation-image-preview-container {
+    position: relative;
+    width: 100%;
+    max-width: 150px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 2px solid #e0e0e0;
+}
+
+.variation-image-preview {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.variation-image-preview-container .btn-remove-image {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    width: 28px;
+    height: 28px;
+    background: rgba(220, 53, 69, 0.9);
+}
+
+.variation-image-preview-container .btn-remove-image:hover {
+    background: #dc3545;
+    transform: scale(1.1);
+}
+
 @media (max-width: 768px) {
     .update-product-modal {
         width: 95%;
@@ -287,6 +492,20 @@ textarea.form-control {
 
     .image-upload-area {
         padding: 1.5rem;
+    }
+
+    .variation-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .variations-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .existing-variations-list {
+        grid-template-columns: 1fr;
     }
 }
 

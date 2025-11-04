@@ -1,61 +1,96 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { base } from "../../../service/Base.jsx";
 import "./Sale.css";
 
 export default function Sale() {
-    // Dữ liệu mẫu cho phần Sale - thông tin khuyến mãi và danh sách sản phẩm
-    const RESPONSE = {
-        id: 1,
-        title: "Sale cuối năm",                   
-        value: "50",                              
-        description: "Sale cuối năm, sale siêu hót hú hú hú",
-        pre_st_date: "10/10/2025",
-        st_date: "13/10/2025",                    
-        end_date: "15/10/2025",                   
-        list_product: [                           
-            {
-                id: 1,
-                thumbnail: "https://product.hstatic.net/1000360022/product/ao-thun-nam-hoa-tiet-in-phoi-mau-predator-form-oversize_0c5655ad3680475496d654529c6fd55d_1024x1024.jpg"
-            },
-            {
-                id: 2,
-                thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvjbXv4gspAYEA6p-yih_uGs7WDPMjolxBTQ&s",
-            },
-            {
-                id: 3,
-                thumbnail: "https://www.google.com.vn/url?sa=i&url=https%3A%2F%2Fteelab.vn%2Fao-thun-teelab-ha-noi-tra-da&psig=AOvVaw0QCw21edeb9HJRtQIG7xRp&ust=1759950770739000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCNDl0tflkpADFQAAAAAdAAAAABAE",
-            },
-            {
-                id: 4,
-                thumbnail: "https://bizweb.dktcdn.net/100/415/697/products/mc1-0224920e-c953-4129-a4b3-d79b600e15fa.jpg?v=1637916532137",
-            },
-            {
-                id: 5,
-                thumbnail: "https://bizweb.dktcdn.net/100/467/909/products/1904762-blk-2.jpg?v=1726316893717",
-            }
-        ]
-    };
+    const navigate = useNavigate();
+    const [sale, setSale] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [productsDetails, setProductsDetails] = useState({}); // Lưu thông tin chi tiết sản phẩm
 
     // State quản lý đếm ngược và carousel
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 }); // Thời gian còn lại
     const [currentSlide, setCurrentSlide] = useState(0); // Slide hiện tại trong carousel
-    const [salePhase, setSalePhase] = useState('preparing'); // 'preparing' hoặc 'selling'
-    const [isNotified, setIsNotified] = useState(false); // Trạng thái đã đăng ký thông báo
+    const [salePhase, setSalePhase] = useState('ended'); // 'preparing', 'selling', hoặc 'ended'
 
-    // useEffect xử lý đếm ngược thời gian chuẩn bị sale và thời gian sale
+    // Fetch active sale from API - Không cần authentication
     useEffect(() => {
-        // Hàm chuyển đổi định dạng ngày từ dd/mm/yyyy thành yyyy-mm-dd để JavaScript hiểu
-        const convertDateFormat = (dateStr) => {
-            const [day, month, year] = dateStr.split('/');
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        const fetchActiveSale = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(`${base}/sales`);
+
+                if (response.status === 200 && response.data?.result) {
+                    const sales = response.data.result || [];
+                    const now = new Date().getTime();
+
+                    // Tìm sale đang active (thời gian hiện tại nằm giữa stDate và endDate)
+                    const activeSale = sales.find(s => {
+                        const stDate = new Date(s.stDate).getTime();
+                        const endDate = new Date(s.endDate).getTime();
+                        return now >= stDate && now < endDate;
+                    });
+
+                    if (activeSale) {
+                        setSale(activeSale);
+                        
+                        // Fetch thông tin chi tiết sản phẩm
+                        if (activeSale.list_product && activeSale.list_product.length > 0) {
+                            const productIds = activeSale.list_product.map(p => p.id).filter(Boolean);
+                            
+                            if (productIds.length > 0) {
+                                const promises = productIds.map(id => 
+                                    axios.get(`${base}/products/${id}`).catch(err => {
+                                        console.log(`Error fetching product ${id}:`, err);
+                                        return null;
+                                    })
+                                );
+                                
+                                const responses = await Promise.all(promises);
+                                const details = {};
+                                
+                                responses.forEach((response, index) => {
+                                    if (response && response.status === 200) {
+                                        details[productIds[index]] = response.data.result;
+                                    }
+                                });
+                                
+                                setProductsDetails(details);
+                            }
+                        }
+                    } else {
+                        setSale(null);
+                        setProductsDetails({});
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching sales:', error);
+                setSale(null);
+                setProductsDetails({});
+            } finally {
+                setLoading(false);
+            }
         };
-        
-        const PRE_START_DATE = new Date(convertDateFormat(RESPONSE.pre_st_date)).getTime(); // Ngày bắt đầu chuẩn bị
-        const startDate = new Date(convertDateFormat(RESPONSE.st_date)).getTime(); // Ngày bắt đầu sale
-        const endDate = new Date(convertDateFormat(RESPONSE.end_date)).getTime(); // Ngày kết thúc sale
+
+        fetchActiveSale();
+    }, []);
+
+    // useEffect xử lý đếm ngược thời gian sale
+    useEffect(() => {
+        if (!sale) {
+            setSalePhase('ended');
+            setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+            return;
+        }
+
+        const startDate = new Date(sale.stDate).getTime();
+        const endDate = new Date(sale.endDate).getTime();
         
         // Timer chạy mỗi giây để cập nhật đếm ngược
         const timer = setInterval(() => {
-            const now = new Date().getTime(); // Thời gian hiện tại
+            const now = new Date().getTime();
             
             if (now < startDate) {
                 // Giai đoạn chuẩn bị sale: đếm ngược từ hiện tại đến ngày bắt đầu sale
@@ -94,23 +129,41 @@ export default function Sale() {
             }
         }, 1000);
 
-        return () => clearInterval(timer); // Cleanup timer khi component unmount
-    }, [RESPONSE.pre_st_date, RESPONSE.st_date, RESPONSE.end_date]);
+        return () => clearInterval(timer);
+    }, [sale]);
 
     // Hàm chuyển slide tiếp theo (vòng lặp)
     const nextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % RESPONSE.list_product.length);
+        const productCount = sale?.list_product?.length || 0;
+        if (productCount > 0) {
+            setCurrentSlide((prev) => (prev + 1) % productCount);
+        }
     };
 
     // Hàm chuyển slide trước đó (vòng lặp)
     const prevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + RESPONSE.list_product.length) % RESPONSE.list_product.length);
+        const productCount = sale?.list_product?.length || 0;
+        if (productCount > 0) {
+            setCurrentSlide((prev) => (prev - 1 + productCount) % productCount);
+        }
     };
 
-    // Hàm xử lý đăng ký thông báo
-    const handleNotifyMe = () => {
-        setIsNotified(true);
-        // Có thể thêm logic gửi email thông báo ở đây
+
+    // Chỉ hiển thị sale đang active (đang bán), không hiển thị khi đang chuẩn bị hoặc đã kết thúc
+    if (loading || !sale || salePhase !== 'selling') {
+        return null;
+    }
+
+    const products = sale.list_product || [];
+    const saleName = sale.name || 'Sale';
+    const saleDescription = sale.description || '';
+    
+    // Tính discount percentage từ value (0-1) -> (0-100%)
+    const getDiscountPercent = (product) => {
+        if (product.value) {
+            return Math.round(product.value * 100);
+        }
+        return 0;
     };
 
     return (
@@ -120,105 +173,101 @@ export default function Sale() {
                 <div className="sale-info">
                     {/* Tiêu đề và mô tả khuyến mãi */}
                     <h2 className="sale-title">
-                        {salePhase === 'preparing' ? 'CHUẨN BỊ SALE CUỐI NĂM' : 
-                         salePhase === 'selling' ? RESPONSE.title.toUpperCase() : 
-                         'SALE ĐÃ KẾT THÚC'}
+                        {saleName.toUpperCase()}
                     </h2>
                     <p className="sale-description">
-                        {salePhase === 'preparing' ? 'Sale sắp bắt đầu! Hãy chuẩn bị để săn deal hot nhất!' :
-                         salePhase === 'selling' ? RESPONSE.description :
-                         'Cảm ơn bạn đã tham gia chương trình khuyến mãi!'}
+                        {saleDescription}
                     </p>
-                    <button 
-                        className="sale-btn" 
-                        onClick={salePhase === 'preparing' ? handleNotifyMe : undefined}
-                    >
-                        {salePhase === 'preparing' ? 
-                            (isNotified ? 'Đã đăng ký thông báo' : 'Thông báo cho tôi') :
-                         salePhase === 'selling' ? 'Mua ngay' :
-                         'Xem sản phẩm khác'}
+                    <button className="sale-btn">
+                        Mua ngay
                     </button>
-                    
-                    {/* Thông báo xác nhận đăng ký */}
-                    {salePhase === 'preparing' && isNotified && (
-                        <div className="notification-message">
-                            <p>✅ Chúng tôi sẽ thông báo cho bạn qua email khi sale bắt đầu!</p>
-                        </div>
-                    )}
                     
                     {/* Phần đếm ngược thời gian */}
                     <div className="countdown-section">
                         <h3 className="countdown-title">
-                            {salePhase === 'preparing' ? 'Sale sẽ bắt đầu sau:' :
-                             salePhase === 'selling' ? 'Hãy nhanh tay để mua hàng ngay!' :
-                             'Sale đã kết thúc'}
+                            Hãy nhanh tay để mua hàng ngay!
                         </h3>
-                        {salePhase !== 'ended' && (
-                            <div className="countdown-timer">
-                                {/* Ô hiển thị số ngày còn lại */}
-                                <div className="time-box">
-                                    <span className="time-number">{String(timeLeft.days).padStart(2, '0')}</span>
-                                    <span className="time-label">Ngày</span>
-                                </div>
-                                {/* Ô hiển thị số giờ còn lại */}
-                                <div className="time-box">
-                                    <span className="time-number">{String(timeLeft.hours).padStart(2, '0')}</span>
-                                    <span className="time-label">Giờ</span>
-                                </div>
-                                {/* Ô hiển thị số phút còn lại */}
-                                <div className="time-box">
-                                    <span className="time-number">{String(timeLeft.minutes).padStart(2, '0')}</span>
-                                    <span className="time-label">Phút</span>
-                                </div>
-                                {/* Ô hiển thị số giây còn lại */}
-                                <div className="time-box">
-                                    <span className="time-number">{String(timeLeft.seconds).padStart(2, '0')}</span>
-                                    <span className="time-label">Giây</span>
-                                </div>
+                        <div className="countdown-timer">
+                            {/* Ô hiển thị số ngày còn lại */}
+                            <div className="time-box">
+                                <span className="time-number">{String(timeLeft.days).padStart(2, '0')}</span>
+                                <span className="time-label">Ngày</span>
                             </div>
-                        )}
+                            {/* Ô hiển thị số giờ còn lại */}
+                            <div className="time-box">
+                                <span className="time-number">{String(timeLeft.hours).padStart(2, '0')}</span>
+                                <span className="time-label">Giờ</span>
+                            </div>
+                            {/* Ô hiển thị số phút còn lại */}
+                            <div className="time-box">
+                                <span className="time-number">{String(timeLeft.minutes).padStart(2, '0')}</span>
+                                <span className="time-label">Phút</span>
+                            </div>
+                            {/* Ô hiển thị số giây còn lại */}
+                            <div className="time-box">
+                                <span className="time-number">{String(timeLeft.seconds).padStart(2, '0')}</span>
+                                <span className="time-label">Giây</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Cột phải: Carousel sản phẩm */}
-                <div className="sale-carousel">
-                    {/* Container chứa các slide */}
-                    <div className="carousel-container">
-                        {/* Track chứa tất cả slide, di chuyển theo currentSlide */}
-                        <div 
-                            className="carousel-track" 
-                            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-                        >
-                            {/* Render từng slide sản phẩm */}
-                            {RESPONSE.list_product.map((product, index) => (
-                                <div key={product.id} className="carousel-slide">
-                                    <img src={product.thumbnail} alt={`Sản phẩm ${product.id}`} />
-                                    {/* Overlay hiển thị thông tin khuyến mãi */}
-                                    <div className="slide-overlay">
-                                        <span className="slide-number">{String(index + 1).padStart(2, '0')} — Sale cuối năm</span>
-                                        <span className="slide-discount">{RESPONSE.value}% OFF</span>
-                                    </div>
-                                </div>
-                            ))}
+                {products.length > 0 && (
+                    <div className="sale-carousel">
+                        {/* Container chứa các slide */}
+                        <div className="carousel-container">
+                            {/* Track chứa tất cả slide, di chuyển theo currentSlide */}
+                            <div 
+                                className="carousel-track" 
+                                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                            >
+                                {/* Render từng slide sản phẩm */}
+                                {products.map((product, index) => {
+                                    const productDetail = productsDetails[product.id];
+                                    const productName = productDetail?.title || productDetail?.name || `Sản phẩm ${product.id || index + 1}`;
+                                    const productId = productDetail?.productId || product.id;
+                                    
+                                    return (
+                                        <div 
+                                            key={product.id || index} 
+                                            className="carousel-slide"
+                                            onClick={() => {
+                                                if (productId) {
+                                                    navigate(`/product/${productId}`);
+                                                }
+                                            }}
+                                            style={{ cursor: productId ? 'pointer' : 'default' }}
+                                        >
+                                            <img src={product.image || productDetail?.image} alt={productName} />
+                                            {/* Overlay hiển thị thông tin khuyến mãi */}
+                                            <div className="slide-overlay">
+                                                <span className="slide-number">{productName}</span>
+                                                <span className="slide-discount">{getDiscountPercent(product)}% OFF</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        
+                        {/* Điều khiển carousel: nút prev/next và dots indicator */}
+                        <div className="carousel-controls">
+                            <button className="carousel-btn prev" onClick={prevSlide}>‹</button>
+                            <button className="carousel-btn next" onClick={nextSlide}>›</button>
+                            {/* Dots indicator - hiển thị slide hiện tại */}
+                            <div className="carousel-dots">
+                                {products.map((_, index) => (
+                                    <button
+                                        key={index}
+                                        className={`dot ${index === currentSlide ? 'active' : ''}`}
+                                        onClick={() => setCurrentSlide(index)}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
-                    
-                    {/* Điều khiển carousel: nút prev/next và dots indicator */}
-                    <div className="carousel-controls">
-                        <button className="carousel-btn prev" onClick={prevSlide}>‹</button>
-                        <button className="carousel-btn next" onClick={nextSlide}>›</button>
-                        {/* Dots indicator - hiển thị slide hiện tại */}
-                        <div className="carousel-dots">
-                            {RESPONSE.list_product.map((_, index) => (
-                                <button
-                                    key={index}
-                                    className={`dot ${index === currentSlide ? 'active' : ''}`}
-                                    onClick={() => setCurrentSlide(index)}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                )}
             </div>
         </section>
     );

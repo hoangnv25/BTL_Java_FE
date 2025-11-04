@@ -1,15 +1,15 @@
 /* Layout for admin page with left sidebar */
 .admin-page {
     display: flex;
-    gap: 12px;
-    padding: 8px;
+    min-height: 100vh;
+    gap: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .admin-sidebar {
-    width: 220px;
-    flex-shrink: 0;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    flex: 0 0 220px;
+    border-right: 1px solid #e5e7eb;
     padding: 12px;
     background: #ffffff;
 }
@@ -41,8 +41,10 @@
 }
 
 .admin-main {
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
-    overflow: visible;
+    overflow-x: auto;
+    width: 100%;
+    max-width: 1800px;
 }
 

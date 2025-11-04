@@ -2,7 +2,10 @@
 .products-container {
     padding: 2rem;
     width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
     min-height: 100vh;
+    box-sizing: border-box;
 }
 
 /* Header */
@@ -150,14 +153,18 @@
 /* Table Container */
 .products-table-container {
     width: 100%;
+    max-width: none;
     background: white;
     border-radius: 8px;
     border: 1px solid #e0e0e0;
+    overflow-x: auto;
 }
 
 /* Products Table */
 .products-table {
     width: 100%;
+    min-width: 900px;
+    max-width: 1400px;
     border-collapse: collapse;
     font-size: 0.95rem;
     table-layout: fixed;
@@ -174,6 +181,14 @@
     font-weight: 600;
     color: #495057;
     white-space: nowrap;
+    vertical-align: middle;
+}
+
+.products-table th:nth-child(3),
+.products-table th:nth-child(4),
+.products-table th:nth-child(5),
+.products-table th:nth-child(6) {
+    text-align: center;
 }
 
 .products-table tbody tr {
@@ -197,9 +212,16 @@
     vertical-align: middle;
 }
 
+.products-table td:nth-child(3),
+.products-table td:nth-child(4),
+.products-table td:nth-child(5),
+.products-table td:nth-child(6) {
+    text-align: center;
+}
+
 /* Image Cell */
 .product-image-cell {
-    width: 10%;
+    width: 80px;
 }
 
 .product-thumbnail {
@@ -224,39 +246,41 @@
 
 /* Product Title */
 .product-title {
-    width: 55%;
+    width: 30%;
+    min-width: 200px;
+    max-width: 350px;
 }
 
 .product-name-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.3rem;
 }
 
 .product-name-text {
     font-weight: 600;
     color: #1a1a1a;
-    word-wrap: break-word;
-    white-space: normal;
-    line-height: 1.4;
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .product-description-text {
     font-size: 0.85rem;
     color: #666;
     line-height: 1.3;
-    word-wrap: break-word;
-    white-space: normal;
     overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Price Cell */
 .product-price-cell {
-    width: 15%;
+    width: 12%;
+    min-width: 120px;
+    text-align: center;
+    vertical-align: middle;
 }
 
 .price-value {
@@ -286,8 +310,9 @@
 
 /* Sale Cell */
 .product-sale-cell {
-    width: 10%;
+    width: 100px;
     text-align: center;
+    vertical-align: middle;
 }
 
 .sale-badge {
@@ -306,8 +331,9 @@
 
 /* Variations Cell */
 .product-variations-cell {
-    width: 10%;
+    width: 90px;
     text-align: center;
+    vertical-align: middle;
 }
 
 .variations-badge {
@@ -326,8 +352,9 @@
 
 /* Actions Cell */
 .product-actions-cell {
-    width: 8%;
+    width: 80px;
     text-align: center;
+    vertical-align: middle;
 }
 
 .btn-edit-product {
@@ -486,12 +513,63 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    position: relative;
+}
+
+.variation-image.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.variation-image.clickable:hover {
+    opacity: 0.85;
+    transform: scale(1.02);
+}
+
+.variation-image.clickable::after {
+    content: '👆 Click để xem chi tiết';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.variation-image.clickable:hover::after {
+    opacity: 1;
 }
 
 .variation-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.variation-image-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.variation-image-loading span {
+    color: #007bff;
+    font-weight: 500;
+    font-size: 0.9rem;
 }
 
 .variation-details {
@@ -529,6 +607,139 @@
 .attr-value.stock.low-stock {
     background: #ffebee;
     color: #c62828;
+}
+
+.low-stock-text {
+    color: #c62828;
+    font-weight: 600;
+}
+
+/* Variation Detail Modal */
+.variation-detail-modal {
+    max-width: 600px;
+    width: 90%;
+}
+
+.variation-detail-content {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.variation-detail-image {
+    flex: 0 0 300px;
+    width: 300px;
+    height: 300px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.variation-detail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.variation-detail-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.variation-detail-modal .modal-footer .btn-primary,
+.variation-detail-modal .modal-footer .btn-secondary {
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+}
+
+.btn-primary {
+    padding: 0.6rem 1.5rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #0056b3;
+    transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-danger {
+    padding: 0.6rem 1.5rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.btn-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.product-detail-modal .modal-footer .btn-primary,
+.product-detail-modal .modal-footer .btn-secondary,
+.product-detail-modal .modal-footer .btn-danger {
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+}
+
+
+@media (max-width: 768px) {
+    .variation-detail-content {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .variation-detail-image {
+        flex: none;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .variation-image.clickable::after {
+        font-size: 0.65rem;
+        padding: 0.4rem 0.8rem;
+    }
 }
 
 .detail-attributes {

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import '../assets/style/Navbar.css'
 import Brand from './Brand'
-import { ShoppingCart, User, ChevronDown, MessageCircle } from 'lucide-react'
+import { ShoppingCart, User, ChevronDown, MessageCircle, Search, X } from 'lucide-react'
 import Category from './CategoryNavbar'
 import { App } from 'antd'
 import { useState, useEffect } from 'react'
@@ -15,6 +15,8 @@ function Navbar() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -51,8 +53,25 @@ function Navbar() {
     checkLogin()
     decodeToken()
   }, [])
-  
-  
+
+  const handleSearchToggle = () => {
+    setShowSearch(!showSearch)
+    if (showSearch) {
+      setSearchQuery('')
+    }
+  }
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      // Navigate to search results page with query
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      setShowSearch(false)
+      setSearchQuery('')
+    }
+  }
+
+
 
   return (
     <header className="navbar-header">
@@ -86,12 +105,66 @@ function Navbar() {
           ) : (
             <></>
           )}
+          <li>
+            <button 
+              className="navbar-link navbar-icon-btn" 
+              onClick={handleSearchToggle}
+              aria-label="Tìm kiếm" 
+              title="Tìm kiếm"
+            >
+              <Search size={22} strokeWidth={2} />
+            </button>
+          </li>
           <li><Link to="/user" className="navbar-link" aria-label="Tài khoản" title="Tài khoản"><User size={22} strokeWidth={2} /></Link></li>
           <li><Link to="/cart" className="navbar-link" aria-label="Giỏ hàng" title="Giỏ hàng"><ShoppingCart size={22} strokeWidth={2} /></Link></li>
           <li><Link to="/chat" className="navbar-link" aria-label="Chat" title="Chat"><MessageCircle size={22} strokeWidth={2} /></Link></li>
         </ul>
 
       </nav>
+
+      {/* Search Bar Overlay */}
+      {showSearch && (
+        <div className="search-overlay" onClick={handleSearchToggle}>
+          <div className="search-container" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="search-close"
+              onClick={handleSearchToggle}
+              aria-label="Đóng"
+            >
+              <X size={20} />
+            </button>
+            <form onSubmit={handleSearchSubmit} className="search-form">
+              <Search className="search-icon" size={17} />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Tìm theo tên sản phẩm..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="search-clear"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Xóa"
+                >
+                  <X size={15} />
+                </button>
+              )}
+              <button type="submit" className="search-submit" aria-label="Tìm kiếm">
+                <Search size={18} />
+              </button>
+            </form>
+            <div className="search-suggestions">
+              <span onClick={() => { setSearchQuery('Áo thun'); }}>Áo thun</span>
+              <span onClick={() => { setSearchQuery('Quần tây'); }}>Quần tây</span>
+              <span onClick={() => { setSearchQuery('Áo polo'); }}>Áo polo</span>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   )
 }
