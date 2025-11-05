@@ -59,7 +59,7 @@ const scrollHistory = (delta) => {
 			: [],
 	});
 
-	const buildHistoryEntry = (item = {}) => ({
+const buildHistoryEntry = (item = {}) => ({
 		id: item.productId ?? item.id ?? null,
 		prod_id: item.prod_id ?? item.id ?? item.productId ?? null,
 		title: item.title || "",
@@ -70,6 +70,8 @@ const scrollHistory = (delta) => {
 			item.Discount ??
 			(item.saleValue && item.saleValue > 0 ? Math.round(item.saleValue * 100) : 0),
 		categoryId: item.categoryId ?? null,
+	// lưu thời điểm xem; nếu đã có thì giữ nguyên
+	viewedAt: item.viewedAt || Date.now(),
 		list_product_variation: Array.isArray(item.list_product_variation)
 			? item.list_product_variation
 			: Array.isArray(item.list_prod_variation)
@@ -77,24 +79,38 @@ const scrollHistory = (delta) => {
 			: [],
 	});
 
-	useEffect(() => {
-		try {
-			const raw = localStorage.getItem("view_history");
-			if (!raw) return;
-			const parsed = JSON.parse(raw);
-			if (Array.isArray(parsed)) {
-				setViewHistory(parsed.map(buildHistoryEntry));
-			}
-		} catch {
-			setViewHistory([]);
-		}
-	}, []);
+useEffect(() => {
+    try {
+        const raw = localStorage.getItem("view_history");
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+            const now = Date.now();
+            const threeDays = 3 * 24 * 60 * 60 * 1000;
+            const cleaned = parsed
+                .map(buildHistoryEntry)
+                .filter(entry => entry.id && now - (entry.viewedAt || 0) <= threeDays);
+            setViewHistory(cleaned);
+            // đồng bộ lại localStorage sau khi loại bỏ item quá hạn
+            localStorage.setItem("view_history", JSON.stringify(cleaned));
+        }
+    } catch {
+        setViewHistory([]);
+    }
+}, []);
 
 	const currentProductId = product?.productId ?? null;
 	const historyToShow = useMemo(
 		() => viewHistory.filter((item) => item.id && item.id !== currentProductId),
 		[viewHistory, currentProductId]
 	);
+
+	// Đảm bảo khi vào trang chi tiết luôn ở đầu trang
+	useEffect(() => {
+		try {
+			window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+		} catch { return; }
+	}, [id]);
 
 	// Fetch product data from API
 	useEffect(() => {
@@ -114,17 +130,21 @@ const scrollHistory = (delta) => {
 					const productData = response.data.result;
 					setProduct(productData);
 
-					// Update view history
+                    // Update view history (giữ tối đa 10 và không quá 3 ngày)
 					try {
 						const rawHistory = localStorage.getItem("view_history") || "[]";
 						const parsedJson = JSON.parse(rawHistory);
 						const parsed = Array.isArray(parsedJson) ? parsedJson : [];
-						const history = parsed.map(buildHistoryEntry).filter((item) => item.id);
-						const entry = buildHistoryEntry(productData);
-						const filtered = history.filter((item) => item.id !== entry.id);
-						const nextHistory = [entry, ...filtered].slice(0, 10);
-						localStorage.setItem("view_history", JSON.stringify(nextHistory));
-						setViewHistory(nextHistory);
+                        const now = Date.now();
+                        const threeDays = 3 * 24 * 60 * 60 * 1000;
+                        const history = parsed
+                            .map(buildHistoryEntry)
+                            .filter((item) => item.id && now - (item.viewedAt || 0) <= threeDays);
+                        const entry = buildHistoryEntry({ ...productData, viewedAt: now });
+                        const filtered = history.filter((item) => item.id !== entry.id);
+                        const nextHistory = [entry, ...filtered].slice(0, 10);
+                        localStorage.setItem("view_history", JSON.stringify(nextHistory));
+                        setViewHistory(nextHistory);
 					} catch {
 						// ignore localStorage errors
 					}
