@@ -54,6 +54,7 @@
     padding: 0;
     color: #0f172a;
     line-height: 1.4;
+    min-height: 44px; /* đảm bảo đồng đều 2 dòng */
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;

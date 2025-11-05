@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { base } from "../../service/Base.jsx";
 import { App } from "antd";
 import ProductFeedback from "./ProductFeedback";
+import ProductCard from "../../components/ProductCard";
 import Breadcrumb from "../../components/Breadcrumb";
 import "./ProductDetail.css";
 
@@ -16,6 +17,84 @@ export default function ProductDetail() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [addingToCart, setAddingToCart] = useState(false);
+	const [viewHistory, setViewHistory] = useState([]);
+	const [relatedProducts, setRelatedProducts] = useState([]);
+const relatedRowRef = useRef(null);
+const historyRowRef = useRef(null);
+const scrollRelated = (delta) => {
+    try {
+        if (relatedRowRef.current) {
+            const container = relatedRowRef.current;
+            const step = delta === 0 ? container.clientWidth : delta;
+            container.scrollBy({ left: step, behavior: 'smooth' });
+        }
+    } catch { return; }
+};
+const scrollHistory = (delta) => {
+    try {
+        if (historyRowRef.current) {
+            const container = historyRowRef.current;
+            const step = delta === 0 ? container.clientWidth : delta;
+            container.scrollBy({ left: step, behavior: 'smooth' });
+        }
+    } catch { return; }
+};
+
+	const mapToCardProduct = (item = {}) => ({
+		id: item.productId ?? item.id ?? item.prod_id ?? null,
+		prod_id: item.prod_id ?? item.productId ?? item.id ?? null,
+		title: item.title || "",
+		price: item.price || 0,
+		thumbnail: item.image || item.thumbnail || "",
+		Discount:
+			item.discount ??
+			item.Discount ??
+			(item.saleValue && item.saleValue > 0 ? Math.round(item.saleValue * 100) : 0),
+		list_product_variation: Array.isArray(item.list_product_variation)
+			? item.list_product_variation
+			: Array.isArray(item.listVariations)
+			? item.listVariations
+			: Array.isArray(item.list_prod_variation)
+			? item.list_prod_variation
+			: [],
+	});
+
+	const buildHistoryEntry = (item = {}) => ({
+		id: item.productId ?? item.id ?? null,
+		prod_id: item.prod_id ?? item.id ?? item.productId ?? null,
+		title: item.title || "",
+		price: item.price || 0,
+		thumbnail: item.image || item.thumbnail || "",
+		Discount:
+			item.discount ??
+			item.Discount ??
+			(item.saleValue && item.saleValue > 0 ? Math.round(item.saleValue * 100) : 0),
+		categoryId: item.categoryId ?? null,
+		list_product_variation: Array.isArray(item.list_product_variation)
+			? item.list_product_variation
+			: Array.isArray(item.list_prod_variation)
+			? item.list_prod_variation
+			: [],
+	});
+
+	useEffect(() => {
+		try {
+			const raw = localStorage.getItem("view_history");
+			if (!raw) return;
+			const parsed = JSON.parse(raw);
+			if (Array.isArray(parsed)) {
+				setViewHistory(parsed.map(buildHistoryEntry));
+			}
+		} catch {
+			setViewHistory([]);
+		}
+	}, []);
+
+	const currentProductId = product?.productId ?? null;
+	const historyToShow = useMemo(
+		() => viewHistory.filter((item) => item.id && item.id !== currentProductId),
+		[viewHistory, currentProductId]
+	);
 
 	// Fetch product data from API
 	useEffect(() => {
@@ -34,8 +113,55 @@ export default function ProductDetail() {
 				if (response.data && response.data.code === 1000 && response.data.result) {
 					const productData = response.data.result;
 					setProduct(productData);
+
+					// Update view history
+					try {
+						const rawHistory = localStorage.getItem("view_history") || "[]";
+						const parsedJson = JSON.parse(rawHistory);
+						const parsed = Array.isArray(parsedJson) ? parsedJson : [];
+						const history = parsed.map(buildHistoryEntry).filter((item) => item.id);
+						const entry = buildHistoryEntry(productData);
+						const filtered = history.filter((item) => item.id !== entry.id);
+						const nextHistory = [entry, ...filtered].slice(0, 10);
+						localStorage.setItem("view_history", JSON.stringify(nextHistory));
+						setViewHistory(nextHistory);
+					} catch {
+						// ignore localStorage errors
+					}
+
+					// Fetch products in the same category
+					try {
+						const allResp = await axios.get(`${base}/products`);
+						if (allResp.status === 200 && Array.isArray(allResp.data?.result)) {
+							const allProducts = allResp.data.result || [];
+							let currentCategoryId = productData.categoryId;
+
+							if (currentCategoryId == null) {
+								const matched = allProducts.find((p) => p.productId === productData.productId);
+								currentCategoryId = matched?.categoryId ?? null;
+							}
+
+							const sameCategory = allProducts
+								.filter(
+									(p) =>
+										currentCategoryId != null &&
+										p.categoryId === currentCategoryId &&
+										p.productId !== productData.productId
+								)
+								.map(mapToCardProduct)
+								.filter((p) => p.id != null)
+								.slice(0, 8);
+
+							setRelatedProducts(sameCategory);
+						} else {
+							setRelatedProducts([]);
+						}
+					} catch {
+						setRelatedProducts([]);
+					}
 				} else {
 					setError("Không thể tải thông tin sản phẩm");
+					setRelatedProducts([]);
 				}
 			} catch (err) {
 				console.error("Error fetching product:", err);
@@ -52,11 +178,11 @@ export default function ProductDetail() {
 	const RESPONSE = useMemo(() => {
 		if (!product) return null;
 
-		// API có thể trả về "listVariations" (đã nhóm sẵn theo màu) hoặc "variations" (array phẳng)
+		// API c+� th�+� trߦ� v�+� "listVariations" (-�+� nh+�m sߦ�n theo m+�u) hoߦ+c "variations" (array phߦ�ng)
 		let list_prod_variation = [];
 		
 		if (product.listVariations && Array.isArray(product.listVariations)) {
-			// Format mới: listVariations đã được nhóm sẵn theo màu sắc
+			// Format m�+�i: listVariations -�+� -榦�+�c nh+�m sߦ�n theo m+�u sߦ�c
 			list_prod_variation = product.listVariations.map((group) => ({
 				product_id: group.productId || product.productId,
 				image: group.image || product.image,
@@ -68,7 +194,7 @@ export default function ProductDetail() {
 				}))
 			}));
 		} else if (product.variations && Array.isArray(product.variations)) {
-			// Format cũ: variations là array phẳng, cần group theo màu
+			// Format c+�: variations l+� array phߦ�ng, cߦ�n group theo m+�u
 			const variationsByColor = {};
 			
 			product.variations.forEach((variation) => {
@@ -99,14 +225,14 @@ export default function ProductDetail() {
 			description: product.description || "",
 			price: product.price || 0,
 			thumbnail: product.image || "",
-			rate: 0, // API không trả về rate, mặc định 0
-			discount: product.saleValue && product.saleValue > 0 ? Math.round(product.saleValue * 100) : undefined, // Convert 0.90 to 90, chỉ set khi > 0
+			rate: 0, // API kh+�ng trߦ� v�+� rate, mߦ+c -��+�nh 0
+			discount: product.saleValue && product.saleValue > 0 ? Math.round(product.saleValue * 100) : undefined, // Convert 0.90 to 90, ch�+� set khi > 0
 			list_prod_variation: list_prod_variation
 		};
 	}, [product]);
 
-	// Tạo gallery ảnh (ảnh chính + ảnh các biến thể) – mỗi entry có key riêng để
-	// không gộp lại dù trùng URL ảnh
+	// Tߦ�o gallery ߦ�nh (ߦ�nh ch+�nh + ߦ�nh c+�c biߦ+n th�+�) G�� m�+�i entry c+� key ri+�ng -��+�
+	// kh+�ng g�+�p lߦ�i d+� tr+�ng URL ߦ�nh
     const galleryEntries = useMemo(() => {
 		if (!RESPONSE) return [];
 		const entries = [];
@@ -149,12 +275,12 @@ export default function ProductDetail() {
 	const hasDiscount = RESPONSE?.discount && RESPONSE.discount > 0;
 	const finalPrice = RESPONSE ? (hasDiscount ? Math.round(RESPONSE.price * (1 - RESPONSE.discount / 100)) : RESPONSE.price) : 0;
 
-    const selectedVariation = activeEntry?.variation; // nhóm theo màu hiện tại
+    const selectedVariation = activeEntry?.variation; // nh+�m theo m+�u hi�+�n tߦ�i
     const sizes = useMemo(() => {
         return selectedVariation?.list?.map(item => item.size) || [];
     }, [selectedVariation]);
 
-    // Đồng bộ color/size theo nhóm màu đang active
+    // -��+�ng b�+� color/size theo nh+�m m+�u -�ang active
 	useEffect(() => {
         if (selectedVariation) {
             setSelectedColor(selectedVariation.color);
@@ -262,7 +388,7 @@ export default function ProductDetail() {
 	const breadcrumbItems = useMemo(() => {
 		const items = [{ label: "Trang chủ", path: "/" }];
 		
-		// Thêm breadcrumb cho trang trước đó nếu có (NewArrivals hoặc Category)
+		// Th+�m breadcrumb cho trang tr���+�c -�+� nߦ+u c+� (NewArrivals hoߦ+c Category)
 		const fromState = location.state;
 		if (fromState?.from === 'newArrivals') {
 			items.push({ 
@@ -290,7 +416,7 @@ export default function ProductDetail() {
 	if (loading) {
 		return (
 			<>
-				<Breadcrumb items={[{ label: "Trang chủ", path: "/" }, { label: "Chi tiết sản phẩm" }]} />
+			<Breadcrumb items={[{ label: "Trang chủ", path: "/" }, { label: "Chi tiết sản phẩm" }]} />
 				<div className="pd-container">
 				{/* Gallery skeleton */}
 				<div className="pd-gallery">
@@ -353,22 +479,22 @@ export default function ProductDetail() {
 		<>
 			<Breadcrumb items={breadcrumbItems} />
 			<div className="pd-container">
-			{/* Gallery trái */}
+		{/* Gallery trái */}
 			<div className="pd-gallery">
 				<div className="pd-main">
 					<img src={activeImg} alt={RESPONSE.title} />
 				</div>
 			</div>
 
-			{/* Thông tin phải */}
+		{/* Thông tin phải */}
 			<div>
 				<div className="pd-meta">LOK SHOP</div>
 				<h1 className="pd-title">{RESPONSE.title}</h1>
 				<div className="pd-meta">
 					<div>
-						{Array.from({ length: full }).map((_, i) => (<span key={"f"+i}>★</span>))}
-						{hasHalf && <span>☆</span>}
-						{Array.from({ length: empty }).map((_, i) => (<span key={"e"+i}>☆</span>))}
+					{Array.from({ length: full }).map((_, i) => (<span key={"f"+i}>★</span>))}
+					{hasHalf && <span>☆</span>}
+					{Array.from({ length: empty }).map((_, i) => (<span key={"e"+i}>☆</span>))}
 					</div>
 					<span>({RESPONSE.rate})</span>
 				</div>
@@ -380,9 +506,9 @@ export default function ProductDetail() {
 				<p>{RESPONSE.description}</p>
 
                 <div className="pd-options">
-                    {/* Màu sắc: <color> và các nút tròn chọn variation */}
+					{/* Màu sắc: <color> và các nút tròn chọn variation */}
                     <div className="opt-row" style={{ alignItems: "flex-start", flexDirection: "column" }}>
-                        <span>Màu sắc: <strong>{selectedColor}</strong></span>
+						<span>Màu sắc: <strong>{selectedColor}</strong></span>
 					{galleryEntries.some(e => e.key !== "main" && e.variation) && (
 						<div className="pd-variations">
 							<div className="pd-variation-dots">
@@ -392,7 +518,7 @@ export default function ProductDetail() {
                                         <button
                                             className={"var-dot" + (activeKey === e.key ? " active" : "")}
                                             style={{ backgroundImage: `url(${e.src})` }}
-                                            aria-label={`Chọn ${e.variation.color}`}
+									aria-label={`Chọn ${e.variation.color}`}
                                             onClick={() => {
                                                 setActiveKey(e.key);
                                                 setSelectedColor(e.variation.color);
@@ -408,9 +534,9 @@ export default function ProductDetail() {
 					)}
                     </div>
 
-                    {/* Kích thước: <size> và danh sách size của màu đang chọn */}
+					{/* Kích thước: <size> và danh sách size của màu đang chọn */}
                     <div className="opt-row" style={{ alignItems: "flex-start", flexDirection: "column" }}>
-                        <span>Kích thước: <strong>{selectedSize}</strong></span>
+						<span>Kích thước: <strong>{selectedSize}</strong></span>
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                             {sizes.map(s => (
                                 <button key={s} className={"chip" + (selectedSize === s ? " active" : "")} onClick={() => setSelectedSize(s)} type="button">{s}</button>
@@ -421,7 +547,7 @@ export default function ProductDetail() {
 					{/* Tồn kho theo size + color đang chọn */}
                     {(() => {
                         const matched = selectedVariation?.list?.find(i => i.size === selectedSize);
-                        const qtyText = matched ? (matched.stock_quantity > 0 ? `Còn ${matched.stock_quantity} sản phẩm` : "Hết hàng") : "Không có tồn kho cho lựa chọn này";
+						const qtyText = matched ? (matched.stock_quantity > 0 ? `Còn ${matched.stock_quantity} sản phẩm` : "Hết hàng") : "Không có tồn kho cho lựa chọn này";
 						return <div className="opt-row" style={{ color: "#666" }}>Stock: {qtyText}</div>;
 					})()}
 					<div className="opt-row">
@@ -449,6 +575,74 @@ export default function ProductDetail() {
 				<ProductFeedback />
 			</div>
 		</div>
+		{(relatedProducts.length > 0 || historyToShow.length > 0) && (
+			<div style={{ marginTop: 48 }}>
+				{relatedProducts.length > 0 && (
+					<>
+						<h2 style={{ margin: "24px 0" }}>Bạn có thể quan tâm</h2>
+						<div style={{ position: 'relative' }}>
+							<div
+								ref={relatedRowRef}
+								style={{ display: 'flex', gap: 16, overflow: 'hidden', scrollBehavior: 'smooth', paddingBottom: 8 }}
+							>
+								{relatedProducts.map((item) => (
+									<div key={item.id} style={{ flex: '0 0 calc((100% - 48px)/4)' }}>
+										<ProductCard product={item} />
+									</div>
+								))}
+							</div>
+							{relatedProducts.length > 4 && (
+								<>
+									<button
+										type="button"
+										onClick={() => scrollRelated(-relatedRowRef.current.clientWidth || -0)}
+										style={{ position: 'absolute', left: 0, top: '40%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 10px', cursor: 'pointer' }}
+									>&lt;</button>
+									<button
+										type="button"
+										onClick={() => scrollRelated(relatedRowRef.current.clientWidth || 0)}
+										style={{ position: 'absolute', right: 0, top: '40%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 10px', cursor: 'pointer' }}
+									>&gt;</button>
+								</>
+							)}
+						</div>
+					</>
+				)}
+
+				{historyToShow.length > 0 && (
+					<>
+						<h2 style={{ margin: "32px 0 24px" }}>Sản phẩm đã xem</h2>
+						<div style={{ position: 'relative' }}>
+							<div
+								ref={historyRowRef}
+								style={{ display: 'flex', gap: 16, overflow: 'hidden', scrollBehavior: 'smooth', paddingBottom: 8 }}
+							>
+								{historyToShow.map((item) => (
+									<div key={item.id} style={{ flex: '0 0 calc((100% - 48px)/4)' }}>
+										<ProductCard product={mapToCardProduct(item)} />
+									</div>
+								))}
+							</div>
+							{historyToShow.length > 4 && (
+								<>
+									<button
+										type="button"
+										onClick={() => scrollHistory(-historyRowRef.current.clientWidth || -0)}
+										style={{ position: 'absolute', left: 0, top: '40%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 10px', cursor: 'pointer' }}
+									>&lt;</button>
+									<button
+										type="button"
+										onClick={() => scrollHistory(historyRowRef.current.clientWidth || 0)}
+										style={{ position: 'absolute', right: 0, top: '40%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 10px', cursor: 'pointer' }}
+									>&gt;</button>
+								</>
+							)}
+						</div>
+					</>
+				)}
+			</div>
+		)}
 		</>
 	);
 }
+
