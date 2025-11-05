@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { base } from "../../service/Base.jsx";
+import { App } from "antd";
 import ProductFeedback from "./ProductFeedback";
 import Breadcrumb from "../../components/Breadcrumb";
 import "./ProductDetail.css";
@@ -9,9 +10,12 @@ import "./ProductDetail.css";
 export default function ProductDetail() {
 	const { id } = useParams();
 	const location = useLocation();
+	const navigate = useNavigate();
+	const { message } = App.useApp();
 	const [product, setProduct] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [addingToCart, setAddingToCart] = useState(false);
 
 	// Fetch product data from API
 	useEffect(() => {
@@ -164,6 +168,95 @@ export default function ProductDetail() {
 	const full = Math.floor(RESPONSE?.rate || 0);
 	const hasHalf = (RESPONSE?.rate || 0) - full >= 0.5;
 	const empty = 5 - full - (hasHalf ? 1 : 0);
+
+	// Add to cart handler
+	const handleAddToCart = async () => {
+		// Check if user is logged in
+		const token = localStorage.getItem('token');
+		if (!token) {
+			message.warning('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+			navigate('/login');
+			return;
+		}
+
+		// Find the selected variation ID
+		const matched = selectedVariation?.list?.find(i => i.size === selectedSize);
+		if (!matched) {
+			message.error('Vui lòng chọn kích thước hợp lệ');
+			return;
+		}
+
+		// Get variation ID - support multiple formats
+		const variationId = matched.id_variation || matched.idVariation || matched.id;
+		if (!variationId) {
+			console.error('Variation ID not found:', matched);
+			message.error('Không tìm thấy ID biến thể. Vui lòng thử lại.');
+			return;
+		}
+
+		// Check stock
+		const stockQty = matched.stock_quantity || matched.stockQuantity || 0;
+		if (stockQty <= 0) {
+			message.error('Sản phẩm đã hết hàng');
+			return;
+		}
+
+		// Check quantity
+		if (qty > stockQty) {
+			message.error(`Chỉ còn ${stockQty} sản phẩm trong kho`);
+			return;
+		}
+
+		setAddingToCart(true);
+		try {
+			console.log('Adding to cart:', {
+				product_variation_id: variationId,
+				quantity: qty,
+				selectedSize,
+				selectedColor
+			});
+
+			const response = await axios.post(`${base}/cart`, {
+				product_variation_id: variationId,
+				quantity: qty
+			}, {
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			console.log('Add to cart response:', response);
+
+			if (response.status === 200 || response.status === 201) {
+				message.success('Đã thêm sản phẩm vào giỏ hàng!');
+				// Reset quantity after successful add
+				setQty(1);
+			} else {
+				const errorMsg = response.data?.message || response.data?.result?.message || 'Không thể thêm vào giỏ hàng';
+				message.error(errorMsg);
+			}
+		} catch (err) {
+			console.error('Error adding to cart:', err);
+			console.error('Error response:', err?.response?.data);
+			
+			// Handle different error formats
+			let errorMsg = 'Có lỗi khi thêm vào giỏ hàng';
+			
+			if (err?.response?.data) {
+				errorMsg = err.response.data.message 
+					|| err.response.data.result?.message 
+					|| err.response.data.error 
+					|| JSON.stringify(err.response.data);
+			} else if (err?.message) {
+				errorMsg = err.message;
+			}
+			
+			message.error(errorMsg);
+		} finally {
+			setAddingToCart(false);
+		}
+	};
 
 	// Breadcrumb items
 	const breadcrumbItems = useMemo(() => {
@@ -342,7 +435,14 @@ export default function ProductDetail() {
 				</div>
 
 				<div className="pd-actions">
-					<button className="btn" type="button">Add to cart</button>
+					<button 
+						className="btn" 
+						type="button" 
+						onClick={handleAddToCart}
+						disabled={addingToCart}
+					>
+						{addingToCart ? 'Đang thêm...' : 'Add to cart'}
+					</button>
 					<button className="btn secondary" type="button">Buy now</button>
 				</div>
 

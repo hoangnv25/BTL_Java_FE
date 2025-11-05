@@ -187,6 +187,11 @@ export default function NAinPage() {
     { label: "NEW ARRIVALS" }
   ];
 
+  const displayedProducts = useMemo(() => {
+    if (showBreadcrumb) return newArrivalsProducts;
+    return newArrivalsProducts.slice(0, 6);
+  }, [newArrivalsProducts, showBreadcrumb]);
+
   return (
     <>
       {showBreadcrumb && <Breadcrumb items={breadcrumbItems} />}
@@ -203,7 +208,7 @@ export default function NAinPage() {
       ) : (
         <>
       <div className="na-grid">
-            {newArrivalsProducts.map((product) => (
+            {displayedProducts.map((product) => (
           <ProductCard 
             key={product.id} 
             product={product}
@@ -211,7 +216,7 @@ export default function NAinPage() {
           />
         ))}
       </div>
-          {showViewMoreButton && newArrivalsProducts.length > 0 && (
+          {showViewMoreButton && newArrivalsProducts.length > displayedProducts.length && (
             <div className="na-view-more-container">
               <button 
                 className="na-view-more-btn"
