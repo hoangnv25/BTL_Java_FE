@@ -4,44 +4,25 @@ import axios from 'axios'
 import { base } from '../../service/Base'
 import './ChatSend.css'
 
-export default function ChatSend({ conversationId, getMessages }) {
+export default function ChatSend({ receiverId: receiverIdProp, getMessages }) {
     const senderId = localStorage.getItem('userId')
     const token = localStorage.getItem('token')
     const isAdmin = localStorage.getItem('isAdmin')
     const [message, setMessage] = useState('')
-    const [receiverId, setReceiverId] = useState(null)
     const [sending, setSending] = useState(false)
+    const [receiverId, setReceiverId] = useState(receiverIdProp)
 
+    
     useEffect(() => {
-        if (isAdmin === 'false') {
+        if (isAdmin === 'false' && !receiverIdProp) {
             setReceiverId(1)
-        } else {
-            const fetchReceiverId = async () => {
-                if (!conversationId) {
-                    console.log("conversationId is null/undefined")
-                    return
-                }
-                try {
-                    const response = await axios.get(`${base}/conversations?viewerId=${senderId}`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    })
-
-                    const conversation = response.data.find(c => String(c.conversationId) === String(conversationId))
-                    if (conversation && conversation.senderSummary) {
-                        setReceiverId(conversation.senderSummary.senderId)
-                    }
-                } catch (error) {
-                    console.error("Error fetching receiverId:", error)
-                }
-            }
-            fetchReceiverId()
+        } else if (receiverIdProp) {
+            setReceiverId(receiverIdProp)
         }
-    }, [conversationId, senderId, token])
-
+    }, [receiverIdProp, isAdmin])
+    
     const handleSend = async () => {
+        console.log(receiverId)
         if (!message.trim() || !receiverId || sending) return
         try {
             setSending(true)

@@ -56,7 +56,7 @@ export default function ChatSilebar() {
     const navigate = useNavigate()
     const gotoChatDetail = (c) => {
         setActiveConversationId(c.conversationId)
-        navigate(`/chat/${c.conversationId}`)
+        navigate(`/chat/${c.senderSummary.senderId}`)
     }
 
 

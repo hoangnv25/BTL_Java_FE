@@ -18,7 +18,7 @@ export default function Chat() {
             {isAdmin === 'true' ? <ChatSilebar /> : null}
             {isAdmin === 'true' ? (
                 <Routes>
-                    <Route path=":conversationId" element={<ChatFrame />} />
+                    <Route path=":senderId" element={<ChatFrame />} />
                 </Routes>
                 ) : (
                 <ChatFrame />

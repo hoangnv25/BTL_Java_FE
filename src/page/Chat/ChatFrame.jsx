@@ -2,18 +2,31 @@ import './ChatFrame.css'
 import { useParams } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
-import { base } from '../../service/Base'
+import { base, baseSocket } from '../../service/Base'
 import ChatSend from './ChatSend'
 
+// import { io } from "socket.io-client";
+import io from "socket.io-client";
+
 export default function ChatFrame() {
-    const { conversationId: urlConversationId } = useParams()
+    let { senderId } = useParams()
     const isAdmin = localStorage.getItem('isAdmin')
-    const [conversationId, setConversationId] = useState(urlConversationId)
+    const [conversationId, setConversationId] = useState('')
     const [messagesData, setMessagesData] = useState([])
     const [isLoading, setIsLoading] = useState(false)
     const viewerId = localStorage.getItem('userId')
     const token = localStorage.getItem('token')
     const messagesEndRef = useRef(null)
+    let id_to_get_conversation = viewerId
+    let receiverId = null
+    if (isAdmin === 'true' && senderId) {
+        id_to_get_conversation = senderId
+        receiverId = senderId
+    } else {
+        receiverId = 1 // Admin ID
+    }
+
+    const socketRef = useRef(null)
 
     const getMessages = async (showLoading = false) => {
         if (!conversationId) {
@@ -41,47 +54,98 @@ export default function ChatFrame() {
 
     useEffect(() => {
         const fetchConversationId = async () => {
-            if (isAdmin === 'false' && !urlConversationId) {
-                try {
-                    const form = new FormData()
-                    form.append('userId', viewerId)
-                    const response = await axios.post(`${base}/chat/conversations/ensure`, form, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    })
-                    const cid = response.data.conversationId
-                    setConversationId(cid)
-                } catch (error) {
-                    console.error('Failed to get conversationId:', error)
-                }
-            } else if (urlConversationId) {
-                setConversationId(urlConversationId)
+            try {
+                const form = new FormData()
+                form.append('userId', id_to_get_conversation)
+                const response = await axios.post(`${base}/chat/conversations/ensure`, form, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                const cid = response.data.conversationId
+                setConversationId(cid)
+            } catch (error) {
+                console.error('Failed to get conversationId:', error)
             }
+            
         }
         fetchConversationId()
-    }, [isAdmin, urlConversationId, viewerId, token])
+    }, [id_to_get_conversation, token])
 
     useEffect(() => {
         if (conversationId) {
             getMessages(true) // Hiển thị skeleton lần đầu
         }
-    }, [conversationId, viewerId, token])
+    }, [conversationId, token])
 
 
-    // ////////////////////////////////////////
-    useEffect(() => {
-        if (!conversationId) return
+    // //////////////////////////////////////// load 5 giây 1 lần
+    // useEffect(() => {
+    //     if (!conversationId) return
         
-        const intervalId = setInterval(() => {
-            getMessages(false) // Không hiển thị skeleton khi polling
-        }, 5000)
+    //     const intervalId = setInterval(() => {
+    //         getMessages(false) // Không hiển thị skeleton khi polling
+    //     }, 5000)
 
-        return () => clearInterval(intervalId)
-    }, [conversationId, viewerId, token])
+    //     return () => clearInterval(intervalId)
+    // }, [conversationId, id_to_get_conversation, token])
     // ////////////////////////////////////////
 
+    const handleNewMessage = (message) => {
+        console.log('Hàm lấy tin nhắn mới đã được gọi')
+        // Gọi getMessages để cập nhật danh sách tin nhắn
+        getMessages(false)
+    }
 
+
+
+    useEffect(() => {
+        if (!token) return;
+        if (socketRef.current) return; // chỉ tạo 1 lần
+    
+        const socket = io("wss://besocket.up.railway.app", {
+            path: "/socket.io/",
+            query: { token },
+            transports: ["websocket"],
+        });
+
+        
+    
+        socket.on("connect", () => {
+            console.log("✅ Socket connected");
+        });
+    
+        socket.on("disconnect", () => {
+            console.log("❌ Socket disconnected");
+        });
+    
+        // Khi nhận tin nhắn mới
+        socket.on("message", (message) => {
+            console.log("💬 Có message: " + message.content);
+            handleNewMessage(message);
+        });
+
+        // socket.onAny((event, ...args) => {
+        //     console.log("📡 Received:", event, args);
+        // });
+    
+        socketRef.current = socket;
+    
+        return () => {
+            socket.disconnect();
+            socketRef.current = null;
+        };
+    }, [token, conversationId]);
+    
+    // Khi conversationId thay đổi -> join đúng room
+    useEffect(() => {
+        if (socketRef.current && conversationId) {
+            const room = "conversation_" + conversationId;
+            console.log("📡 Join room:", room);
+            socketRef.current.emit("join_room", room);
+        }
+    }, [conversationId]);
+    
     const messages = messagesData.filter(m => String(m.conversationId) === String(conversationId))
 
     useEffect(() => {
@@ -92,45 +156,31 @@ export default function ChatFrame() {
 
     const formatTime = (iso) => {
         try {
-            // Parse ISO string (UTC) và cộng thêm 7 giờ (UTC+7 - múi giờ Việt Nam)
             const d = new Date(iso)
-            const vietnamTime = new Date(d.getTime() + (7 * 60 * 60 * 1000))
-            
-            // Lấy thời gian hiện tại ở UTC và cộng thêm 7 giờ để so sánh
             const now = new Date()
-            const nowUTC = Date.UTC(
-                now.getUTCFullYear(),
-                now.getUTCMonth(),
-                now.getUTCDate(),
-                now.getUTCHours(),
-                now.getUTCMinutes(),
-                now.getUTCSeconds()
-            )
-            const nowVietnam = new Date(nowUTC + (7 * 60 * 60 * 1000))
             
-            // So sánh ngày theo múi giờ Việt Nam
-            const vietnamDate = vietnamTime.getDate()
-            const vietnamMonth = vietnamTime.getMonth()
-            const vietnamYear = vietnamTime.getFullYear()
-            const nowDate = nowVietnam.getDate()
-            const nowMonth = nowVietnam.getMonth()
-            const nowYear = nowVietnam.getFullYear()
+            // So sánh ngày
+            const date = d.getDate()
+            const month = d.getMonth()
+            const year = d.getFullYear()
+            const nowDate = now.getDate()
+            const nowMonth = now.getMonth()
+            const nowYear = now.getFullYear()
             
-            const isToday = vietnamDate === nowDate && 
-                          vietnamMonth === nowMonth && 
-                          vietnamYear === nowYear
+            const isToday = date === nowDate && 
+                          month === nowMonth && 
+                          year === nowYear
             
             if (isToday) {
                 // Hiển thị giờ:phút (24h format)
-                const hours = String(vietnamTime.getHours()).padStart(2, '0')
-                const minutes = String(vietnamTime.getMinutes()).padStart(2, '0')
+                const hours = String(d.getHours()).padStart(2, '0')
+                const minutes = String(d.getMinutes()).padStart(2, '0')
                 return `${hours}:${minutes}`
             }
             // Hiển thị ngày/tháng/năm
-            const day = String(vietnamDate).padStart(2, '0')
-            const month = String(vietnamMonth + 1).padStart(2, '0')
-            const year = vietnamYear
-            return `${day}/${month}/${year}`
+            const day = String(date).padStart(2, '0')
+            const monthStr = String(month + 1).padStart(2, '0')
+            return `${day}/${monthStr}/${year}`
         } catch {
             return ''
         }
@@ -201,7 +251,7 @@ export default function ChatFrame() {
                 )}
                 <div ref={messagesEndRef} />
             </div>
-            {conversationId && <ChatSend key={conversationId} conversationId={conversationId} getMessages={getMessages} />}
+            <ChatSend receiverId={receiverId} getMessages={getMessages} />
         </div>
     )
 }
