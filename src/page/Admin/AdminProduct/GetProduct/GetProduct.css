@@ -158,6 +158,9 @@
     border-radius: 8px;
     border: 1px solid #e0e0e0;
     overflow-x: auto;
+    max-height: 600px;
+    overflow-y: auto;
+    position: relative;
 }
 
 /* Products Table */
@@ -173,6 +176,9 @@
 .products-table thead {
     background: #f8f9fa;
     border-bottom: 2px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .products-table th {

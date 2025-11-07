@@ -137,11 +137,11 @@
 }
 
 .sidebar-nav button:hover {
-    background: #111827;
+    background: #374151;
     color: #ffffff;
-    border-color: #111827;
+    border-color: #374151;
     transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     filter: contrast(1.1);
 }
 
@@ -154,10 +154,10 @@
 }
 
 .sidebar-nav button.active {
-    background: #111827;
+    background: #374151;
     color: #ffffff;
-    border-color: #111827;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border-color: #374151;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .sidebar-nav button.active::before {
@@ -176,27 +176,27 @@
 }
 
 .sidebar-nav button.primary {
-    background: #111827;
-    color: #fff;
-    border-color: #111827;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    color: #111827;
+    border-color: #e5e5e5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .sidebar-nav button.primary:hover {
-    background: #ffffff;
-    color: #111827;
-    border-color: #111827;
+    background: #374151;
+    color: #ffffff;
+    border-color: #374151;
     transform: translateX(4px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    filter: contrast(1.2);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    filter: contrast(1.1);
 }
 
 .sidebar-nav button.primary:hover svg {
-    color: #111827;
+    color: #ffffff;
 }
 
 .sidebar-nav button.primary svg {
-    color: #ffffff;
+    color: #111827;
 }
 
 .sidebar-nav button.logout {
@@ -207,9 +207,9 @@
 }
 
 .sidebar-nav button.logout:hover {
-    background: #111827;
+    background: #374151;
     color: #ffffff;
-    border-color: #111827;
+    border-color: #374151;
     transform: translateX(4px);
     filter: contrast(1.1);
 }
@@ -489,14 +489,14 @@
         margin: 0;
         gap: 16px;
         background: #ffffff;
-        border: none;
-        border-radius: 0;
-        border-bottom: 2px solid #111827;
-        box-shadow: none;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 12px;
     }
 
     .detail-item:last-child {
-        border-bottom: none;
+        margin-bottom: 0;
     }
 
     .detail-item:hover {

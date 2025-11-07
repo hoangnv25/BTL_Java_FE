@@ -7,7 +7,8 @@ import NotLoggedIn from '../../components/NotLoggedIn';
 import Breadcrumb from '../../components/Breadcrumb';
 import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
-import { User, Phone, Mail, UserCircle, Lock, LogOut, Package } from 'lucide-react';
+import Review from './Review/Review';
+import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare } from 'lucide-react';
 
 export default function Information() {
     const token = localStorage.getItem('token')
@@ -17,6 +18,7 @@ export default function Information() {
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 900 : false)
     const [showUpdate, setShowUpdate] = useState(false);
     const [showUpdatePassword, setShowUpdatePassword] = useState(false);
+    const [showReview, setShowReview] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 900)
@@ -93,6 +95,10 @@ export default function Information() {
                             <button className="primary" onClick={() => setShowUpdatePassword(true)}>
                                 <Lock size={18} />
                                 <span>Đổi mật khẩu</span>
+                            </button>
+                            <button className="primary" onClick={() => setShowReview(true)}>
+                                <MessageSquare size={18} />
+                                <span>Review</span>
                             </button>
                             <button className="logout" onClick={() => { localStorage.removeItem('token'); window.location.href = '/'; }}>
                                 <LogOut size={18} />
@@ -188,6 +194,12 @@ export default function Information() {
                     open={showUpdatePassword}
                     user={userData}
                     onClose={() => setShowUpdatePassword(false)}
+                />
+            )}
+            {showReview && (
+                <Review
+                    open={showReview}
+                    onClose={() => setShowReview(false)}
                 />
             )}
         </>
