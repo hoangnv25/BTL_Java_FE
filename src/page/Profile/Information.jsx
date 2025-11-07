@@ -4,12 +4,17 @@ import { base } from '../../service/Base';
 import { useEffect, useState } from 'react';
 import NotLoggedIn from '../../components/NotLoggedIn';
 import Breadcrumb from '../../components/Breadcrumb';
+import UpdateInformation from './UpdateInformation/UpdateInformation';
+import UpdatePassword from './UpdatePassword/UpdatePassword';
+import { User, Phone, Mail, UserCircle, Lock, LogOut, Package } from 'lucide-react';
 
 export default function Information() {
     const token = localStorage.getItem('token')
     
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showUpdate, setShowUpdate] = useState(false);
+    const [showUpdatePassword, setShowUpdatePassword] = useState(false);
 
     useEffect(() => {
         if (!token) {
@@ -41,7 +46,10 @@ export default function Information() {
         loading ? (
             <>
                 <Breadcrumb items={breadcrumbItems} />
-                <div>Loading...</div>
+                <div className="profile-loading">
+                    <div className="loading-spinner"></div>
+                    <p>Đang tải thông tin...</p>
+                </div>
             </>
         ) : (
         <>
@@ -49,43 +57,120 @@ export default function Information() {
             <div className="profile-container">
                 <div className="profile-layout">
                     <aside className="sidebar">
-                        <div className="hello">TRANG TÀI KHOẢN</div>
-                        <div className="greeting">Xin chào, <strong>{userData.userName || userData.fullName || 'Người dùng'}</strong> !</div>
+                        <div className="sidebar-header">
+                            <div className="hello">TRANG TÀI KHOẢN</div>
+                            <div className="greeting">
+                                <UserCircle size={20} />
+                                <span>Xin chào, <strong>{userData.userName || userData.fullName || 'Người dùng'}</strong>!</span>
+                            </div>
+                        </div>
                         <nav className="sidebar-nav">
-                            <button className="active">Thông tin tài khoản</button>
-                            <button>Sổ địa chỉ (1)</button>
-                            <button className="logout" onClick={() => { localStorage.removeItem('token'); window.location.href = '/'; }}>Đăng xuất</button>
+                            <button className="active">
+                                <UserCircle size={18} />
+                                <span>Thông tin tài khoản</span>
+                            </button>
+                            <button className="primary" onClick={() => setShowUpdate(true)}>
+                                <User size={18} />
+                                <span>Thay đổi thông tin</span>
+                            </button>
+                            <button className="primary" onClick={() => setShowUpdatePassword(true)}>
+                                <Lock size={18} />
+                                <span>Đổi mật khẩu</span>
+                            </button>
+                            <button className="logout" onClick={() => { localStorage.removeItem('token'); window.location.href = '/'; }}>
+                                <LogOut size={18} />
+                                <span>Đăng xuất</span>
+                            </button>
                         </nav>
                     </aside>
 
                     <main className="content">
-                        <h2 className="section-title">TÀI KHOẢN</h2>
+                        <div className="content-header">
+                            <h2 className="section-title">
+                                <UserCircle size={24} />
+                                <span>Thông tin tài khoản</span>
+                            </h2>
+                        </div>
                         <section className="user-info">
-                            <div className="user-avatar">
-                                <img src={userData.avatar || '/ava_user.webp'} alt="User avatar" />
+                            <div className="user-avatar-wrapper">
+                                <div className="user-avatar">
+                                    <img src={userData.avatar || '/ava_user.webp'} alt="User avatar" />
+                                </div>
+                                <div className="avatar-badge">
+                                    <User size={16} />
+                                </div>
                             </div>
                             <div className="user-details">
-                                <div className="user-name">Tên tài khoản: <strong>{userData.userName || userData.fullName || 'Người dùng'}</strong></div>
-                                <div className="user-email">Địa chỉ: <strong>Vietnam</strong></div>
-                                <div className="user-phone">Điện thoại: <strong>{userData.phoneNumber || '—'}</strong></div>
-                                <div className="user-email">Email: <strong>{userData.email || '—'}</strong></div>
+                                <div className="detail-item">
+                                    <div className="detail-icon">
+                                        <UserCircle size={20} />
+                                    </div>
+                                    <div className="detail-content">
+                                        <span className="detail-label">Tên tài khoản</span>
+                                        <span className="detail-value">{userData.userName || userData.fullName || 'Người dùng'}</span>
+                                    </div>
+                                </div>
+                                <div className="detail-item">
+                                    <div className="detail-icon">
+                                        <Phone size={20} />
+                                    </div>
+                                    <div className="detail-content">
+                                        <span className="detail-label">Điện thoại</span>
+                                        <span className="detail-value">{userData.phoneNumber || '—'}</span>
+                                    </div>
+                                </div>
+                                <div className="detail-item">
+                                    <div className="detail-icon">
+                                        <Mail size={20} />
+                                    </div>
+                                    <div className="detail-content">
+                                        <span className="detail-label">Email</span>
+                                        <span className="detail-value">{userData.email || '—'}</span>
+                                    </div>
+                                </div>
                             </div>
                         </section>
 
-                        <h3 className="orders-title">ĐƠN HÀNG CỦA BẠN</h3>
-                        <div className="orders-table">
-                            <div className="orders-head">
-                                <span>Mã đơn hàng</span>
-                                <span>Ngày đặt</span>
-                                <span>Thành tiền</span>
-                                <span>TT thanh toán</span>
-                                <span>TT vận chuyển</span>
+                        <div className="orders-section">
+                            <h3 className="orders-title">
+                                <Package size={20} />
+                                <span>Đơn hàng của bạn</span>
+                            </h3>
+                            <div className="orders-table">
+                                <div className="orders-head">
+                                    <span>Mã đơn hàng</span>
+                                    <span>Ngày đặt</span>
+                                    <span>Thành tiền</span>
+                                    <span>TT thanh toán</span>
+                                    <span>TT vận chuyển</span>
+                                </div>
+                                <div className="orders-empty">
+                                    <Package size={48} />
+                                    <p>Không có đơn hàng nào</p>
+                                </div>
                             </div>
-                            <div className="orders-empty">Không có đơn hàng nào.</div>
                         </div>
                     </main>
                 </div>
             </div>
+            {showUpdate && (
+                <UpdateInformation
+                    open={showUpdate}
+                    user={userData}
+                    onClose={() => setShowUpdate(false)}
+                    onUpdated={(updated) => {
+                        if (updated) setUserData(updated);
+                        setShowUpdate(false);
+                    }}
+                />
+            )}
+            {showUpdatePassword && (
+                <UpdatePassword
+                    open={showUpdatePassword}
+                    user={userData}
+                    onClose={() => setShowUpdatePassword(false)}
+                />
+            )}
         </>
     ))
 }
