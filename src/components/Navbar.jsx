@@ -20,7 +20,7 @@ function Navbar() {
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
+    localStorage.clear()
     message.success('Đăng xuất thành công')
     setIsLoggedIn(false)
     setIsAdmin(false)
@@ -39,8 +39,10 @@ function Navbar() {
     if (token) {
       const decodedToken = jwtDecode(token)
       if (decodedToken.scope.includes('ROLE_ADMIN')) {
+        localStorage.setItem('isAdmin', true)
         setIsAdmin(true)
       } else {
+        localStorage.setItem('isAdmin', false)
         setIsAdmin(false)
       }
       

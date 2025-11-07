@@ -32,7 +32,7 @@ export default function AdminCategory() {
 
     const handleEditCategory = (category) => {
         setEditingCategory(category)
-        const pid = category.parentId ?? category.perentId ?? 0
+        const pid = category.parentId ?? 0
         setModalParentId(pid)
         setModalMode('edit')
         setIsModalOpen(true)
@@ -78,7 +78,7 @@ export default function AdminCategory() {
         const childrenByParent = new Map()
 
         for (const cat of flatCategories) {
-            const parentId = cat.parentId ?? cat.perentId ?? 0
+            const parentId = cat.parentId ?? 0
             if (!parentId || parentId === 0) {
                 parents.push({ ...cat, children: [] })
             } else {

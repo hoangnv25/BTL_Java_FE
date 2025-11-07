@@ -5,7 +5,7 @@ import { App } from 'antd'
 
 export default function Modal({ open = false, onClose, parentIdDefault = 0, onCreated, onUpdated, mode = 'create', category = null }) {
     const [categoryName, setCategoryName] = useState('')
-    const [perentId, setPerentId] = useState(parentIdDefault ?? 0)
+    const [parentId, setParentId] = useState(parentIdDefault ?? 0)
     const [imageFile, setImageFile] = useState(null)
     const [previewUrl, setPreviewUrl] = useState('')
     const [submitting, setSubmitting] = useState(false)
@@ -13,21 +13,21 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
     const { message } = App.useApp();
 
     useEffect(() => {
-		setPerentId(parentIdDefault ?? 0)
+		setParentId(parentIdDefault ?? 0)
 	}, [parentIdDefault])
 
 	useEffect(() => {
 		if (!open) return
 		if (mode === 'edit' && category) {
 			setCategoryName(category.categoryName || '')
-			setPerentId((category.parentId ?? category.perentId ?? 0) || 0)
+			setParentId((category.parentId ?? 0) || 0)
 			setImageFile(null)
 			setPreviewUrl('')
 			return
 		}
 		if (mode === 'create') {
 			setCategoryName('')
-			setPerentId(parentIdDefault ?? 0)
+			setParentId(parentIdDefault ?? 0)
 			setImageFile(null)
 			setPreviewUrl('')
 		}
@@ -81,7 +81,7 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
         try {
             const formData = new FormData()
             formData.append('categoryName', categoryName.trim())
-            formData.append('perentId', String(perentId || 0))
+            formData.append('perentId', String(parentId || 0))
             if (imageFile) formData.append('image', imageFile)
 
 			const response = await axios.post(`${base}/category`, formData, {
@@ -111,7 +111,7 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
 		try {
 			const formData = new FormData()
 			formData.append('categoryName', categoryName.trim())
-			formData.append('perentId', String(perentId || 0))
+			formData.append('parentId', String(parentId || 0))
 			if (imageFile) formData.append('image', imageFile)
 
 			const response = await axios.put(`${base}/category/${category.categoryId}`, formData, {
@@ -156,14 +156,14 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="perentId">perentId</label>
+                        <label htmlFor="parentId">parentId</label>
                         <input
-                            id="perentId"
+                            id="parentId"
                             className="form-control"
                             type="number"
                             min="0"
-                            value={perentId}
-                            onChange={(e) => setPerentId(Number(e.target.value) || 0)}
+                            value={parentId}
+                            onChange={(e) => setParentId(Number(e.target.value) || 0)}
                         />
                     </div>
 
