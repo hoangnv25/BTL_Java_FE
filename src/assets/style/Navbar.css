@@ -26,11 +26,22 @@
   cursor: pointer;
 }
 
+/* Brand Name */
+.brand-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  /* margin: 0 0 2rem 0; */
+  letter-spacing: 1px;
+}
+
 .navbar-menu {
   display: flex;
   align-items: center;
   gap: 24px;
   list-style: none;
+  margin-bottom: 0;
 }
 
 .navbar-link {
@@ -98,11 +109,13 @@
 .navbar-dropdown-icon {
   display: block;
   margin-left: 6px;
+  transform: translateY(1px);
 }
 
 /* Indent child categories */
 .navbar-dropdown-menu li.is-child {
   padding-left: 16px;
+  cursor: pointer;
 }
 
 /* Search Icon Button */
@@ -318,3 +331,8 @@
   }
 }
 
+
+/* Ẩn header PC khi màn hình nhỏ hơn hoặc bằng 900px (đã có NavbarMobile) */
+@media (max-width: 900px) {
+  .navbar-header { display: none; }
+}

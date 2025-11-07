@@ -2,6 +2,7 @@ import './Information.css'
 import axios from 'axios';
 import { base } from '../../service/Base';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom'
 import NotLoggedIn from '../../components/NotLoggedIn';
 import Breadcrumb from '../../components/Breadcrumb';
 import UpdateInformation from './UpdateInformation/UpdateInformation';
@@ -13,13 +14,17 @@ export default function Information() {
     
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 900 : false)
     const [showUpdate, setShowUpdate] = useState(false);
     const [showUpdatePassword, setShowUpdatePassword] = useState(false);
 
     useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 900)
+        window.addEventListener('resize', handleResize)
+
         if (!token) {
             setLoading(false);
-            return;
+            return () => { window.removeEventListener('resize', handleResize) }
         }
         (async () => {
             const response = await axios.get(`${base}/users/myInfor`, {
@@ -30,6 +35,7 @@ export default function Information() {
                 setLoading(false);
             }
         })();
+        return () => { window.removeEventListener('resize', handleResize) }
     }, [token]);
 
     // Breadcrumb items
@@ -39,6 +45,17 @@ export default function Information() {
     ];
 
     if (!token) {
+        if (isMobile) {
+            return (
+                <>
+                    <Breadcrumb items={breadcrumbItems} />
+                    <div style={{ padding: '16px', display: 'flex', gap: '12px' }}>
+                        <Link to="/login" style={{ flex: 1, textAlign: 'center', padding: '10px 12px', border: '1px solid #e5e5e5', borderRadius: '10px', textDecoration: 'none', color: '#111', background: '#f5f5f5' }}>Đăng nhập</Link>
+                        <Link to="/register" style={{ flex: 1, textAlign: 'center', padding: '10px 12px', border: '1px solid #111', borderRadius: '10px', textDecoration: 'none', color: '#fff', background: '#111' }}>Đăng ký</Link>
+                    </div>
+                </>
+            )
+        }
         return <NotLoggedIn />
     }
 
@@ -153,6 +170,8 @@ export default function Information() {
                     </main>
                 </div>
             </div>
+
+            
             {showUpdate && (
                 <UpdateInformation
                     open={showUpdate}

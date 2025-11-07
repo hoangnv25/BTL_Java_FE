@@ -6,15 +6,19 @@ function FloatingCartLink() {
   const location = useLocation()
   const currentPath = location.pathname
 
-  const allowedPaths = new Set(['/', '/newArrivals', '/categories'])
-  const shouldShow = allowedPaths.has(currentPath)
+  const allowedStatic = new Set(['/', '/newArrivals', '/user'])
+  const allowedPatterns = [/^\/category\/[^/]+$/, /^\/product\/[^/]+$/]
 
-  if (!shouldShow) return null
+  const shouldShow =
+    allowedStatic.has(currentPath) ||
+    allowedPatterns.some((pattern) => pattern.test(currentPath))
 
   return (
-    <Link to="/cart" className="floating-cart" aria-label="Mở giỏ hàng" title="Giỏ hàng">
-      <ShoppingCart size={24} strokeWidth={2.5} />
-    </Link>
+    shouldShow ? (
+      <Link to="/cart" className="floating-cart" aria-label="Mở giỏ hàng" title="Giỏ hàng">
+        <ShoppingCart size={24} strokeWidth={2.5} />
+      </Link>
+    ) : null
   )
 }
 

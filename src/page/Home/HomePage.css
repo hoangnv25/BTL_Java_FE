@@ -1,9 +1,18 @@
 .home-page {
     width: 100%;
-    height: 100%;
+    height: 100vh; /* để container trở thành vùng cuộn riêng của trang Home */
     object-fit: cover;
     object-position: center;
     margin-top: 20px;
+    overflow-y: auto; /* cho phép cuộn */
+    -ms-overflow-style: none; /* IE và legacy Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+/* Ẩn scrollbar cho Chrome/Edge/Safari */
+.home-page::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 .homeimg {
     width: 100%;
