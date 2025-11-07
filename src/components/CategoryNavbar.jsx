@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { base } from '../service/Base.jsx'
 
-export default function Category() {
+export default function Category({ closeAll }) {
     const [categories, setCategories] = useState([])
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
@@ -31,6 +31,7 @@ export default function Category() {
 
     function handleChildClick(categoryId, categoryName) {
         navigate(`/category/${categoryId}`, { state: { name: categoryName } })
+        closeAll()
     }
 
     function handleParentClick(categoryId, categoryName) {
@@ -55,7 +56,7 @@ export default function Category() {
                         <li 
                             key={parent.categoryId}
                             onClick={() => handleParentClick(parent.categoryId, parent.categoryName)}
-                            style={{ cursor: 'pointer' }}
+                            style={{ cursor: 'no-drop' }}
                         >
                             {parent.categoryName}
                         </li>

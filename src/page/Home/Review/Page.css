@@ -5,6 +5,7 @@
     padding: 80px 20px;
     background-color: #f8f9fa;
     min-height: 40vh;
+    overflow: hidden;
 }
 
 /* Header Section */
