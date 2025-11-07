@@ -155,9 +155,11 @@ export default function AdminCategory() {
 
     return (
         <div className="admin-category-container">
-            <h1 className="admin-category-title">Danh mục</h1>
-            <div className="admin-category-actions">
-
+            <div className="admin-category-header">
+                <h1 className="admin-category-title">Quản lý danh mục</h1>
+                <div className="admin-category-actions">
+                    <span className="admin-category-count">Tổng số: {categories.length} danh mục</span>
+                </div>
             </div>
             {categoryTree && categoryTree.length > 0 ? (
                 renderTree(categoryTree)

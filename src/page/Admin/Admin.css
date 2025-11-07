@@ -13,6 +13,7 @@ html:has(.admin-page) {
     padding: 0;
     margin: 0;
     overflow: hidden;
+    max-width: 1200px;
 }
 
 .admin-sidebar {

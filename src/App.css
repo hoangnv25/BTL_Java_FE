@@ -2,7 +2,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  height: 100vh; /* cho phép cuộn trong app-main */
+  height: 90vh; /* cho phép cuộn trong app-main */
   overflow-y: auto;
   -ms-overflow-style: none; /* IE/legacy Edge */
   scrollbar-width: none; /* Firefox */
@@ -12,23 +12,6 @@
 .app-main::-webkit-scrollbar {
   width: 0;
   height: 0;
-}
-
-/* Override cho trang Admin để full width */
-.app-main:has(.admin-page) {
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100% !important;
-  height: 100vh !important;
-  overflow: hidden !important;
-}
-
-.admin-page {
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100% !important;
 }
 
 /* Tránh nội dung bị che bởi bottom-nav trên mobile */
