@@ -199,7 +199,7 @@
 
 .products-table tbody tr:hover {
     background-color: #f0f7ff;
-    transform: scale(1.002);
+    transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
