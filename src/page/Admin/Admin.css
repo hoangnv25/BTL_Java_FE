@@ -4,31 +4,38 @@ html:has(.admin-page) {
     overflow: hidden !important;
     height: 100vh !important;
 }
-
 /* Layout for admin page with left sidebar */
 .admin-page {
     display: flex;
-    height: 100vh;
-    gap: 0;
+    height: 86vh;
+    gap: 16px;
     padding: 0;
     margin: 0;
     overflow: hidden;
     max-width: 1200px;
+    /* border: 1px solid #e5e7eb; */
 }
 
 .admin-sidebar {
     flex: 0 0 220px;
     width: 220px;
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-    border-right: 1px solid #e5e7eb;
     padding: 12px;
-    background: #ffffff;
-    overflow-y: auto;
-    z-index: 100;
+    background: #f4f4f4;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
 }
+
+.admin-main {
+    flex: 1 1 auto;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: auto;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+
+}
+
 
 .admin-nav ul {
     list-style: none;
@@ -56,14 +63,4 @@ html:has(.admin-page) {
     color: #ffffff;
 }
 
-.admin-main {
-    flex: 1 1 auto;
-    min-width: 0;
-    width: 100%;
-    max-width: 1800px;
-    margin-left: 220px;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: auto;
-}
 
