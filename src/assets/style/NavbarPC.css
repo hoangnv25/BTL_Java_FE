@@ -1,0 +1,12 @@
+/* PC specific helpers */
+
+@media (max-width: 900px) {
+  /* Ẩn header PC trên mobile (PC component có class navbar-pc) */
+  .navbar-pc { display: none !important; }
+}
+
+@media (min-width: 901px) {
+  .navbar-pc { display: block; }
+}
+
+

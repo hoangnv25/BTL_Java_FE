@@ -1,39 +1,99 @@
-import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import '../assets/style/Navbar.css'
-import Brand from './Brand'
-import { ShoppingCart, User, ChevronDown } from 'lucide-react'
-import Category from './CategoryNavbar'
+import { App } from 'antd'
+import { useState, useEffect } from 'react'
+import { jwtDecode } from "jwt-decode";
+import NavbarPC from './NavbarPC'
+import NavbarMobile from './NavbarMobile'
+
 
 function Navbar() {
+  const { message } = App.useApp();
+  const token = localStorage.getItem('token')
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 900 : false)
   const navigate = useNavigate()
 
+  const handleLogout = () => {
+    localStorage.clear()
+    message.success('Đăng xuất thành công')
+    setIsLoggedIn(false)
+    setIsAdmin(false)
+  }
+
+  const checkLogin = () => {
+    if (token) {
+      setIsLoggedIn(true)
+    } else {
+      setIsLoggedIn(false)
+      setIsAdmin(false)
+    }
+  }
+
+  const decodeToken = () => {
+    if (token) {
+      const decodedToken = jwtDecode(token)
+      if (decodedToken.scope.includes('ROLE_ADMIN')) {
+        localStorage.setItem('isAdmin', true)
+        setIsAdmin(true)
+      } else {
+        localStorage.setItem('isAdmin', false)
+        setIsAdmin(false)
+      }
+      
+    }
+  }
+
+  useEffect(() => {
+    checkLogin()
+    decodeToken()
+    const handleResize = () => setIsMobile(window.innerWidth <= 900)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const handleSearchToggle = () => {
+    setShowSearch(!showSearch)
+    if (showSearch) {
+      setSearchQuery('')
+    }
+  }
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      // Navigate to search results page with query
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      setShowSearch(false)
+      setSearchQuery('')
+    }
+  }
+
   return (
-    <header className="navbar-header">
-      <nav className="navbar">
-        <div className="navbar-brand" onClick={() => navigate('/')}>
-          <Brand />
-        </div>
-
-        <ul className="navbar-menu">
-          <li><Link to="/" className="navbar-link">Trang chủ</Link></li>
-          <li><Link to="/newArrivals" className="navbar-link">Hàng mới dề</Link></li>
-          <li className="navbar-dropdown">
-            <span className="navbar-link">Danh mục</span>
-            <ChevronDown className="navbar-dropdown-icon" size={22} strokeWidth={2} />
-            <div className="navbar-dropdown-menu">
-              <Category />
-            </div>
-          </li> 
-          <li><Link to="/login" className="navbar-link">Đăng nhập</Link></li>
-          <li><Link to="/register" className="signup-btn">Đăng ký</Link></li>
-          <li><Link to="/admin" className="signup-btn">Quản trị</Link></li>
-          <li><Link to="/user" className="navbar-link" aria-label="Tài khoản" title="Tài khoản"><User size={22} strokeWidth={2} /></Link></li>
-          <li><Link to="/cart" className="navbar-link" aria-label="Giỏ hàng" title="Giỏ hàng"><ShoppingCart size={22} strokeWidth={2} /></Link></li>
-        </ul>
-
-      </nav>
-    </header>
+    isMobile ? (
+      <NavbarMobile
+        isLoggedIn={isLoggedIn}
+        isAdmin={isAdmin}
+        handleLogout={handleLogout}
+        navigate={navigate}
+      />
+    ) : (
+      <NavbarPC
+        isLoggedIn={isLoggedIn}
+        isAdmin={isAdmin}
+        showSearch={showSearch}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleSearchToggle={handleSearchToggle}
+        handleSearchSubmit={handleSearchSubmit}
+        handleLogout={handleLogout}
+        navigate={navigate}
+      />
+    )
   )
 }
 

@@ -1,0 +1,184 @@
+.uii-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.uii-modal {
+    width: 100%;
+    max-width: 520px;
+    background: linear-gradient(180deg,#ffffff,#f9fafb);
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(17,24,39,.15);
+    overflow: hidden;
+}
+
+.uii-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.uii-close {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.uii-form {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Image Upload - Style giống admin nhưng nhỏ hơn */
+.uii-image-upload-area {
+    position: relative;
+    border: 2px dashed #ced4da;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.2s ease;
+    max-width: 280px;
+}
+
+.uii-image-upload-area:hover {
+    border-color: #007bff;
+    background: #e7f3ff;
+}
+
+.uii-image-input {
+    display: none;
+}
+
+.uii-image-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: #495057;
+}
+
+.uii-image-upload-label svg {
+    color: #007bff;
+}
+
+.uii-image-upload-label span:first-of-type {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.uii-upload-hint {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Image Preview */
+.uii-image-preview-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 200px;
+}
+
+.uii-image-preview-container {
+    position: relative;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e0e0e0;
+}
+
+.uii-image-preview {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.uii-btn-remove-image {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.uii-btn-remove-image:hover {
+    background: #dc3545;
+    transform: scale(1.1);
+}
+
+.uii-btn-change-image {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.uii-btn-change-image:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+.uii-btn-change-image input[type="file"] {
+    display: none;
+}
+
+.uii-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.uii-field input[type="text"],
+.uii-field input[type="email"] {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #fff;
+}
+
+.uii-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.uii-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+
+.uii-btn.primary { background: #111827; color: #fff; }
+.uii-btn.secondary { background: #f1f5f9; color: #111; }
+
+

@@ -32,4 +32,11 @@
   }
 }
 
+@media (max-width: 900px) {
+  .floating-cart {
+    right: 28px;
+    bottom: 80px;
+  }
+}
+
 

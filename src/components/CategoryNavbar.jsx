@@ -1,70 +1,74 @@
-import { Fragment } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { base } from '../service/Base.jsx'
 
-export default function Category() {
-
-    const response = {
-        "message": "Lấy danh sách danh mục thành công",
-        "data": [
-            {
-                "category_id": 1,
-                "name": "Nam",
-                "parent_id": null
-            },
-            {
-                "category_id": 2,
-                "name": "Quần âu nam",
-                "parent_id": 1
-            },
-            {
-                "category_id": 3,
-                "name": "Quần short nam",
-                "parent_id": 1
-            },
-            {
-                "category_id": 4,
-                "name": "Quần tây nam",
-                "parent_id": 1
-            },
-            {
-                "category_id": 7,
-                "name": "Áo thun nữ",
-                "parent_id": 5
-            },
-            {
-                "category_id": 5,
-                "name": "Nữ",
-                "parent_id": null
-            },
-            {
-                "category_id": 6,
-                "name": "Áo khoác nữ",
-                "parent_id": 5
-            }
-        ]
-    }
-
-
-    const categories = response.data
-    const parents = categories.filter((c) => c.parent_id === null)
+export default function Category({ closeAll }) {
+    const [categories, setCategories] = useState([])
+    const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
+
+    // Fetch categories from API
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get(`${base}/category`)
+                if (response.status === 200 && response.data?.result) {
+                    setCategories(response.data.result)
+                }
+            } catch (err) {
+                console.error('Error fetching categories:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchCategories()
+    }, [])
+
+    // Filter parent categories (parentId === 0 or null)
+    const parents = categories.filter((c) => !c.parentId || c.parentId === 0)
 
     function handleChildClick(categoryId, categoryName) {
         navigate(`/category/${categoryId}`, { state: { name: categoryName } })
+        closeAll()
+    }
+
+    function handleParentClick(categoryId, categoryName) {
+        navigate(`/category/${categoryId}`, { state: { name: categoryName } })
+    }
+
+    if (loading) {
+        return (
+            <div>
+                <ul>
+                    <li style={{ color: '#94a3b8', fontSize: '14px' }}>Đang tải...</li>
+                </ul>
+            </div>
+        )
     }
 
     return (
         <div>
             <ul>
                 {parents.map((parent) => (
-                    <Fragment key={`parent-${parent.category_id}`}>
-                        <li key={parent.category_id}>{parent.name}</li>
+                    <Fragment key={`parent-${parent.categoryId}`}>
+                        <li 
+                            key={parent.categoryId}
+                            onClick={() => handleParentClick(parent.categoryId, parent.categoryName)}
+                            style={{ cursor: 'no-drop' }}
+                        >
+                            {parent.categoryName}
+                        </li>
                         {categories
-                            .filter((child) => child.parent_id === parent.category_id)
+                            .filter((child) => child.parentId === parent.categoryId)
                             .map((child) => (
-                                <li key={child.category_id} className={'is-child'} onClick={() => handleChildClick(child.category_id, child.name)}>
-                                    {/* <Link to={`/category/${child.category_id}`}>{child.name}</Link> */}
-                                    {child.name}
+                                <li 
+                                    key={child.categoryId} 
+                                    className={'is-child'} 
+                                    onClick={() => handleChildClick(child.categoryId, child.categoryName)}
+                                >
+                                    {child.categoryName}
                                 </li>
                             ))}
                     </Fragment>

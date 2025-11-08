@@ -38,7 +38,7 @@ export default function Login() {
             if (response.status === 200) {
                 message.success('Đăng nhập thành công');
                 localStorage.setItem('token', response.data.result.token);
-                navigate('/');
+                window.location.href = '/';
                 return;
             }
             message.error('Đăng nhập thất bại');

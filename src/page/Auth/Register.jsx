@@ -19,13 +19,28 @@ export default function Register() {
         roles: ["USER1"]
     });
 
-    // {
-    //     "fullName":"user",
-    //     "email":"tuan1234444@gmail.com",
-    //     "password":"user",
-    //     "phoneNumber":"098192492311",
-    //     "roles":["USER1"]
-    // }
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        const payload = { 
+            fullName: formData.fullName, 
+            password: formData.password
+        };
+        
+        try {
+            message.loading('Đang đăng nhập...');
+            const response = await axios.post(`${base}/auth/token`, payload);
+            if (response.status === 200) {
+                message.success('Đăng nhập thành công');
+                localStorage.setItem('token', response.data.result.token);
+                window.location.href = '/';
+                return;
+            }
+            message.error('Đăng nhập thất bại');
+        } catch (error) {
+            message.error(error?.response?.data?.message || 'Đăng nhập thất bại');
+        }
+    };
+
 
     const navigate = useNavigate();
 
@@ -43,21 +58,19 @@ export default function Register() {
             message.error('Mật khẩu xác nhận không khớp!');
             return;
         }
-        const payload = {
-            fullName: formData.fullName,
-            email: formData.email,
-            password: formData.password,
-            phoneNumber: formData.phoneNumber,
-            roles: ["USER1"]
-        }
 
-        // console.log(payload);
+        const payload = new FormData();
+        payload.append("username", formData.fullName);
+        payload.append("email", formData.email);
+        payload.append("password", formData.password);
+        payload.append("phoneNumber", formData.phoneNumber);
+        // payload.append("roles", ["USER"]);
 
         try {
             const response = await axios.post(`${base}/users`, payload);
             if (response.status === 200) {
                 message.success('Đăng ký thành công!');
-                navigate('/login');
+                handleLogin(e);
                 return;
             }
             message.error('Đăng ký thất bại!');
@@ -84,7 +97,7 @@ export default function Register() {
                             <input 
                                 type="text" 
                                 name="fullName"
-                                placeholder="Họ và tên" 
+                                placeholder="Tên tài khoản" 
                                 className="register-form-input"
                                 value={formData.fullName}
                                 onChange={handleInputChange}

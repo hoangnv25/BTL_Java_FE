@@ -32,7 +32,7 @@ export default function AdminCategory() {
 
     const handleEditCategory = (category) => {
         setEditingCategory(category)
-        const pid = category.parentId ?? category.perentId ?? 0
+        const pid = category.parentId ?? 0
         setModalParentId(pid)
         setModalMode('edit')
         setIsModalOpen(true)
@@ -78,7 +78,7 @@ export default function AdminCategory() {
         const childrenByParent = new Map()
 
         for (const cat of flatCategories) {
-            const parentId = cat.parentId ?? cat.perentId ?? 0
+            const parentId = cat.parentId ?? 0
             if (!parentId || parentId === 0) {
                 parents.push({ ...cat, children: [] })
             } else {
@@ -103,46 +103,57 @@ export default function AdminCategory() {
         if (!nodes || nodes.length === 0) return null
         return (
             <ul className="admin-category-tree">
-                {nodes.map((node) => (
-                    <li key={node.categoryId} className="category-item">
-                        <div className="category-row level-1">
-                            <span className="category-name">{node.categoryName}</span>
-                            <div className="category-right">
-                                {typeof node.productCount === 'number' && (
-                                    <span className="category-count">{node.productCount}</span>
-                                )}
-                                <div className="category-actions">
-                                    <button className="btn btn-edit" onClick={() => handleEditCategory(node)}><Edit /></button>
-                                    <button className="btn btn-delete" onClick={() => handleDeleteCategory(node)}><Trash /></button>
+                {nodes.map((node) => {
+                    const children = node.children || []
+                    const childrenTotalCount = children.reduce((sum, c) => {
+                        return sum + (typeof c.productCount === 'number' ? c.productCount : 0)
+                    }, 0)
+                    const hasChildren = children.length > 0
+                    const displayCount = hasChildren
+                        ? childrenTotalCount
+                        : (typeof node.productCount === 'number' ? node.productCount : null)
+
+                    return (
+                        <li key={node.categoryId} className="category-item">
+                            <div className="category-row level-1">
+                                <span className="category-name">{node.categoryName}</span>
+                                <div className="category-right">
+                                    <div className="category-actions">
+                                        <button className="btn btn-edit" onClick={() => handleEditCategory(node)}><Edit /></button>
+                                        <button className="btn btn-delete" onClick={() => handleDeleteCategory(node)}><Trash /></button>
+                                    </div>
+                                    {displayCount !== null && (
+                                        <span className="category-count">{displayCount}</span>
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                        <ul className="children-list">
-                            {(node.children || []).map((child) => (
-                                <li key={child.categoryId} className="category-item">
-                                    <div className="category-row level-2">
-                                        <span className="category-name">{child.categoryName}</span>
-                                        <div className="category-right">
-                                            {typeof child.productCount === 'number' && (
-                                                <span className="category-count">{child.productCount}</span>
-                                            )}
-                                            <div className="category-actions">
-                                                <button className="btn btn-edit" onClick={() => handleEditCategory(child)}><Edit /></button>
-                                                <button className="btn btn-delete" onClick={() => handleDeleteCategory(child)}><Trash /></button>
+                            <ul className="children-list">
+                                {children.map((child) => (
+                                    <li key={child.categoryId} className="category-item">
+                                        <div className="category-row level-2">
+                                            <span className="category-name">{child.categoryName}</span>
+                                            <div className="category-right">
+                                                <div className="category-actions">
+                                                    <button className="btn btn-edit" onClick={() => handleEditCategory(child)}><Edit /></button>
+                                                    <button className="btn btn-delete" onClick={() => handleDeleteCategory(child)}><Trash /></button>
+                                                </div>
+                                                {typeof child.productCount === 'number' && (
+                                                    <span className="category-count">{child.productCount}</span>
+                                                )}
                                             </div>
                                         </div>
-                                    </div>
+                                    </li>
+                                ))}
+                                <li className="category-add-item">
+                                    <button type="button" className="category-add-row add-child" onClick={() => handleAddChild(node)}>
+                                        <span className="add-icon" aria-hidden="true">+</span>
+                                        Thêm danh mục con
+                                    </button>
                                 </li>
-                            ))}
-                            <li className="category-add-item">
-                                <button type="button" className="category-add-row add-child" onClick={() => handleAddChild(node)}>
-                                    <span className="add-icon" aria-hidden="true">+</span>
-                                    Thêm danh mục con
-                                </button>
-                            </li>
-                        </ul>
-                    </li>
-                ))}
+                            </ul>
+                        </li>
+                    )
+                })}
                 <li className="category-add-item">
                     <button type="button" className="category-add-row add-parent" onClick={() => handleAddParent()}>
                         <span className="add-icon" aria-hidden="true">+</span>
@@ -155,9 +166,11 @@ export default function AdminCategory() {
 
     return (
         <div className="admin-category-container">
-            <h1 className="admin-category-title">Danh mục</h1>
-            <div className="admin-category-actions">
-
+            <div className="admin-category-header">
+                <h1 className="admin-category-title">Quản lý danh mục</h1>
+                <div className="admin-category-actions">
+                    <span className="admin-category-count">Tổng số: {categories.length} danh mục</span>
+                </div>
             </div>
             {categoryTree && categoryTree.length > 0 ? (
                 renderTree(categoryTree)

@@ -120,7 +120,7 @@
 
 .cart-item {
     display: grid;
-    grid-template-columns: auto auto 1fr auto;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
     gap: 20px;
     padding: 20px;
     border: 1px solid #e0e0e0;
