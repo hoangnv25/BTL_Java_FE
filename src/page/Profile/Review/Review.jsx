@@ -3,22 +3,45 @@ import axios from 'axios';
 import { base } from '../../../service/Base';
 import { useEffect, useState } from 'react';
 import { Star, Send, MessageSquare, Trash2 } from 'lucide-react';
+import ConfirmDialog from './ConfirmDialog';
 
-export default function Review({ onClose, open }) {
+export default function Review({ onClose, open, existingReview: initialReview, isCreateMode }) {
     const token = localStorage.getItem('token')
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
-    const [checking, setChecking] = useState(true);
-    const [hasReview, setHasReview] = useState(false);
-    const [existingReview, setExistingReview] = useState(null);
+    const [checking, setChecking] = useState(!initialReview && !isCreateMode); // Chỉ check nếu không có initialReview
+    const [hasReview, setHasReview] = useState(!!initialReview);
+    const [existingReview, setExistingReview] = useState(initialReview);
     const [success, setSuccess] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [error, setError] = useState('');
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+
+    // Load dữ liệu từ initialReview nếu có
+    useEffect(() => {
+        if (initialReview) {
+            setRating(parseInt(initialReview.rating) || 0);
+            setComment(initialReview.comment || initialReview.content || '');
+            setHasReview(true);
+            setExistingReview(initialReview);
+        } else if (isCreateMode) {
+            setRating(0);
+            setComment('');
+            setHasReview(false);
+            setExistingReview(null);
+        }
+    }, [initialReview, isCreateMode]);
 
     useEffect(() => {
+        // Nếu đã có initialReview hoặc isCreateMode thì không cần check
+        if (initialReview || isCreateMode) {
+            setChecking(false);
+            return;
+        }
+
         if (!open || !token) {
             setChecking(false);
             return;
@@ -27,26 +50,92 @@ export default function Review({ onClose, open }) {
         const checkExistingReview = async () => {
             try {
                 setChecking(true);
-                const response = await axios.get(`${base}/reviews/user`, {
+                
+                // Lấy thông tin user hiện tại để có userId
+                const userResponse = await axios.get(`${base}/users/myInfor`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
-
-                if (response.status === 200 && response.data?.data && response.data.data.length > 0) {
-                    const review = response.data.data[0];
+                
+                const currentUser = userResponse.data?.result || userResponse.data?.data || userResponse.data;
+                const userId = currentUser?.id || currentUser?.userId || currentUser?.user_id;
+                
+                if (!userId) {
+                    setHasReview(false);
+                    return;
+                }
+                
+                // Lấy review của user bằng API getReviewByUserId
+                const reviewsResponse = await axios.get(`${base}/reviews/user/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                // Parse reviews data - xử lý nhiều format
+                let reviewData = null;
+                
+                // Trường hợp đặc biệt: result.reviews là array (backend format mới)
+                if (reviewsResponse.data?.result?.reviews && Array.isArray(reviewsResponse.data.result.reviews)) {
+                    if (reviewsResponse.data.result.reviews.length > 0) {
+                        reviewData = reviewsResponse.data.result.reviews[0];
+                        // Thêm rating từ result.rating nếu có
+                        if (reviewsResponse.data.result.rating && !reviewData.rating) {
+                            reviewData.rating = reviewsResponse.data.result.rating;
+                        }
+                    }
+                }
+                // Trường hợp 1: response.data.result là array
+                else if (reviewsResponse.data?.result && Array.isArray(reviewsResponse.data.result)) {
+                    if (reviewsResponse.data.result.length > 0) {
+                        reviewData = reviewsResponse.data.result[0];
+                    }
+                }
+                // Trường hợp 2: response.data.result là single object (có id)
+                else if (reviewsResponse.data?.result && typeof reviewsResponse.data.result === 'object' && reviewsResponse.data.result.id) {
+                    reviewData = reviewsResponse.data.result;
+                }
+                // Trường hợp 3: response.data.data là array
+                else if (reviewsResponse.data?.data && Array.isArray(reviewsResponse.data.data)) {
+                    if (reviewsResponse.data.data.length > 0) {
+                        reviewData = reviewsResponse.data.data[0];
+                    }
+                }
+                // Trường hợp 4: response.data.data là single object
+                else if (reviewsResponse.data?.data && typeof reviewsResponse.data.data === 'object' && reviewsResponse.data.data.id) {
+                    reviewData = reviewsResponse.data.data;
+                }
+                // Trường hợp 5: response.data là array trực tiếp
+                else if (Array.isArray(reviewsResponse.data)) {
+                    if (reviewsResponse.data.length > 0) {
+                        reviewData = reviewsResponse.data[0];
+                    }
+                }
+                // Trường hợp 6: response.data là single object trực tiếp (có id)
+                else if (reviewsResponse.data && typeof reviewsResponse.data === 'object' && reviewsResponse.data.id) {
+                    reviewData = reviewsResponse.data;
+                }
+                
+                if (reviewData) {
                     setHasReview(true);
-                    setExistingReview(review);
+                    setExistingReview(reviewData);
                     // Load dữ liệu vào form để chỉnh sửa
-                    setRating(parseInt(review.rating) || 0);
-                    setComment(review.comment || '');
+                    setRating(parseInt(reviewData.rating) || 0);
+                    setComment(reviewData.comment || reviewData.content || '');
                 } else {
                     setHasReview(false);
+                    setExistingReview(null);
+                    setRating(0);
+                    setComment('');
                 }
             } catch (err) {
-                console.error('Error checking review:', err);
-                // Nếu API không tồn tại hoặc lỗi, cho phép tạo review
+                
+                // Nếu lỗi 404 (không có review) hoặc lỗi khác, cho phép tạo review mới
                 setHasReview(false);
+                setExistingReview(null);
+                setRating(0);
+                setComment('');
             } finally {
                 setChecking(false);
             }
@@ -80,7 +169,7 @@ export default function Review({ onClose, open }) {
                 response = await axios.put(
                     `${base}/reviews/${reviewId}`,
                     {
-                        rating: rating.toString(),
+                        rating: rating,
                         comment: comment.trim()
                     },
                     {
@@ -95,7 +184,7 @@ export default function Review({ onClose, open }) {
                 response = await axios.post(
                     `${base}/reviews`,
                     {
-                        rating: rating.toString(),
+                        rating: rating,
                         comment: comment.trim()
                     },
                     {
@@ -125,7 +214,7 @@ export default function Review({ onClose, open }) {
                             setExistingReview(review);
                         }
                     } catch (err) {
-                        console.error('Error fetching review after creation:', err);
+                        // Ignore error
                     }
                 } else {
                     // Cập nhật existingReview với dữ liệu mới
@@ -145,19 +234,19 @@ export default function Review({ onClose, open }) {
                 }, 2000);
             }
         } catch (err) {
-            console.error('Error saving review:', err);
             setError(err.response?.data?.message || 'Có lỗi xảy ra khi lưu đánh giá. Vui lòng thử lại.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDelete = async () => {
+    const confirmDelete = () => {
         if (!existingReview) return;
+        setShowConfirmDelete(true);
+    };
 
-        const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa đánh giá này?');
-        if (!confirmDelete) return;
-
+    const handleDelete = async () => {
+        setShowConfirmDelete(false);
         setDeleting(true);
         setError('');
 
@@ -186,7 +275,6 @@ export default function Review({ onClose, open }) {
                 }, 2000);
             }
         } catch (err) {
-            console.error('Error deleting review:', err);
             setError(err.response?.data?.message || 'Có lỗi xảy ra khi xóa đánh giá. Vui lòng thử lại.');
         } finally {
             setDeleting(false);
@@ -237,26 +325,56 @@ export default function Review({ onClose, open }) {
                 <div className="form-group">
                     <label className="form-label">Đánh giá của bạn *</label>
                     <div className="rating-container">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                                key={star}
-                                type="button"
-                                className={`star-btn ${star <= (hoverRating || rating) ? 'active' : ''}`}
-                                onClick={() => setRating(star)}
-                                onMouseEnter={() => setHoverRating(star)}
-                                onMouseLeave={() => setHoverRating(0)}
-                            >
-                                <Star size={32} fill={star <= (hoverRating || rating) ? '#fbbf24' : 'none'} />
-                            </button>
-                        ))}
+                        {[1, 2, 3, 4, 5].map((starIndex) => {
+                            const currentRating = hoverRating || rating;
+                            const isFull = starIndex <= currentRating;
+                            const isHalf = starIndex - 0.5 === currentRating;
+                            
+                            return (
+                                <div key={starIndex} className="star-wrapper">
+                                    {/* Half star button (left half) */}
+                                    <button
+                                        type="button"
+                                        className="star-btn star-half-btn"
+                                        onClick={() => setRating(starIndex - 0.5)}
+                                        onMouseEnter={() => setHoverRating(starIndex - 0.5)}
+                                        onMouseLeave={() => setHoverRating(0)}
+                                    >
+                                        <Star 
+                                            size={32} 
+                                            fill={isHalf || isFull ? '#fbbf24' : 'none'}
+                                            color="#fbbf24"
+                                            style={{
+                                                clipPath: 'polygon(0 0, 50% 0, 50% 100%, 0 100%)'
+                                            }}
+                                        />
+                                    </button>
+                                    {/* Full star button (right half) */}
+                                    <button
+                                        type="button"
+                                        className="star-btn star-full-btn"
+                                        onClick={() => setRating(starIndex)}
+                                        onMouseEnter={() => setHoverRating(starIndex)}
+                                        onMouseLeave={() => setHoverRating(0)}
+                                    >
+                                        <Star 
+                                            size={32} 
+                                            fill={isFull ? '#fbbf24' : 'none'}
+                                            color="#fbbf24"
+                                        />
+                                    </button>
+                                </div>
+                            );
+                        })}
                     </div>
                     {rating > 0 && (
                         <p className="rating-text">
-                            {rating === 1 && 'Rất không hài lòng'}
-                            {rating === 2 && 'Không hài lòng'}
-                            {rating === 3 && 'Bình thường'}
-                            {rating === 4 && 'Hài lòng'}
+                            {rating <= 1 && 'Rất không hài lòng'}
+                            {rating > 1 && rating <= 2 && 'Không hài lòng'}
+                            {rating > 2 && rating < 4 && 'Bình thường'}
+                            {rating >= 4 && rating < 5 && 'Hài lòng'}
                             {rating === 5 && 'Rất hài lòng'}
+                            <span style={{marginLeft: '8px', color: '#9ca3af'}}>({rating} sao)</span>
                         </p>
                     )}
                 </div>
@@ -300,7 +418,7 @@ export default function Review({ onClose, open }) {
                         <button
                             type="button"
                             className="btn-delete"
-                            onClick={handleDelete}
+                            onClick={confirmDelete}
                             disabled={loading || deleting}
                         >
                             {deleting ? (
@@ -336,6 +454,18 @@ export default function Review({ onClose, open }) {
                 </div>
             </form>
             </div>
+
+            {/* Confirm Delete Dialog */}
+            <ConfirmDialog
+                open={showConfirmDelete}
+                title="Xóa đánh giá"
+                message="Bạn có chắc chắn muốn xóa đánh giá này? Hành động này không thể hoàn tác."
+                confirmText="Xóa đánh giá"
+                cancelText="Hủy"
+                type="danger"
+                onConfirm={handleDelete}
+                onCancel={() => setShowConfirmDelete(false)}
+            />
         </div>
     );
 }

@@ -7,7 +7,7 @@ import NotLoggedIn from '../../components/NotLoggedIn';
 import Breadcrumb from '../../components/Breadcrumb';
 import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
-import Review from './Review/Review';
+import ReviewList from './Review/ReviewList';
 import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare } from 'lucide-react';
 
 export default function Information() {
@@ -197,7 +197,7 @@ export default function Information() {
                 />
             )}
             {showReview && (
-                <Review
+                <ReviewList
                     open={showReview}
                     onClose={() => setShowReview(false)}
                 />
