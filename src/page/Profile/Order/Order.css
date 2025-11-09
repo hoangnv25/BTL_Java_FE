@@ -1,0 +1,311 @@
+/* Orders Section */
+.profile-orders-section {
+    margin-top: 32px;
+    grid-column: 1 / -1;
+}
+
+.profile-orders-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.3px;
+}
+
+.profile-orders-title svg {
+    color: #111827;
+}
+
+.profile-orders-table {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e5e5;
+    overflow: hidden;
+}
+
+.profile-orders-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #eee;
+    border-top-color: #111;
+    border-radius: 50%;
+    animation: ord-spin 0.9s linear infinite;
+}
+@keyframes ord-spin {
+    to { transform: rotate(360deg); }
+}
+
+.profile-orders-head {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
+    padding: 16px 24px;
+    background: #f5f5f5;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.profile-orders-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 12px;
+}
+.profile-orders-item {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.profile-orders-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
+    padding: 14px 24px;
+    text-align: left;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+}
+.profile-orders-item:nth-child(even) .profile-orders-row {
+    background: #fcfcfc;
+}
+.profile-orders-row:hover {
+    background: #fafafa;
+}
+.profile-orders-row[aria-expanded="true"] {
+    background: #f5f8ff;
+    border-left: 3px solid #2563eb;
+}
+.profile-orders-item:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+.profile-row-expander {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.profile-order-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+.profile-order-summary img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.profile-order-summary .info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.profile-order-summary .title {
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.profile-order-summary .sub {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.profile-badge {
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+}
+.profile-badge.pending { background: #fff4e5; color: #92400e; }
+.profile-badge.approved { background: #e6f4ff; color: #1e40af; }
+.profile-badge.shipping { background: #eff6ff; color: #1659d2; }
+.profile-badge.completed { background: #e7f8ed; color: #065f46; }
+.profile-badge.canceled { background: #fdecea; color: #7f1d1d; }
+
+.profile-order-details {
+    padding: 0 24px;
+    background: #fff;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: max-height 0.28s ease, opacity 0.24s ease, transform 0.24s ease;
+}
+.profile-order-details.open {
+    padding: 10px 24px 18px 24px;
+    max-height: 1000px; /* large enough to cover common content */
+    opacity: 1;
+    transform: translateY(0);
+}
+.profile-order-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-bottom: 8px;
+}
+.profile-btn {
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+.profile-btn-secondary {
+    background: #fff;
+    color: #111;
+    border-color: #ddd;
+}
+.profile-btn-secondary:hover { background: #f7f7f7; }
+.profile-btn-danger {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #fff;
+}
+.profile-btn-danger:hover { opacity: 0.9; }
+.profile-order-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 8px 0 12px 0;
+    color: #374151;
+    font-size: 14px;
+}
+.profile-order-products {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+.profile-order-product {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 8px 10px;
+    background: #fff;
+}
+.profile-order-product img {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+.profile-order-product-info .name {
+    font-weight: 600;
+    color: #111827;
+}
+.profile-order-product-info .sub {
+    color: #6b7280;
+    font-size: 13px;
+}
+.profile-order-product-price {
+    font-weight: 700;
+    color: #111827;
+}
+
+.profile-orders-empty {
+    padding: 60px 24px;
+    text-align: center;
+    color: #9ca3af;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.profile-orders-empty svg {
+    color: #d1d5db;
+    opacity: 0.5;
+}
+
+.profile-orders-empty p {
+    font-size: 16px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+/* Responsive for Orders */
+@media (max-width: 768px) {
+    .profile-orders-head {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        font-size: 11px;
+    }
+    .profile-orders-head span {
+        display: none;
+    }
+    .profile-orders-head span:first-child {
+        display: block;
+    }
+    .profile-orders-row {
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+    }
+    .profile-orders-row span:nth-child(2),
+    .profile-orders-row span:nth-child(3),
+    .profile-orders-row span:nth-child(4),
+    .profile-orders-row span:nth-child(5) {
+        display: none;
+    }
+    .profile-order-meta {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Cancel modal */
+.profile-order-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.profile-order-modal {
+    width: 92%;
+    max-width: 420px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+.profile-order-modal-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+}
+.profile-order-modal-body {
+    padding: 12px 16px;
+}
+.profile-order-modal-error {
+    margin-top: 8px;
+    color: #7f1d1d;
+    background: #fdecea;
+    border: 1px solid #f5c6cb;
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+.profile-order-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid #eee;
+}
+
+

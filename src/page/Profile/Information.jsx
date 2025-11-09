@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import NotLoggedIn from '../../components/NotLoggedIn';
 import Breadcrumb from '../../components/Breadcrumb';
 import Address from './Address/Address';
+import Order from './Order/Order';
 import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
 import Review from './Review/Review';
@@ -160,27 +161,9 @@ export default function Information() {
                                 </div>
                             </div>
                         </section>
-
-                        <div className="orders-section">
-                            <h3 className="orders-title">
-                                <Package size={20} />
-                                <span>Đơn hàng của bạn</span>
-                            </h3>
-                            <div className="orders-table">
-                                <div className="orders-head">
-                                    <span>Mã đơn hàng</span>
-                                    <span>Ngày đặt</span>
-                                    <span>Thành tiền</span>
-                                    <span>TT thanh toán</span>
-                                    <span>TT vận chuyển</span>
-                                </div>
-                                <div className="orders-empty">
-                                    <Package size={48} />
-                                    <p>Không có đơn hàng nào</p>
-                                </div>
-                            </div>
-                        </div>
                     </main>
+
+                    <Order />
                 </div>
             </div>
 
