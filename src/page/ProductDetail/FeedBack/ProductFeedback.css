@@ -1,0 +1,410 @@
+.product-feedback {
+    grid-column: 1 / -1; /* kéo dài qua cả hai cột */
+    width: 100%; /* đảm bảo full chiều ngang */
+    box-sizing: border-box;
+    margin-top: 32px;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.pf-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.pf-header span {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.pf-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pf-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 0px, #f8f8f8 40px, #f0f0f0 80px);
+    background-size: 200px 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: 8px;
+}
+
+.pf-skeleton--summary {
+    height: 120px;
+}
+
+.pf-skeleton--list {
+    height: 200px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: -200px 0;
+    }
+    100% {
+        background-position: calc(200px + 100%) 0;
+    }
+}
+
+.pf-error {
+    padding: 16px;
+    background: #fee2e2;
+    color: #dc2626;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.pf-summary {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.pf-summary-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 200px;
+}
+
+.pf-score-number {
+    font-size: 48px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+}
+
+.pf-stars {
+    display: flex;
+    gap: 4px;
+    font-size: 20px;
+}
+
+.pf-star {
+    color: #d1d5db;
+}
+
+.pf-star--full {
+    color: #fbbf24;
+}
+
+.pf-star--half {
+    color: #fbbf24;
+    opacity: 0.5;
+}
+
+.pf-score-label {
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.pf-distribution {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pf-distribution-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pf-distribution-label {
+    min-width: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.pf-distribution-bar {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.pf-distribution-bar-fill {
+    height: 100%;
+    background: #fbbf24;
+    transition: width 0.3s ease;
+}
+
+.pf-distribution-count {
+    min-width: 30px;
+    font-size: 14px;
+    color: #6b7280;
+    text-align: right;
+}
+
+.pf-feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pf-feedback-card {
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.pf-feedback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.pf-feedback-user {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.pf-feedback-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pf-feedback-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pf-feedback-avatar-placeholder {
+    font-size: 16px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.pf-feedback-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.pf-feedback-date {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.pf-feedback-comment {
+    margin: 12px 0 0 0;
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.6;
+}
+
+.pf-feedback-images {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.pf-feedback-images img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+}
+
+.pf-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.pf-empty p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .pf-summary {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .pf-summary-score {
+        min-width: auto;
+    }
+
+    .pf-feedback-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+/* Form đánh giá */
+.pf-btn-add {
+    padding: 8px 16px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.pf-btn-add:hover {
+    background: #1d4ed8;
+}
+
+.pf-form {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.pf-form-group {
+    margin-bottom: 20px;
+}
+
+.pf-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.pf-form-rating {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pf-form-star {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #d1d5db;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s, transform 0.1s;
+}
+
+.pf-form-star:hover {
+    transform: scale(1.1);
+}
+
+.pf-form-star.active {
+    color: #fbbf24;
+}
+
+.pf-form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.pf-form-group textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.pf-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.pf-btn-submit {
+    padding: 10px 24px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.pf-btn-submit:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.pf-btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .pf-form {
+        padding: 16px;
+    }
+
+    .pf-form-star {
+        font-size: 24px;
+    }
+}
+
+/* Nút xóa feedback */
+.pf-btn-delete {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.pf-btn-delete:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.pf-btn-delete:active {
+    background: #fecaca;
+}
+

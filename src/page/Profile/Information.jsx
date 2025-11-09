@@ -119,9 +119,11 @@ export default function Information() {
                                 <div className="user-avatar">
                                     <img src={userData.avatar || '/ava_user.webp'} alt="User avatar" />
                                 </div>
-                                <div className="avatar-badge">
-                                    <User size={16} />
-                                </div>
+                                {!userData.avatar && (
+                                    <div className="avatar-badge">
+                                        <User size={16} />
+                                    </div>
+                                )}
                             </div>
                             <div className="user-details">
                                 <div className="detail-item">
