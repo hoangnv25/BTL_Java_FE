@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { base } from '../../../service/Base';
 import { Package, ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Order() {
 	const [loading, setLoading] = useState(true);
@@ -12,6 +13,8 @@ export default function Order() {
 	const [cancelId, setCancelId] = useState(null);
 	const [canceling, setCanceling] = useState(false);
 	const [cancelError, setCancelError] = useState('');
+	const [viewProduct, setViewProduct] = useState(null);
+	const navigate = useNavigate();
 
 	const fetchOrders = async (mounted = true) => {
 		const token = localStorage.getItem('token');
@@ -195,7 +198,15 @@ export default function Order() {
 											</div>
 											<div className="profile-order-products">
 												{(o.orderDetails || []).map((d, idx) => (
-													<div key={`${o.id}-${idx}`} className="profile-order-product">
+													<div
+														key={`${o.id}-${idx}`}
+														className="profile-order-product"
+														onClick={(e) => {
+															e.stopPropagation();
+															setViewProduct({ id: d.productId, name: d.productName });
+														}}
+														style={{ cursor: 'pointer' }}
+													>
 														<img src={d.image} alt={d.productName} />
 														<div className="profile-order-product-info">
 															<div className="name">{d.productName}</div>
@@ -220,6 +231,45 @@ export default function Order() {
 					</div>
 				)}
 			</div>
+
+			{viewProduct && (
+				<div
+					className="profile-order-modal-backdrop"
+					onClick={() => setViewProduct(null)}
+				>
+					<div
+						className="profile-order-modal"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<div className="profile-order-modal-header">
+							<h4>Xem sản phẩm</h4>
+						</div>
+						<div className="profile-order-modal-body">
+							<p>Bạn có muốn mở trang sản phẩm “{viewProduct.name}”?</p>
+						</div>
+						<div className="profile-order-modal-footer">
+							<button
+								type="button"
+								className="profile-btn profile-btn-secondary"
+								onClick={() => setViewProduct(null)}
+							>
+								Đóng
+							</button>
+							<button
+								type="button"
+								className="profile-btn profile-btn-danger"
+								onClick={() => {
+									const id = viewProduct.id;
+									setViewProduct(null);
+									navigate(`/product/${id}`);
+								}}
+							>
+								Xem sản phẩm
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 
 			{cancelId !== null && (
 				<div className="profile-order-modal-backdrop" onClick={() => !canceling && setCancelId(null)}>

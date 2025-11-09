@@ -34,6 +34,15 @@ html:has(.admin-page) {
     border: 1px solid #e5e7eb;
     border-radius: 10px;
 
+    
+    -ms-overflow-style: none; /* IE, Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.admin-main::-webkit-scrollbar { /* Chrome, Safari, Opera */
+display: none;
+width: 0;
+height: 0;
 }
 
 
