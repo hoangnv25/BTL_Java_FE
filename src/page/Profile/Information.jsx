@@ -5,10 +5,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom'
 import NotLoggedIn from '../../components/NotLoggedIn';
 import Breadcrumb from '../../components/Breadcrumb';
+import Address from './Address/Address';
 import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
 import Review from './Review/Review';
-import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare } from 'lucide-react';
+import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare, MapPin } from 'lucide-react';
 
 export default function Information() {
     const token = localStorage.getItem('token')
@@ -19,6 +20,7 @@ export default function Information() {
     const [showUpdate, setShowUpdate] = useState(false);
     const [showUpdatePassword, setShowUpdatePassword] = useState(false);
     const [showReview, setShowReview] = useState(false);
+    const [showAddress, setShowAddress] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 900)
@@ -100,6 +102,11 @@ export default function Information() {
                                 <MessageSquare size={18} />
                                 <span>Review</span>
                             </button>
+                            <button className="primary" onClick={() => setShowAddress(true)}>
+                                <MapPin size={18} />
+                                <span>Địa chỉ</span>
+                            </button>
+                                
                             <button className="logout" onClick={() => { localStorage.removeItem('token'); window.location.href = '/'; }}>
                                 <LogOut size={18} />
                                 <span>Đăng xuất</span>
@@ -200,6 +207,12 @@ export default function Information() {
                 <Review
                     open={showReview}
                     onClose={() => setShowReview(false)}
+                />
+            )}
+            {showAddress && (
+                <Address
+                    open={showAddress}
+                    onClose={() => setShowAddress(false)}
                 />
             )}
         </>
