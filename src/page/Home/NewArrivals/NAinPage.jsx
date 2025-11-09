@@ -5,6 +5,7 @@ import { base } from "../../../service/Base.jsx";
 import ProductCard from "../../../components/ProductCard";
 import Breadcrumb from "../../../components/Breadcrumb";
 import "./NewArrivals.css";
+import { Filter, X } from "lucide-react";
 
 export default function NAinPage() {
   const navigate = useNavigate();
@@ -13,6 +14,14 @@ export default function NAinPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeSales, setActiveSales] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  // Sidebar filter states (chỉ hiệu lực trên trang /newArrivals)
+  const [searchText, setSearchText] = useState("");
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Chỉ hiện breadcrumb khi ở trang /newArrivals (không phải trang chủ)
   const showBreadcrumb = location.pathname === '/newArrivals';
@@ -68,6 +77,24 @@ export default function NAinPage() {
     };
 
     fetchProducts();
+  }, []);
+
+  // Fetch categories cho sidebar
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${base}/category`);
+        if (response.status === 200 && Array.isArray(response.data)) {
+          setCategories(response.data);
+        } else if (response.status === 200 && response.data?.result) {
+          // fallback nếu API trả về trong field result
+          setCategories(response.data.result);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+    fetchCategories();
   }, []);
 
   // Helper function để tìm discount cho sản phẩm
@@ -177,7 +204,8 @@ export default function NAinPage() {
         thumbnail: product.image || '',
         rate: 0, // API không trả về rate, mặc định 0
         Discount: discount > 0 ? discount : undefined, // Chỉ set discount khi > 0
-        list_product_variation: list_product_variation
+        list_product_variation: list_product_variation,
+        categoryId: product.categoryId ?? null
       };
     });
   }, [products, getProductDiscount, groupVariationsByColor]);
@@ -187,48 +215,179 @@ export default function NAinPage() {
     { label: "NEW ARRIVALS" }
   ];
 
+  // Giá min/max để gợi ý
+  const [priceBoundMin, priceBoundMax] = useMemo(() => {
+    if (!newArrivalsProducts || newArrivalsProducts.length === 0) return [0, 0];
+    const prices = newArrivalsProducts.map(p => Number(p.price) || 0);
+    return [Math.min(...prices), Math.max(...prices)];
+  }, [newArrivalsProducts]);
+
+  // Áp dụng filter chỉ khi ở trang /newArrivals
+  const filteredProducts = useMemo(() => {
+    if (!showBreadcrumb) return newArrivalsProducts;
+    let list = newArrivalsProducts;
+
+    // Tìm kiếm theo tiêu đề
+    if (searchText.trim()) {
+      const q = searchText.trim().toLowerCase();
+      list = list.filter(p => (p.title || '').toLowerCase().includes(q));
+    }
+
+    // Lọc theo giá
+    const minVal = priceMin !== "" ? Number(priceMin) : null;
+    const maxVal = priceMax !== "" ? Number(priceMax) : null;
+    if (minVal !== null) {
+      list = list.filter(p => (Number(p.price) || 0) >= minVal);
+    }
+    if (maxVal !== null) {
+      list = list.filter(p => (Number(p.price) || 0) <= maxVal);
+    }
+
+    // Lọc theo danh mục
+    if (selectedCategoryId) {
+      const catIdNum = Number(selectedCategoryId);
+      list = list.filter(p => (p.categoryId ?? null) === catIdNum);
+    }
+
+    return list;
+  }, [newArrivalsProducts, showBreadcrumb, searchText, priceMin, priceMax, selectedCategoryId]);
+
   const displayedProducts = useMemo(() => {
-    if (showBreadcrumb) return newArrivalsProducts;
+    if (showBreadcrumb) return filteredProducts;
     return newArrivalsProducts.slice(0, 6);
-  }, [newArrivalsProducts, showBreadcrumb]);
+  }, [newArrivalsProducts, showBreadcrumb, filteredProducts]);
 
   return (
     <>
       {showBreadcrumb && <Breadcrumb items={breadcrumbItems} />}
-    <section className="na-section">
-      <h2 className="na-title">New Arrivals</h2>
-      <p className="na-desc">Các sản phẩm mới nhất dành cho bạn</p>
-      
-      {loading ? (
-        <div className="na-loading">Đang tải sản phẩm mới...</div>
-      ) : error ? (
-        <div className="na-error">{error}</div>
-      ) : newArrivalsProducts.length === 0 ? (
-        <div className="na-empty">Chưa có sản phẩm mới trong 10 ngày qua</div>
-      ) : (
-        <>
-      <div className="na-grid">
-            {displayedProducts.map((product) => (
-          <ProductCard 
-            key={product.id} 
-            product={product}
-            fromPage="newArrivals"
-          />
-        ))}
-      </div>
-          {showViewMoreButton && newArrivalsProducts.length > displayedProducts.length && (
-            <div className="na-view-more-container">
-              <button 
-                className="na-view-more-btn"
-                onClick={() => navigate('/newArrivals')}
-              >
-                Xem thêm
-              </button>
+      <section className="na-section na-page">
+        <h2 className="na-title">New Arrivals</h2>
+        <p className="na-desc">Các sản phẩm mới nhất dành cho bạn</p>
+        
+        {loading ? (
+          <div className="na-loading">Đang tải sản phẩm mới...</div>
+        ) : error ? (
+          <div className="na-error">{error}</div>
+        ) : newArrivalsProducts.length === 0 ? (
+          <div className="na-empty">Chưa có sản phẩm mới trong 10 ngày qua</div>
+        ) : (
+          <>
+            <div className={showBreadcrumb ? "na-layout" : ""}>
+              {showBreadcrumb && (
+                <aside className={`na-sidebar${isSidebarOpen ? " is-open" : ""}`}>
+                  <div className="na-sidebar-header">
+                    <div className="na-filter-title">Bộ lọc</div>
+                    <button 
+                      type="button" 
+                      className="na-sidebar-close" 
+                      aria-label="Đóng bộ lọc"
+                      onClick={() => setIsSidebarOpen(false)}
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  <div className="na-filter-group">
+                    <div className="na-filter-title">Tìm kiếm</div>
+                    <input
+                      type="text"
+                      className="na-input"
+                      placeholder="Tìm sản phẩm..."
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="na-filter-group">
+                    <div className="na-filter-title">Khoảng giá</div>
+                    <div className="na-price-row">
+                      <input
+                        type="number"
+                        className="na-input"
+                        placeholder={priceBoundMin ? `${priceBoundMin}` : "Từ"}
+                        value={priceMin}
+                        onChange={(e) => setPriceMin(e.target.value)}
+                        min={0}
+                      />
+                      <span className="na-price-sep">-</span>
+                      <input
+                        type="number"
+                        className="na-input"
+                        placeholder={priceBoundMax ? `${priceBoundMax}` : "Đến"}
+                        value={priceMax}
+                        onChange={(e) => setPriceMax(e.target.value)}
+                        min={0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="na-filter-group">
+                    <div className="na-filter-title">Danh mục</div>
+                    <select
+                      className="na-select"
+                      value={selectedCategoryId}
+                      onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    >
+                      <option value="">Tất cả</option>
+                      {categories.map((c) => (
+                        <option key={c.categoryId ?? c.id} value={c.categoryId ?? c.id}>
+                          {c.categoryName || c.name || `#${c.categoryId ?? c.id}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </aside>
+              )}
+
+              {/* Overlay khi mở sidebar ở màn hình trung bình */}
+              {showBreadcrumb && (
+                <div 
+                  className={`na-overlay${isSidebarOpen ? " show" : ""}`} 
+                  onClick={() => setIsSidebarOpen(false)} 
+                  aria-hidden="true"
+                />
+              )}
+
+              <div className={showBreadcrumb ? "na-content" : ""}>
+                {showBreadcrumb && (
+                  <div className="na-toolbar">
+                    <button 
+                      type="button" 
+                      className="na-filter-toggle" 
+                      onClick={() => setIsSidebarOpen(true)}
+                      aria-label="Mở bộ lọc"
+                      title="Bộ lọc"
+                    >
+                      <Filter size={18} />
+                      <span>Bộ lọc</span>
+                    </button>
+                  </div>
+                )}
+                <div className="na-grid">
+                  {displayedProducts.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product}
+                      fromPage="newArrivals"
+                    />
+                  ))}
+                </div>
+
+                {showViewMoreButton && newArrivalsProducts.length > displayedProducts.length && (
+                  <div className="na-view-more-container">
+                    <button 
+                      className="na-view-more-btn"
+                      onClick={() => navigate('/newArrivals')}
+                    >
+                      Xem thêm
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </>
-      )}
-    </section>
+          </>
+        )}
+      </section>
     </>
   );
 }
