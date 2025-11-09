@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { base } from '../../../service/Base';
 import './Address.css';
@@ -124,7 +125,7 @@ export default function Address({ open, onClose }) {
 		}
 	};
 
-	return (
+	const modalContent = (
 		<div className="addr-modal-backdrop" onClick={onClose}>
 			<div className="addr-modal" onClick={(e) => e.stopPropagation()}>
 				<div className="addr-modal-header">
@@ -266,6 +267,9 @@ export default function Address({ open, onClose }) {
 			</div>
 		</div>
 	);
+
+	// Render modal at document.body to avoid ancestor stacking-context (e.g., transform/sticky) issues
+	return createPortal(modalContent, document.body);
 }
 
 
