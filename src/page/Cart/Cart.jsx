@@ -6,12 +6,15 @@ import { App } from "antd";
 import { Trash2 } from "lucide-react";
 import Breadcrumb from "../../components/Breadcrumb";
 import "./Cart.css";
+import CartAddr from "./CartAddr";
+
 
 export default function Cart() {
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [orderNote, setOrderNote] = useState("");
     const [selectedItems, setSelectedItems] = useState(new Set());
+    const [isOrdering, setIsOrdering] = useState(false);
     const navigate = useNavigate();
     const { message } = App.useApp();
 
@@ -341,21 +344,57 @@ export default function Cart() {
         }
     };
 
-    // Xử lý checkout (tạm thôi, sau bổ sung sau)
-    const handleCheckout = () => {
+    // Đặt hàng
+    const handleCheckout = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            message.error('Vui lòng đăng nhập để đặt hàng');
+            navigate('/login');
+            return;
+        }
+
         const selectedItemsList = cartItems.filter(item => {
             const itemKey = `${item.product_id}-${item.product_variation_id}`;
             return selectedItems.has(itemKey);
         });
-        
         if (selectedItemsList.length === 0) {
-            alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
+            message.error("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
             return;
         }
-        
-        console.log("Checkout with selected items:", selectedItemsList);
-        console.log("Order note:", orderNote);
-        alert("Tính năng thanh toán đang được phát triển!");
+
+        const payload = {
+            note: orderNote || undefined,
+            items: selectedItemsList.map(it => ({
+                variationId: it.product_variation_id,
+                quantity: it.quantity
+            }))
+        };
+
+        try {
+            setIsOrdering(true);
+            const res = await axios.post(`${base}/orders`, payload, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (res.status === 200 || res.status === 201) {
+                message.success("Đặt hàng thành công!");
+                // Xoá các item đã đặt khỏi giao diện giỏ hàng
+                const selectedKeys = new Set(
+                    selectedItemsList.map(it => `${it.product_id}-${it.product_variation_id}`)
+                );
+                setCartItems(prev => prev.filter(it => !selectedKeys.has(`${it.product_id}-${it.product_variation_id}`)));
+                setSelectedItems(new Set());
+                setOrderNote("");
+                return;
+            }
+            throw new Error('Unexpected status when creating order');
+        } catch (error) {
+            message.error(error?.response?.data?.message || "Đặt hàng thất bại. Vui lòng thử lại.");
+        } finally {
+            setIsOrdering(false);
+        }
     };
 
     if (loading) {
@@ -493,21 +532,29 @@ export default function Cart() {
                     </div>
                 </div>
                 
-                <div className="order-summary">
-                    <div className="total-section">
-                        <h3>TỔNG CỘNG</h3>
-                        <div className="total-amount">
-                            {calculateTotal().toLocaleString()}₫
+                <div className="cart-right">
+                    <div className="order-summary">
+                        <div className="total-section">
+                            <h3>TỔNG CỘNG</h3>
+                            <div className="total-amount">
+                                {calculateTotal().toLocaleString()}₫
+                            </div>
                         </div>
+                        
+                        <button 
+                            className="checkout-btn"
+                            onClick={handleCheckout}
+                            disabled={isOrdering}
+                        >
+                            {isOrdering ? 'Đang đặt hàng...' : 'Đặt hàng'}
+                        </button>
                     </div>
                     
-                    <button 
-                        className="checkout-btn"
-                        onClick={handleCheckout}
-                    >
-                        Thanh Toán
-                    </button>
+                    <CartAddr />
                 </div>
+
+
+
             </div>
         </div>
         </>
