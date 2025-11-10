@@ -3,6 +3,155 @@
 	max-width: 1280px;
 	margin: 0 auto;
 }
+.na-layout {
+	display: grid;
+	grid-template-columns: 260px 1fr;
+	gap: 24px;
+	align-items: start;
+}
+.na-sidebar {
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 16px;
+	background: #fff;
+}
+.na-sidebar-header {
+	display: none; /* chỉ hiện ở màn hình trung bình khi dùng overlay */
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 8px;
+}
+.na-sidebar-close {
+	background: transparent;
+	border: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 6px;
+	border-radius: 8px;
+	cursor: pointer;
+	color: #475569;
+}
+.na-sidebar-close:hover {
+	background: #f1f5f9;
+	color: #0f172a;
+}
+.na-filter-group {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 10px 0;
+	border-bottom: 1px dashed #e5e7eb;
+}
+.na-filter-group:last-child {
+	border-bottom: none;
+}
+.na-filter-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: #0f172a;
+}
+.na-input, .na-select {
+	width: 100%;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 10px 12px;
+	font-size: 14px;
+	color: #0f172a;
+	background: #fff;
+	outline: none;
+}
+.na-input:focus, .na-select:focus {
+	border-color: #0f172a;
+}
+
+/* Select đẹp hơn + caret tùy biến */
+.na-select {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	background:
+		#fff
+		url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>")
+		no-repeat right 12px center/16px 16px;
+	padding-right: 40px;
+	border-radius: 10px;
+	cursor: pointer;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.na-select:hover {
+	border-color: #cbd5e1;
+}
+.na-select:focus {
+	border-color: #0f172a;
+	box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+/* Style từng option (hỗ trợ tốt nhất trên desktop) */
+.na-select option {
+	font-size: 14px;
+	color: #0f172a;
+	background-color: #ffffff;
+	padding: 8px 10px; /* có thể bị giới hạn trên một số trình duyệt */
+	line-height: 1.6;
+}
+.na-select option[disabled] {
+	color: #94a3b8;
+}
+.na-select option:checked {
+	background-color: #f1f5f9;
+	font-weight: 600;
+}
+.na-select option:hover {
+	background-color: #f8fafc; /* có thể không áp dụng trên một số OS */
+}
+.na-select option:active {
+	background-color: #e2e8f0;
+}
+/* Style cho option placeholder (ví dụ 'Tất cả' với value = '') */
+.na-select option[value=""] {
+	color: #64748b;
+	font-style: italic;
+}
+.na-price-row {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 8px;
+}
+.na-price-sep {
+	color: #64748b;
+}
+.na-content {
+	min-width: 0;
+}
+.na-toolbar {
+	display: none; /* hiện ở màn hình trung bình */
+	margin-bottom: 12px;
+	display: none;
+}
+.na-filter-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: #0f172a;
+	color: #fff;
+	border: none;
+	border-radius: 10px;
+	padding: 8px 12px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.na-filter-toggle:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+	background: #1e293b;
+}
+.na-overlay {
+	display: none;
+}
 .na-title { 
 	text-align: center; 
 	font-size: 32px; 
@@ -16,7 +165,7 @@
 	margin: 0 0 32px; 
 	font-size: 16px;
 }
-.na-grid {
+.na-page .na-grid {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	gap: 24px;
@@ -74,7 +223,45 @@
 }
 
 @media (max-width: 1024px) {
-	.na-grid { 
+	.na-layout {
+		grid-template-columns: 1fr;
+	}
+	.na-sidebar { order: 1; }
+	.na-content { order: 2; }
+
+	/* Ẩn sidebar mặc định, dùng overlay-drawer khi mở */
+	.na-sidebar {
+		display: none;
+	}
+	.na-sidebar.is-open {
+		display: block;
+		position: fixed;
+		z-index: 1001;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		width: 80%;
+		max-width: 320px;
+		overflow: auto;
+		border-radius: 0;
+		padding: 16px;
+		box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+	}
+	.na-sidebar.is-open .na-sidebar-header {
+		display: flex;
+	}
+	.na-overlay.show {
+		display: block;
+		position: fixed;
+		z-index: 1000;
+		top: 0; left: 0; right: 0; bottom: 0;
+		background: rgba(0,0,0,0.35);
+	}
+	.na-toolbar {
+		display: flex;
+		justify-content: flex-end;
+	}
+	.na-page .na-grid { 
 		grid-template-columns: repeat(2, 1fr); 
 		gap: 20px;
 	}
@@ -83,8 +270,37 @@
 	}
 }
 @media (max-width: 640px) {
-	.na-grid { 
-		grid-template-columns: 1fr; 
+	.na-sidebar {
+		display: none;
+	}
+	/* Cho phép mở sidebar kiểu overlay ở mobile */
+	.na-sidebar.is-open {
+		display: block;
+		position: fixed;
+		z-index: 1001;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		width: 85%;
+		max-width: 320px;
+		overflow: auto;
+		border-radius: 0;
+		padding: 16px;
+		box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+	}
+	.na-overlay.show {
+		display: block;
+		position: fixed;
+		z-index: 1000;
+		top: 0; left: 0; right: 0; bottom: 0;
+		background: rgba(0,0,0,0.35);
+	}
+	.na-toolbar {
+		display: flex;
+		justify-content: flex-end;
+	}
+	.na-page .na-grid {
+		grid-template-columns: repeat(2, 1fr);
 		gap: 16px;
 	}
 	.na-title {

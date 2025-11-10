@@ -24,10 +24,12 @@ function NavbarPC({
         </div>
 
         <ul className="navbar-menu">
-          <li><Link to="/" className="navbar-link">Trang chủ</Link></li>
-          <li><Link to="/newArrivals" className="navbar-link">Hàng mới về</Link></li>
+          <li><Link to="/" className="navbar-link"><strong style={{ textTransform: 'uppercase' }}>Trang chủ</strong></Link></li>
+          <li className="navbar-separator" aria-hidden="true"></li>
+          <li><Link to="/newArrivals" className="navbar-link"><strong style={{ textTransform: 'uppercase' }}>Hàng mới về</strong></Link></li>
+          <li className="navbar-separator" aria-hidden="true"></li>
           <li className="navbar-dropdown">
-            <span className="navbar-link">Danh mục</span>
+            <span className="navbar-link"><strong style={{ textTransform: 'uppercase' }}>Danh mục</strong></span>
             <ChevronDown className="navbar-dropdown-icon" size={22} strokeWidth={2} />
             <div className="navbar-dropdown-menu">
               <Category />
@@ -54,6 +56,7 @@ function NavbarPC({
           ) : (
             <>
               <li><Link to="/login" className="navbar-link">Đăng nhập</Link></li>
+              <li className="navbar-separator" aria-hidden="true"></li>
               <li><Link to="/register" className="signup-btn">Đăng ký</Link></li>
             </>
           )}
