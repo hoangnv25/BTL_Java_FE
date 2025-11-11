@@ -294,6 +294,13 @@
     border: 1px solid #e5e7eb;
 }
 
+.pf-form-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #111827;
+}
+
 .pf-form-group {
     margin-bottom: 20px;
 }
@@ -385,7 +392,29 @@
     }
 }
 
-/* Nút xóa feedback */
+/* Nút hành động feedback */
+.pf-btn-edit {
+    background: transparent;
+    border: none;
+    color: #2563eb;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.pf-btn-edit:hover {
+    background: #e0e7ff;
+    color: #1d4ed8;
+}
+
+.pf-btn-edit:active {
+    background: #c7d2fe;
+}
+
 .pf-btn-delete {
     background: transparent;
     border: none;

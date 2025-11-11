@@ -3,7 +3,7 @@ import axios from "axios";
 import { base } from "../../../service/Base.jsx";
 import { App } from "antd";
 import { jwtDecode } from "jwt-decode";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit2 } from "lucide-react";
 import "./ProductFeedback.css";
 
 const STAR_LEVELS = [5, 4, 3, 2, 1];
@@ -45,6 +45,8 @@ export default function ProductFeedback({ productId }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [showForm, setShowForm] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingFeedbackId, setEditingFeedbackId] = useState(null);
     const [formData, setFormData] = useState({
         rating: 0,
         comment: "",
@@ -251,6 +253,11 @@ export default function ProductFeedback({ productId }) {
             return;
         }
 
+        if (isEditing && !editingFeedbackId) {
+            message.error('Không xác định được đánh giá cần chỉnh sửa');
+            return;
+        }
+
         if (formData.rating === 0) {
             message.warning('Vui lòng chọn số sao đánh giá');
             return;
@@ -267,18 +274,30 @@ export default function ProductFeedback({ productId }) {
                 rating: String(formData.rating),
                 note: formData.comment.trim()
             };
+            let response;
 
-            const response = await axios.post(`${base}/feedback/${productId}`, payload, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+            if (isEditing && editingFeedbackId) {
+                response = await axios.put(`${base}/feedback/${productId}/${editingFeedbackId}`, payload, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } else {
+                response = await axios.post(`${base}/feedback/${productId}`, payload, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
 
             if (response.status === 200 || response.status === 201) {
-                message.success('Đã gửi đánh giá thành công!');
+                message.success(isEditing ? 'Đã cập nhật đánh giá thành công!' : 'Đã gửi đánh giá thành công!');
                 setFormData({ rating: 0, comment: "", images: [] });
                 setShowForm(false);
+                setIsEditing(false);
+                setEditingFeedbackId(null);
                 // Refresh danh sách feedback
                 await fetchFeedbackData();
             } else {
@@ -316,21 +335,41 @@ export default function ProductFeedback({ productId }) {
         }
     };
 
-    const canDeleteFeedback = (feedbackItem) => {
+    const canManageFeedback = (feedbackItem) => {
         const token = localStorage.getItem('token');
         if (!token) return false;
         
         const isAdmin = checkIsAdmin();
-        if (isAdmin) return true; // Admin có thể xóa mọi feedback
+        if (isAdmin) return true; // Admin có thể chỉnh sửa/xóa mọi feedback
 
         const currentUserId = getCurrentUserId();
         // API trả về userId trực tiếp trong feedback item
-        const feedbackUserId = feedbackItem.userId;
+        const feedbackUserId = feedbackItem.userId || feedbackItem.user_id || feedbackItem.user?.id;
         
-        // Chỉ user tạo feedback mới được xóa
-        const canDelete = currentUserId && feedbackUserId && String(currentUserId) === String(feedbackUserId);
+        // Chỉ user tạo feedback mới được chỉnh sửa/xóa
+        const canModify = currentUserId && feedbackUserId && String(currentUserId) === String(feedbackUserId);
         
-        return canDelete;
+        return canModify;
+    };
+
+    const canEditFeedback = (feedbackItem) => canManageFeedback(feedbackItem);
+    const canDeleteFeedback = (feedbackItem) => canManageFeedback(feedbackItem);
+
+    const handleEditFeedback = (feedbackItem) => {
+        if (!canEditFeedback(feedbackItem)) return;
+        const feedbackId = feedbackItem.id || feedbackItem.feedbackId || feedbackItem.feedback_id;
+        if (!feedbackId) {
+            message.error('Không tìm thấy mã đánh giá để chỉnh sửa');
+            return;
+        }
+        const currentRating = Number(feedbackItem.rating || feedbackItem.star || 0);
+        setFormData({
+            rating: Number.isNaN(currentRating) ? 0 : currentRating,
+            comment: feedbackItem.note || feedbackItem.feedback || ""
+        });
+        setIsEditing(true);
+        setEditingFeedbackId(feedbackId);
+        setShowForm(true);
     };
 
     const handleDeleteFeedback = async (feedbackId) => {
@@ -353,6 +392,12 @@ export default function ProductFeedback({ productId }) {
 
             if (response.status === 200 || response.status === 204) {
                 message.success('Đã xóa đánh giá thành công!');
+                if (isEditing && editingFeedbackId === feedbackId) {
+                    setIsEditing(false);
+                    setEditingFeedbackId(null);
+                    setFormData({ rating: 0, comment: "", images: [] });
+                    setShowForm(false);
+                }
                 // Refresh danh sách feedback
                 await fetchFeedbackData();
             } else {
@@ -380,17 +425,30 @@ export default function ProductFeedback({ productId }) {
                                 message.warning('Vui lòng đăng nhập để đánh giá sản phẩm');
                                 return;
                             }
-                            setShowForm(!showForm);
+                            if (showForm) {
+                                setShowForm(false);
+                                setIsEditing(false);
+                                setEditingFeedbackId(null);
+                                setFormData({ rating: 0, comment: "", images: [] });
+                            } else {
+                                setShowForm(true);
+                                setIsEditing(false);
+                                setEditingFeedbackId(null);
+                                setFormData({ rating: 0, comment: "", images: [] });
+                            }
                         }}
                         className="pf-btn-add"
                     >
-                        {showForm ? 'Hủy' : 'Viết đánh giá'}
+                        {showForm ? (isEditing ? 'Hủy chỉnh sửa' : 'Hủy') : 'Viết đánh giá'}
                     </button>
                 </div>
             </div>
 
             {showForm && (
                 <form className="pf-form" onSubmit={handleSubmitFeedback}>
+                    <div className="pf-form-title">
+                        {isEditing ? 'Chỉnh sửa đánh giá của bạn' : 'Viết đánh giá của bạn'}
+                    </div>
                     <div className="pf-form-group">
                         <label>Đánh giá của bạn:</label>
                         <div className="pf-form-rating">
@@ -419,7 +477,9 @@ export default function ProductFeedback({ productId }) {
                     </div>
                     <div className="pf-form-actions">
                         <button type="submit" disabled={submitting} className="pf-btn-submit">
-                            {submitting ? 'Đang gửi...' : 'Gửi đánh giá'}
+                            {submitting
+                                ? (isEditing ? 'Đang cập nhật...' : 'Đang gửi...')
+                                : (isEditing ? 'Cập nhật đánh giá' : 'Gửi đánh giá')}
                         </button>
                     </div>
                 </form>
@@ -498,10 +558,20 @@ export default function ProductFeedback({ productId }) {
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                             {renderStars(item.rating || item.star || 0)}
+                                            {canEditFeedback(item) && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleEditFeedback(item)}
+                                                    className="pf-btn-edit"
+                                                    title="Chỉnh sửa đánh giá"
+                                                >
+                                                    <Edit2 size={16} />
+                                                </button>
+                                            )}
                                             {canDeleteFeedback(item) && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleDeleteFeedback(item.id)}
+                                                    onClick={() => handleDeleteFeedback(item.id || item.feedbackId || item.feedback_id)}
                                                     className="pf-btn-delete"
                                                     title="Xóa đánh giá"
                                                 >
