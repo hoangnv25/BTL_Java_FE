@@ -4,6 +4,7 @@ import { Route, Routes, Outlet } from 'react-router-dom'
 import AdminCategory from './AdminCategory/AdminCategory'
 import AdminSale from './AdminSale/AdminSale'
 import GetProduct from './AdminProduct/GetProduct/GetProduct'
+import AdminReview from './AdminReview/AdminReview'
 
 export default function Admin() {
     return (
@@ -19,7 +20,7 @@ export default function Admin() {
                     <Route path="orders" element={<div>Orders</div>} />
                     <Route path="categories" element={<AdminCategory />} />
                     <Route path="feedback" element={<div>Feedback</div>} />
-                    <Route path="reviews" element={<div>Reviews</div>} />
+                    <Route path="reviews" element={<AdminReview />} />
                     <Route path="addresses" element={<div>Addresses</div>} />
                     <Route path="payments" element={<div>Payments</div>} />
                     <Route path="settings" element={<div>Settings</div>} />

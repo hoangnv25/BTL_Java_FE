@@ -184,29 +184,46 @@
 
 .rating-container {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     align-items: center;
+}
+
+.star-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 32px;
 }
 
 .star-btn {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 4px;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     transition: transform 0.2s ease;
-    color: #d1d5db;
 }
 
-.star-btn:hover {
-    transform: scale(1.1);
+.star-half-btn {
+    width: 50%;
+    z-index: 2;
 }
 
-.star-btn.active {
-    color: #fbbf24;
+.star-full-btn {
+    z-index: 1;
+}
+
+.star-wrapper:hover {
+    transform: scale(1.15);
 }
 
 .star-btn svg {
     transition: all 0.2s ease;
+    display: block;
 }
 
 .rating-text {
