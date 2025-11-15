@@ -5,11 +5,11 @@ import { useState, useEffect } from 'react'
 import { jwtDecode } from "jwt-decode";
 import NavbarPC from './NavbarPC'
 import NavbarMobile from './NavbarMobile'
+import { getToken, removeToken } from '../service/LocalStorage'
 
 
 function Navbar() {
   const { message } = App.useApp();
-  const token = localStorage.getItem('token')
 
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -19,6 +19,7 @@ function Navbar() {
   const navigate = useNavigate()
 
   const handleLogout = () => {
+    removeToken()
     localStorage.clear()
     message.success('Đăng xuất thành công')
     setIsLoggedIn(false)
@@ -26,34 +27,51 @@ function Navbar() {
   }
 
   const checkLogin = () => {
+    const token = getToken()
     if (token) {
       setIsLoggedIn(true)
+      decodeToken(token)
     } else {
       setIsLoggedIn(false)
       setIsAdmin(false)
     }
   }
 
-  const decodeToken = () => {
+  const decodeToken = (token) => {
     if (token) {
-      const decodedToken = jwtDecode(token)
-      if (decodedToken.scope.includes('ROLE_ADMIN')) {
-        localStorage.setItem('isAdmin', true)
-        setIsAdmin(true)
-      } else {
-        localStorage.setItem('isAdmin', false)
+      try {
+        const decodedToken = jwtDecode(token)
+        if (decodedToken.scope.includes('ROLE_ADMIN')) {
+          localStorage.setItem('isAdmin', true)
+          setIsAdmin(true)
+        } else {
+          localStorage.setItem('isAdmin', false)
+          setIsAdmin(false)
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error)
         setIsAdmin(false)
       }
-      
     }
   }
 
   useEffect(() => {
     checkLogin()
-    decodeToken()
+    
+    // Lắng nghe sự kiện thay đổi token
+    const handleTokenChange = () => {
+      checkLogin()
+    }
+    
+    window.addEventListener('tokenChanged', handleTokenChange)
+    
     const handleResize = () => setIsMobile(window.innerWidth <= 900)
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    
+    return () => {
+      window.removeEventListener('tokenChanged', handleTokenChange)
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   const handleSearchToggle = () => {

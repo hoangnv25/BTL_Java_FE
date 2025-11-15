@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { base } from '../../service/Base';
 import { App } from 'antd';
+import { setToken } from '../../service/LocalStorage';
 
 export default function Register() {
     const { message } = App.useApp();
@@ -31,7 +32,8 @@ export default function Register() {
             const response = await axios.post(`${base}/auth/token`, payload);
             if (response.status === 200) {
                 message.success('Đăng nhập thành công');
-                localStorage.setItem('token', response.data.result.token);
+                // Sử dụng setToken để lưu và trigger event
+                setToken(response.data.result.token);
                 window.location.href = '/';
                 return;
             }

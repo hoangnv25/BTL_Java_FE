@@ -6,6 +6,7 @@ import { App } from "antd";
 import ProductFeedback from "./ProductFeedback";
 import ProductCard from "../../components/ProductCard";
 import Breadcrumb from "../../components/Breadcrumb";
+import { getToken } from "../../service/LocalStorage";
 import "./ProductDetail.css";
 
 export default function ProductDetail() {
@@ -318,7 +319,7 @@ useEffect(() => {
 	// Add to cart handler
 	const handleAddToCart = async () => {
 		// Check if user is logged in
-		const token = localStorage.getItem('token');
+		const token = getToken();
 		if (!token) {
 			message.warning('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
 			navigate('/login');

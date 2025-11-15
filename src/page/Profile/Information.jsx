@@ -9,9 +9,10 @@ import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
 import Review from './Review/Review';
 import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare } from 'lucide-react';
+import { getToken, removeToken } from '../../service/LocalStorage';
 
 export default function Information() {
-    const token = localStorage.getItem('token')
+    const token = getToken()
     
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -100,7 +101,7 @@ export default function Information() {
                                 <MessageSquare size={18} />
                                 <span>Review</span>
                             </button>
-                            <button className="logout" onClick={() => { localStorage.removeItem('token'); window.location.href = '/'; }}>
+                            <button className="logout" onClick={() => { removeToken(); window.location.href = '/'; }}>
                                 <LogOut size={18} />
                                 <span>Đăng xuất</span>
                             </button>

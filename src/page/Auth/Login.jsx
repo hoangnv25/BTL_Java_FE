@@ -7,6 +7,7 @@ import axios from 'axios';
 import { base } from '../../service/Base';
 import { App } from 'antd';
 import { OAuthConfig } from '../../configurations/configuration';
+import { setToken } from '../../service/LocalStorage';
 
 export default function Login() {
     const { message } = App.useApp();
@@ -37,7 +38,8 @@ export default function Login() {
             const response = await axios.post(`${base}/auth/token`, payload);
             if (response.status === 200) {
                 message.success('Đăng nhập thành công');
-                localStorage.setItem('token', response.data.result.token);
+                // Sử dụng setToken để lưu và trigger event
+                setToken(response.data.result.token);
                 window.location.href = '/';
                 return;
             }
@@ -61,21 +63,6 @@ export default function Login() {
 
         // Lưu provider vào sessionStorage
         sessionStorage.setItem('oauthProvider', 'google');
-
-        window.location.href = targetUrl;
-    }
-
-    const handleFacebookLogin = async () => {
-        const callBackUrl = `${window.location.origin}/auth/OAuth`;
-        const authUrl = "https://www.facebook.com/v18.0/dialog/oauth";
-        const facebookClientId = OAuthConfig.Facebook.clientId;
-
-        const targetUrl = `${authUrl}?client_id=${facebookClientId}&redirect_uri=${encodeURIComponent(
-            callBackUrl
-        )}&response_type=code&scope=public_profile,email`;
-
-        // Lưu provider vào sessionStorage
-        sessionStorage.setItem('oauthProvider', 'facebook');
 
         window.location.href = targetUrl;
     }
@@ -126,14 +113,6 @@ export default function Login() {
                         <div className="login-button-group">
                             <button type="submit" className="login-signin-btn">
                                 Đăng nhập
-                            </button>
-
-                            <button type="button" className="login-facebook-btn" onClick={handleFacebookLogin}>
-                                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '8px' }}>
-                                    <path d="M18 9.007a9 9 0 1 1-10.222-8.874V1h3.333v2.765A6.94 6.94 0 0 0 9 3.653c1.043 0 2.043.26 2.947.734V1.5h3.334v6.21h-2.501a4.93 4.93 0 0 0 2.143 3.262l-1.006 1.755A6.93 6.93 0 0 1 9 12.653a6.93 6.93 0 0 1-6.002-3.518L1.495 9.75a9 9 0 0 1 9-9.006Z" fill="#1877F2"/>
-                                    <path d="M13.332 5.802h1.996V4.207H13.33a2.65 2.65 0 0 0-2.646 2.646V7.45H9.003V9.14h1.647v4.914H13.33v-4.914h2.005l.29-1.595h-2.295V5.802Z" fill="#fff"/>
-                                </svg>
-                                Đăng nhập với Facebook
                             </button>
 
                             <button type="button" className="login-google-btn" onClick={handleGoogleLogin}>

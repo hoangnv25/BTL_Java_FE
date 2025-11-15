@@ -5,6 +5,7 @@ import { base } from "../../service/Base";
 import { App } from "antd";
 import { Trash2 } from "lucide-react";
 import Breadcrumb from "../../components/Breadcrumb";
+import { getToken, removeToken } from "../../service/LocalStorage";
 import "./Cart.css";
 
 export default function Cart() {
@@ -25,7 +26,7 @@ export default function Cart() {
     useEffect(() => {
         const fetchCartData = async () => {
             // Check if user is logged in
-            const token = localStorage.getItem('token');
+            const token = getToken();
             if (!token) {
                 setLoading(false);
                 setCartItems([]);
@@ -99,7 +100,7 @@ export default function Cart() {
                 // Nếu lỗi 401 (unauthorized), redirect to login
                 if (error?.response?.status === 401) {
                     message.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-                    localStorage.removeItem('token');
+                    removeToken();
                     navigate('/login');
                 }
             } finally {
@@ -190,7 +191,7 @@ export default function Cart() {
     const updateQuantity = async (productId, variationId, newQuantity) => {
         if (newQuantity < 1) return;
         
-        const token = localStorage.getItem('token');
+        const token = getToken();
         if (!token) {
             message.error('Vui lòng đăng nhập để cập nhật giỏ hàng');
             return;
@@ -268,7 +269,7 @@ export default function Cart() {
 
     // Xóa item khỏi cart
     const removeItem = async (productId, variationId) => {
-        const token = localStorage.getItem('token');
+        const token = getToken();
         if (!token) {
             message.error('Vui lòng đăng nhập');
             return;

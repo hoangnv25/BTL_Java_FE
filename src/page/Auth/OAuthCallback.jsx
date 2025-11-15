@@ -5,6 +5,7 @@ import axios from "axios";
 // import { base } from "../../service/Base";
 import "./Login.css";
 import { localhost } from "../../service/Base";
+import { setToken } from "../../service/LocalStorage";
 
 export default function OAuthCallback() {
   const navigate = useNavigate();
@@ -25,19 +26,11 @@ export default function OAuthCallback() {
       const oauthProvider = sessionStorage.getItem('oauthProvider') || 'google';
       console.log("OAuth Provider:", oauthProvider);
       
-      setProvider(oauthProvider === 'facebook' ? 'Facebook' : 'Google');
+      setProvider('Google');
 
-      const apiEndpoint = oauthProvider === 'facebook' 
-        ? `${localhost}/auth/outbound/facebook?code=${authCode}`
-        : `${localhost}/auth/outbound/authentication?code=${authCode}`;
-      
-      const successMessage = oauthProvider === 'facebook'
-        ? "Đăng nhập Facebook thành công!"
-        : "Đăng nhập Google thành công!";
-      
-      const errorMessage = oauthProvider === 'facebook'
-        ? "Đăng nhập Facebook thất bại"
-        : "Đăng nhập Google thất bại";
+      const apiEndpoint = `${localhost}/auth/outbound/authentication?code=${authCode}`;
+      const successMessage = "Đăng nhập Google thành công!";
+      const errorMessage = "Đăng nhập Google thất bại";
 
       axios
         .post(apiEndpoint)
@@ -45,7 +38,8 @@ export default function OAuthCallback() {
           console.log("OAuth Response:", response.data);
 
           if (response.data.result?.token) {
-            localStorage.setItem("token", response.data.result.token);
+            // Sử dụng setToken để lưu và trigger event
+            setToken(response.data.result.token);
             
             sessionStorage.removeItem('oauthProvider');
             

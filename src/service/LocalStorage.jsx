@@ -1,7 +1,9 @@
-export const KEY_TOKEN = "accessToken";
+export const KEY_TOKEN = "token";
 
 export const setToken = (token) => {
   localStorage.setItem(KEY_TOKEN, token);
+  // Dispatch event để các component khác biết token đã thay đổi
+  window.dispatchEvent(new Event('tokenChanged'));
 };
 
 export const getToken = () => {
@@ -9,5 +11,7 @@ export const getToken = () => {
 };
 
 export const removeToken = () => {
-  return localStorage.removeItem(KEY_TOKEN);
+  localStorage.removeItem(KEY_TOKEN);
+  // Dispatch event khi xóa token
+  window.dispatchEvent(new Event('tokenChanged'));
 };

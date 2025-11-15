@@ -6,32 +6,41 @@ import homeimg from "../../assets/image/homeimg.png";
 import "./HomePage.css";
 import { getToken } from "../../service/LocalStorage";
 import { Box, Typography } from "@mui/material";
+import { jwtDecode } from "jwt-decode";
 
 export default function HomePage() {
     const [userDetails, setUserDetails] = useState(null);
     
-    const getUserDetails = async (accessToken) => {
-        if (!accessToken) return;
-        const response = await fetch(
-            `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&accessToken=${accessToken}`
-        );
-        const data = await response.json();
-        setUserDetails(data);
-    };
-
-    const getFacebookUserDetails = async (accessToken) => {
-        if (!accessToken) return;
-        const response = await fetch(
-            `https://graph.facebook.com/v18.0/me?fields=id,name,email&access_token=${accessToken}`
-        );
-        const data = await response.json();
-        setUserDetails(data);
+    const getUserDetails = (token) => {
+        if (!token) return;
+        try {
+            // Decode JWT token để lấy thông tin user
+            const decodedToken = jwtDecode(token);
+            setUserDetails({
+                name: decodedToken.fullName || decodedToken.sub, // Ưu tiên fullName từ claim
+                // Có thể thêm các thông tin khác từ token nếu cần
+            });
+        } catch (error) {
+            console.error("Error decoding token:", error);
+            setUserDetails(null);
+        }
     };
 
     useEffect(() => {
-        const accessToken = getToken();
-        getUserDetails(accessToken);
-        getFacebookUserDetails(accessToken);
+        const token = getToken();
+        getUserDetails(token);
+        
+        // Lắng nghe sự kiện thay đổi token
+        const handleTokenChange = () => {
+            const newToken = getToken();
+            getUserDetails(newToken);
+        };
+        
+        window.addEventListener('tokenChanged', handleTokenChange);
+        
+        return () => {
+            window.removeEventListener('tokenChanged', handleTokenChange);
+        };
     }, []);
     return (
         <div className="home-page">
