@@ -107,6 +107,9 @@ export default function ChatFrame() {
         const client = new Client({
             webSocketFactory: () => socket,
             reconnectDelay: 5000,
+            connectHeaders: {
+                Authorization: `Bearer ${token}` // thêm token
+            }
         });
     
         client.onConnect = () => {
@@ -128,6 +131,7 @@ export default function ChatFrame() {
             client.deactivate();
         };
     }, [conversationId]);
+    
     
     const messages = messagesData.filter(m => String(m.conversationId) === String(conversationId))
 
