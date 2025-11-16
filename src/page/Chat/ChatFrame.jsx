@@ -2,11 +2,12 @@ import './ChatFrame.css'
 import { useParams } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
-import { base, baseSocket } from '../../service/Base'
+import { base } from '../../service/Base'
 import ChatSend from './ChatSend'
 
-// import { io } from "socket.io-client";
-import io from "socket.io-client";
+import SockJS from 'sockjs-client'
+import { Client } from '@stomp/stompjs'
+
 
 export default function ChatFrame() {
     let { senderId } = useParams()
@@ -26,7 +27,7 @@ export default function ChatFrame() {
         receiverId = 1 // Admin ID
     }
 
-    const socketRef = useRef(null)
+    const stompClientRef = useRef(null)
 
     const getMessages = async (showLoading = false) => {
         if (!conversationId) {
@@ -100,50 +101,32 @@ export default function ChatFrame() {
 
 
     useEffect(() => {
-        if (!token) return;
-        if (socketRef.current) return; // chỉ tạo 1 lần
+        if (!conversationId) return;
     
-        const socket = io("wss://besocket.up.railway.app", {
-            path: "/socket.io/",
-            query: { token },
-            transports: ["websocket"],
-        });
-
-        
-    
-        socket.on("connect", () => {
-            console.log("✅ Socket connected");
+        const socket = new SockJS(`${base}/ws`);
+        const client = new Client({
+            webSocketFactory: () => socket,
+            reconnectDelay: 5000,
         });
     
-        socket.on("disconnect", () => {
-            console.log("❌ Socket disconnected");
-        });
+        client.onConnect = () => {
+            console.log("✅ STOMP connected");
+            client.subscribe(`/topic/conversation/${conversationId}`, (message) => {
+                const body = JSON.parse(message.body);
+                handleNewMessage(body);
+            });
+        };
     
-        // Khi nhận tin nhắn mới
-        socket.on("message", (message) => {
-            console.log("💬 Có message: " + message.content);
-            handleNewMessage(message);
-        });
-
-        // socket.onAny((event, ...args) => {
-        //     console.log("📡 Received:", event, args);
-        // });
+        client.onWebSocketClose = () => {
+            console.log("❌ WebSocket closed");
+        };
     
-        socketRef.current = socket;
+        client.activate();
+        stompClientRef.current = client;
     
         return () => {
-            socket.disconnect();
-            socketRef.current = null;
+            client.deactivate();
         };
-    }, [token, conversationId]);
-    
-    // Khi conversationId thay đổi -> join đúng room
-    useEffect(() => {
-        if (socketRef.current && conversationId) {
-            const room = "conversation_" + conversationId;
-            console.log("📡 Join room:", room);
-            socketRef.current.emit("join_room", room);
-        }
     }, [conversationId]);
     
     const messages = messagesData.filter(m => String(m.conversationId) === String(conversationId))
@@ -157,7 +140,11 @@ export default function ChatFrame() {
     const formatTime = (iso) => {
         try {
             const d = new Date(iso)
+            // Thêm 7 giờ để đúng giờ Việt Nam (UTC+7)
+            d.setHours(d.getHours() + 7)
             const now = new Date()
+            // Thêm 7 giờ vào now để so sánh ngày chính xác
+            now.setHours(now.getHours() + 7)
             
             // So sánh ngày
             const date = d.getDate()
