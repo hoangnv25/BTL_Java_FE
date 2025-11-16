@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { base } from '../../../service/Base';
 import './Address.css';
-import { X, MapPin, Trash2 } from 'lucide-react';
+import { X, MapPin, Trash2, CheckCircle } from 'lucide-react';
 
 export default function Address({ open, onClose }) {
 	if (!open) return null;
@@ -18,6 +18,7 @@ export default function Address({ open, onClose }) {
 	const [creating, setCreating] = useState(false);
 	const [showCreate, setShowCreate] = useState(false);
 	const [deletingId, setDeletingId] = useState(null);
+	const [updatingId, setUpdatingId] = useState(null);
 
 	useEffect(() => {
 		let mounted = true;
@@ -122,6 +123,33 @@ export default function Address({ open, onClose }) {
 			setError('Không thể xoá địa chỉ. Vui lòng thử lại.');
 		} finally {
 			setDeletingId(null);
+		}
+	};
+
+	const handleSetDefault = async (e, id) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setError('');
+		const token = localStorage.getItem('token');
+		try {
+			setUpdatingId(id);
+			await axios.put(
+				`${base}/address/${id}`,
+				{
+					defaultAddress: true,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+			await reloadAddresses();
+		} catch (e) {
+			setError('Không thể đặt địa chỉ mặc định. Vui lòng thử lại.');
+		} finally {
+			setUpdatingId(null);
 		}
 	};
 
@@ -240,16 +268,42 @@ export default function Address({ open, onClose }) {
 												<span className="addr-badge">Mặc định</span>
 											)}
 											{!addr._default && (
-												<button
-													type="button"
-													className="addr-delete-btn"
-													onClick={(e) => handleDelete(e, addr.address_id)}
-													disabled={deletingId === addr.address_id}
-													aria-label="Xóa địa chỉ"
-													title="Xóa địa chỉ"
-												>
-													<Trash2 size={16} />
-												</button>
+												<div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+													<button
+														type="button"
+														onClick={(e) => handleSetDefault(e, addr.address_id)}
+														disabled={updatingId === addr.address_id}
+														aria-label="Đặt làm mặc định"
+														title="Đặt làm mặc định"
+														style={{ 
+															display: 'flex',
+															alignItems: 'center',
+															gap: '4px',
+															padding: '4px 8px',
+															border: '1px solid #1890ff',
+															borderRadius: '4px',
+															background: 'transparent',
+															color: updatingId === addr.address_id ? '#ccc' : '#1890ff',
+															cursor: updatingId === addr.address_id ? 'not-allowed' : 'pointer',
+															opacity: updatingId === addr.address_id ? 0.5 : 1,
+															fontSize: '12px',
+															transition: 'all 0.2s'
+														}}
+													>
+														<CheckCircle size={14} />
+														<span>Đặt mặc định</span>
+													</button>
+													<button
+														type="button"
+														className="addr-delete-btn"
+														onClick={(e) => handleDelete(e, addr.address_id)}
+														disabled={deletingId === addr.address_id}
+														aria-label="Xóa địa chỉ"
+														title="Xóa địa chỉ"
+													>
+														<Trash2 size={16} />
+													</button>
+												</div>
 											)}
 										</div>
 									</div>
