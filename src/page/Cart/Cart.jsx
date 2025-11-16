@@ -75,6 +75,7 @@ export default function Cart() {
                                     
                                     return {
                                         id: item.id, // cart item ID để dùng cho update/delete
+                                        cart_id: item.cart_id || item.id, // cart_id để sort
                                         product_id: item.product_id,
                                         product_variation_id: item.product_variation_id,
                                         quantity: item.quantity,
@@ -90,8 +91,14 @@ export default function Cart() {
                         })
                     );
                     
-                    // Lọc bỏ items null (fetch failed)
-                    setCartItems(itemsWithDetails.filter(item => item !== null));
+                    // Lọc bỏ items null (fetch failed) và sắp xếp theo cart_id giảm dần
+                    const filteredItems = itemsWithDetails.filter(item => item !== null);
+                    filteredItems.sort((a, b) => {
+                        const cartIdA = a.cart_id || a.id || 0;
+                        const cartIdB = b.cart_id || b.id || 0;
+                        return cartIdB - cartIdA; // Sắp xếp giảm dần (lớn nhất ở trên)
+                    });
+                    setCartItems(filteredItems);
                 } else {
                     setCartItems([]);
                 }
