@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import '../assets/style/Navbar.css'
-import { App } from 'antd'
+import { App, Modal } from 'antd'
 import { useState, useEffect } from 'react'
 import { jwtDecode } from "jwt-decode";
+import axios from 'axios'
+import { base } from '../service/Base'
 import NavbarPC from './NavbarPC'
 import NavbarMobile from './NavbarMobile'
 
@@ -16,13 +18,45 @@ function Navbar() {
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 900 : false)
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    localStorage.clear()
-    message.success('Đăng xuất thành công')
-    setIsLoggedIn(false)
-    setIsAdmin(false)
+    setIsLogoutModalOpen(true)
+  }
+
+  const confirmLogout = async () => {
+    const currentToken = localStorage.getItem('token')
+    if (!currentToken) {
+      message.error('Không tìm thấy token')
+      setIsLogoutModalOpen(false)
+      return
+    }
+
+    setIsLoggingOut(true)
+    try {
+      const response = await axios.post(`${base}/auth/logout`, {
+        token: currentToken
+      })
+      
+      if (response.status === 200) {
+        localStorage.clear()
+        message.success('Đăng xuất thành công')
+        setIsLoggedIn(false)
+        setIsAdmin(false)
+        setIsLogoutModalOpen(false)
+        navigate('/')
+      }
+    } catch (error) {
+      message.error(error?.response?.data?.message || 'Đăng xuất thất bại')
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
+  const cancelLogout = () => {
+    setIsLogoutModalOpen(false)
   }
 
   const checkLogin = () => {
@@ -75,26 +109,41 @@ function Navbar() {
   }
 
   return (
-    isMobile ? (
-      <NavbarMobile
-        isLoggedIn={isLoggedIn}
-        isAdmin={isAdmin}
-        handleLogout={handleLogout}
-        navigate={navigate}
-      />
-    ) : (
-      <NavbarPC
-        isLoggedIn={isLoggedIn}
-        isAdmin={isAdmin}
-        showSearch={showSearch}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        handleSearchToggle={handleSearchToggle}
-        handleSearchSubmit={handleSearchSubmit}
-        handleLogout={handleLogout}
-        navigate={navigate}
-      />
-    )
+    <>
+      {isMobile ? (
+        <NavbarMobile
+          isLoggedIn={isLoggedIn}
+          isAdmin={isAdmin}
+          handleLogout={handleLogout}
+          navigate={navigate}
+        />
+      ) : (
+        <NavbarPC
+          isLoggedIn={isLoggedIn}
+          isAdmin={isAdmin}
+          showSearch={showSearch}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleSearchToggle={handleSearchToggle}
+          handleSearchSubmit={handleSearchSubmit}
+          handleLogout={handleLogout}
+          navigate={navigate}
+        />
+      )}
+      <Modal
+        title="Xác nhận đăng xuất"
+        open={isLogoutModalOpen}
+        onOk={confirmLogout}
+        onCancel={cancelLogout}
+        okText="Đăng xuất"
+        cancelText="Hủy"
+        okButtonProps={{ danger: true, loading: isLoggingOut }}
+        cancelButtonProps={{ disabled: isLoggingOut }}
+        closable={!isLoggingOut}
+      >
+        <p>Bạn có muốn đăng xuất không?</p>
+      </Modal>
+    </>
   )
 }
 
