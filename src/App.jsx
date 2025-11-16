@@ -13,8 +13,11 @@ import CategoryProduct from './page/Category/CategoryProduct.jsx'
 import Admin from './page/Admin/Admin.jsx'
 import Chat from './page/Chat/Chat.jsx'
 import SearchResults from './page/Search/SearchResults.jsx'
+import { useTokenRefresh } from './hooks/useTokenRefresh'
 
 function App() {
+  useTokenRefresh()
+
   return (
     <>
       <Navbar />
