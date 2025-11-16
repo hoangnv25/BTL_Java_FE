@@ -37,6 +37,7 @@ function Navbar() {
   const decodeToken = () => {
     if (token) {
       const decodedToken = jwtDecode(token)
+      localStorage.setItem('userId', decodedToken.userId)
       if (decodedToken.scope.includes('ROLE_ADMIN')) {
         localStorage.setItem('isAdmin', true)
         setIsAdmin(true)

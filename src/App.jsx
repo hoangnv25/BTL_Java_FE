@@ -31,7 +31,7 @@ function App() {
           
           <Route path="/user" element={<Information />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/chat" element={<Chat />} />
+          <Route path="/chat/*" element={<Chat />} />
 
           <Route path="/admin/*" element={<Admin />} />
         </Routes>
