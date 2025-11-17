@@ -1,16 +1,19 @@
-import { useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { base } from '../../service/Base'
 import './ChatSend.css'
+import { App } from 'antd'
 
-export default function ChatSend({ receiverId: receiverIdProp, getMessages }) {
+export default function ChatSend({ receiverId: receiverIdProp, getMessages, onUnauthorized }) {
     const senderId = localStorage.getItem('userId')
     const token = localStorage.getItem('token')
     const isAdmin = localStorage.getItem('isAdmin')
     const [message, setMessage] = useState('')
     const [sending, setSending] = useState(false)
     const [receiverId, setReceiverId] = useState(receiverIdProp)
+    const { message: messageApi } = App.useApp()
+    const navigate = useNavigate()
 
     
     useEffect(() => {
@@ -40,6 +43,17 @@ export default function ChatSend({ receiverId: receiverIdProp, getMessages }) {
             setSending(false)
         } catch (error) {
             console.error('Failed to send message:', error)
+            if (error?.response?.status === 401) {
+                if (typeof onUnauthorized === 'function') {
+                    onUnauthorized()
+                } else {
+                    messageApi.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('isAdmin')
+                    localStorage.removeItem('userId')
+                    navigate('/login', { replace: true })
+                }
+            }
             setSending(false)
         }
     }

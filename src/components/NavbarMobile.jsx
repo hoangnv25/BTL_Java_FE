@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import '../assets/style/NavbarMobile.css'
 import Category from './CategoryNavbar'
 import { Home, MessageCircle, User, List, Sparkles, LayoutDashboard, X } from 'lucide-react'
@@ -11,9 +11,28 @@ function NavbarMobile({
   navigate,
 }) {
   const [showCategories, setShowCategories] = useState(false)
+  const location = useLocation()
+  const isChatPage = location.pathname.startsWith('/chat')
 
   const closeAll = () => {
     setShowCategories(false)
+  }
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const body = document.body
+    if (!isChatPage) {
+      body.classList.add('has-bottom-nav')
+    } else {
+      body.classList.remove('has-bottom-nav')
+    }
+    return () => {
+      body.classList.remove('has-bottom-nav')
+    }
+  }, [isChatPage])
+
+  if (isChatPage) {
+    return null
   }
 
   return (

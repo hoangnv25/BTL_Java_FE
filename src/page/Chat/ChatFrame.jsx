@@ -1,16 +1,18 @@
 import './ChatFrame.css'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { base } from '../../service/Base'
 import ChatSend from './ChatSend'
-
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
-
+import { ArrowLeft } from 'lucide-react'
+import { App } from 'antd'
 
 export default function ChatFrame() {
     let { senderId } = useParams()
+  const navigate = useNavigate()
+    const { message } = App.useApp()
     const isAdmin = localStorage.getItem('isAdmin')
     const [conversationId, setConversationId] = useState('')
     const [messagesData, setMessagesData] = useState([])
@@ -18,6 +20,7 @@ export default function ChatFrame() {
     const viewerId = localStorage.getItem('userId')
     const token = localStorage.getItem('token')
     const messagesEndRef = useRef(null)
+    const unauthorizedRef = useRef(false)
     let id_to_get_conversation = viewerId
     let receiverId = null
     if (isAdmin === 'true' && senderId) {
@@ -28,6 +31,14 @@ export default function ChatFrame() {
     }
 
     const stompClientRef = useRef(null)
+
+    const handleUnauthorized = () => {
+        if (unauthorizedRef.current) return
+        unauthorizedRef.current = true
+        message.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
+        localStorage.clear()
+        navigate('/login', { replace: true })
+    }
 
     const getMessages = async (showLoading = false) => {
         if (!conversationId) {
@@ -46,6 +57,9 @@ export default function ChatFrame() {
             setMessagesData(response.data)
         } catch (error) {
             console.error('Failed to get messages:', error)
+            if (error?.response?.status === 401) {
+                handleUnauthorized()
+            }
         } finally {
             if (showLoading) {
                 setIsLoading(false)
@@ -67,6 +81,9 @@ export default function ChatFrame() {
                 setConversationId(cid)
             } catch (error) {
                 console.error('Failed to get conversationId:', error)
+                if (error?.response?.status === 401) {
+                    handleUnauthorized()
+                }
             }
             
         }
@@ -148,7 +165,7 @@ export default function ChatFrame() {
             d.setHours(d.getHours() + 7)
             const now = new Date()
             // Thêm 7 giờ vào now để so sánh ngày chính xác
-            now.setHours(now.getHours() + 7)
+            now.setHours(now.getHours())
             
             // So sánh ngày
             const date = d.getDate()
@@ -163,15 +180,10 @@ export default function ChatFrame() {
                           year === nowYear
             
             if (isToday) {
-                // Hiển thị giờ:phút (24h format)
-                const hours = String(d.getHours()).padStart(2, '0')
-                const minutes = String(d.getMinutes()).padStart(2, '0')
-                return `${hours}:${minutes}`
+                return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
             }
             // Hiển thị ngày/tháng/năm
-            const day = String(date).padStart(2, '0')
-            const monthStr = String(month + 1).padStart(2, '0')
-            return `${day}/${monthStr}/${year}`
+            return d.toLocaleDateString('vi-VN')
         } catch {
             return ''
         }
@@ -179,27 +191,30 @@ export default function ChatFrame() {
 
     const getInitials = (name) => {
         if (!name) return '?'
-        const parts = String(name).trim().split(/\s+/)
-        if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        return String(name).trim().slice(0, 2).toUpperCase()
     }
 
-    const headerTitle = messages.find(m => !m.me)?.senderSummary?.senderName || `Liên hệ trực tiếp với Admin Hoàng Culus`
+    const headerTitle = messages.find(m => !m.me)?.senderSummary?.displayName || `Liên hệ trực tiếp với Admin Hoàng Culus`
 
     return (
         <div className="chat-frame">
             <div className="chat-frame__header">
-                {isLoading && conversationId ? (
-                    <>
-                        <div className="chat-frame__title chat-skeleton-header-title"></div>
-                        <div className="chat-frame__subtitle chat-skeleton-header-subtitle"></div>
-                    </>
-                ) : (
-                    <>
-                        <div className="chat-frame__title">{headerTitle}</div>
-                        <div className="chat-frame__subtitle">{messages.length} tin nhắn</div>
-                    </>
-                )}
+                <button className="chat-frame__back" type="button" onClick={() => navigate(-1)} aria-label="Quay lại">
+                    <ArrowLeft size={18} />
+                </button>
+                <div className="chat-frame__header-text">
+                    {isLoading && conversationId ? (
+                        <>
+                            <div className="chat-frame__title chat-skeleton-header-title"></div>
+                            <div className="chat-frame__subtitle chat-skeleton-header-subtitle"></div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="chat-frame__title">{headerTitle}</div>
+                            <div className="chat-frame__subtitle">{messages.length} tin nhắn</div>
+                        </>
+                    )}
+                </div>
             </div>
             <div className="chat-frame__messages">
                 {isLoading && conversationId ? (
@@ -233,8 +248,8 @@ export default function ChatFrame() {
                             ) : <div className="chat-message__avatar--spacer" />}
                             <div className={`chat-bubble${m.me ? ' chat-bubble--me' : ' chat-bubble--other'}`}>
                                 <div className="chat-bubble__content">{m.content}</div>
-                                <div className="chat-bubble__meta">
-                                    {m.senderSummary?.senderName || 'Người dùng'} • {formatTime(m.createdAt)}
+                            <div className="chat-bubble__meta">
+                                    {formatTime(m.createdAt)}
                                 </div>
                             </div>
                         </div>
@@ -242,7 +257,7 @@ export default function ChatFrame() {
                 )}
                 <div ref={messagesEndRef} />
             </div>
-            <ChatSend receiverId={receiverId} getMessages={getMessages} />
+            <ChatSend receiverId={receiverId} getMessages={getMessages} onUnauthorized={handleUnauthorized} />
         </div>
     )
 }

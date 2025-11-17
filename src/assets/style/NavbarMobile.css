@@ -5,7 +5,7 @@
   z-index: 50;
   background: #ffffff;
   border-bottom: 1px solid #eeeeee;
-  display: none;
+  display: block;
 }
 
 .navbar-mobile-brand {
@@ -23,7 +23,7 @@
   height: 64px;
   background: #ffffff;
   border-top: 1px solid #eeeeee;
-  display: none;
+  display: grid;
   grid-template-columns: repeat(5, 1fr);
   align-items: center;
   justify-items: center;
@@ -43,6 +43,7 @@
   border: none;
   text-decoration: none;
   font-size: 11px;
+  cursor: pointer;
 }
 
 /* Cột trống ở giữa để dành chỗ cho FAB */
@@ -195,17 +196,6 @@
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
-}
-
-/* Responsive visibility */
-@media (max-width: 900px) {
-  .navbar-mobile-header { display: block; }
-  .bottom-nav { display: grid; }
-}
-
-@media (min-width: 901px) {
-  .navbar-mobile-header { display: none; }
-  .bottom-nav { display: none; }
 }
 
 

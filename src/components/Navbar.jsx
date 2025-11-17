@@ -16,7 +16,7 @@ function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 900 : false)
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 1024 : false)
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const navigate = useNavigate()
@@ -72,7 +72,7 @@ function Navbar() {
   useEffect(() => {
     checkLogin()
     decodeToken()
-    const handleResize = () => setIsMobile(window.innerWidth <= 900)
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024)
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
