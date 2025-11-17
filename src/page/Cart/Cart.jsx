@@ -5,16 +5,16 @@ import { base } from "../../service/Base";
 import { App } from "antd";
 import { Trash2 } from "lucide-react";
 import Breadcrumb from "../../components/Breadcrumb";
+import Checkout from "../../components/Checkout/Checkout";
 import "./Cart.css";
-import CartAddr from "./CartAddr";
 
 
 export default function Cart() {
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [orderNote, setOrderNote] = useState("");
     const [selectedItems, setSelectedItems] = useState(new Set());
-    const [isOrdering, setIsOrdering] = useState(false);
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+    const [checkoutItems, setCheckoutItems] = useState([]);
     const navigate = useNavigate();
     const { message } = App.useApp();
 
@@ -61,6 +61,7 @@ export default function Cart() {
                     const itemsWithDetails = await Promise.all(
                         cartArray.map(async (item) => {
                             try {
+                                const cartIdentifier = item.cart_id ?? item.id ?? item.cartItemId ?? 0;
                                 const productResponse = await axios.get(`${base}/products/${item.product_id}`, {
                                     headers: {
                                         'Authorization': `Bearer ${token}`
@@ -74,8 +75,8 @@ export default function Cart() {
                                     const selectedVariation = findVariationById(productData, item.product_variation_id);
                                     
                                     return {
-                                        id: item.id, // cart item ID để dùng cho update/delete
-                                        cart_id: item.cart_id || item.id, // cart_id để sort
+                                        cartItemId: cartIdentifier,
+                                        cart_id: cartIdentifier,
                                         product_id: item.product_id,
                                         product_variation_id: item.product_variation_id,
                                         quantity: item.quantity,
@@ -93,11 +94,7 @@ export default function Cart() {
                     
                     // Lọc bỏ items null (fetch failed) và sắp xếp theo cart_id giảm dần
                     const filteredItems = itemsWithDetails.filter(item => item !== null);
-                    filteredItems.sort((a, b) => {
-                        const cartIdA = a.cart_id || a.id || 0;
-                        const cartIdB = b.cart_id || b.id || 0;
-                        return cartIdB - cartIdA; // Sắp xếp giảm dần (lớn nhất ở trên)
-                    });
+                    filteredItems.sort((a, b) => (b.cart_id || 0) - (a.cart_id || 0));
                     setCartItems(filteredItems);
                 } else {
                     setCartItems([]);
@@ -171,6 +168,13 @@ export default function Cart() {
         }, 0);
     };
 
+    const getSelectedItemsList = () => {
+        return cartItems.filter(item => {
+            const itemKey = `${item.product_id}-${item.product_variation_id}`;
+            return selectedItems.has(itemKey);
+        });
+    };
+
     // Toggle chọn/bỏ chọn item
     const toggleItemSelection = (productId, variationId) => {
         const itemKey = `${productId}-${variationId}`;
@@ -225,7 +229,6 @@ export default function Cart() {
         );
 
         try {
-            // Thử endpoint mới: /cart/{product_variation_id}
             const response = await axios.put(`${base}/cart/${variationId}`, {
                 quantity: newQuantity
             }, {
@@ -236,35 +239,11 @@ export default function Cart() {
             });
 
             if (response.status === 200 || response.status === 204) {
-                // Success - đã update optimistically rồi, không cần hiện thông báo
                 return;
             }
 
-            // Nếu không thành công rõ ràng, ném lỗi để vào nhánh catch xử lý chung
             throw new Error('Unexpected status when updating quantity');
         } catch (error) {
-            const shouldFallback = error?.response?.status === 404 || error?.response?.status === 405;
-            if (shouldFallback && cartItem.id) {
-                try {
-                    // Fallback endpoint cũ: /cart/update/{cart_item_id}
-                    const legacy = await axios.put(`${base}/cart/update/${cartItem.id}`, {
-                        quantity: newQuantity
-                    }, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (legacy.status === 200 || legacy.status === 204) {
-                        return; // đã update thành công theo endpoint cũ
-                    }
-                } catch {
-                    // Tiếp tục xuống để revert và báo lỗi bằng error ban đầu
-                }
-            }
-
-            // Revert khi thất bại
             setCartItems(prev => 
                 prev.map(item => 
                     item.product_id === productId && item.product_variation_id === variationId
@@ -311,7 +290,6 @@ export default function Cart() {
         });
 
         try {
-            // Thử endpoint mới: /cart/{product_variation_id}
             const response = await axios.delete(`${base}/cart/${variationId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -323,36 +301,15 @@ export default function Cart() {
                 return;
             }
 
-            // Nếu không thành công rõ ràng, ném lỗi để vào nhánh catch
             throw new Error('Unexpected status when deleting cart item');
         } catch (error) {
-            const shouldFallback = error?.response?.status === 404 || error?.response?.status === 405;
-            if (shouldFallback && cartItem.id) {
-                try {
-                    // Fallback endpoint cũ: /cart/remove/{cart_item_id}
-                    const legacy = await axios.delete(`${base}/cart/remove/${cartItem.id}`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    if (legacy.status === 200 || legacy.status === 204) {
-                        message.success('Đã xóa sản phẩm khỏi giỏ hàng');
-                        return;
-                    }
-                } catch {
-                    // Tiếp tục xuống để revert và báo lỗi bằng error ban đầu
-                }
-            }
-
-            // Revert on error
             setCartItems(oldItems);
             message.error(error?.response?.data?.message || 'Có lỗi khi xóa sản phẩm');
         }
     };
 
     // Đặt hàng
-    const handleCheckout = async () => {
+    const handleCheckout = () => {
         const token = localStorage.getItem('token');
         if (!token) {
             message.error('Vui lòng đăng nhập để đặt hàng');
@@ -360,48 +317,33 @@ export default function Cart() {
             return;
         }
 
-        const selectedItemsList = cartItems.filter(item => {
-            const itemKey = `${item.product_id}-${item.product_variation_id}`;
-            return selectedItems.has(itemKey);
-        });
+        const selectedItemsList = getSelectedItemsList();
         if (selectedItemsList.length === 0) {
             message.error("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
             return;
         }
 
-        const payload = {
-            note: orderNote || undefined,
-            items: selectedItemsList.map(it => ({
-                variationId: it.product_variation_id,
-                quantity: it.quantity
-            }))
-        };
+        setCheckoutItems(selectedItemsList);
+        setIsCheckoutOpen(true);
+    };
 
-        try {
-            setIsOrdering(true);
-            const res = await axios.post(`${base}/orders`, payload, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (res.status === 200 || res.status === 201) {
-                message.success("Đặt hàng thành công!");
-                // Xoá các item đã đặt khỏi giao diện giỏ hàng
-                const selectedKeys = new Set(
-                    selectedItemsList.map(it => `${it.product_id}-${it.product_variation_id}`)
-                );
-                setCartItems(prev => prev.filter(it => !selectedKeys.has(`${it.product_id}-${it.product_variation_id}`)));
-                setSelectedItems(new Set());
-                setOrderNote("");
-                return;
-            }
-            throw new Error('Unexpected status when creating order');
-        } catch (error) {
-            message.error(error?.response?.data?.message || "Đặt hàng thất bại. Vui lòng thử lại.");
-        } finally {
-            setIsOrdering(false);
+    const handleOrderSuccess = (orderedItems = []) => {
+        if (!orderedItems.length) {
+            setCheckoutItems([]);
+            setIsCheckoutOpen(false);
+            return;
         }
+
+        const orderedKeys = new Set(
+            orderedItems.map(it => `${it.product_id}-${it.product_variation_id}`)
+        );
+
+        setCartItems(prev =>
+            prev.filter(it => !orderedKeys.has(`${it.product_id}-${it.product_variation_id}`))
+        );
+        setSelectedItems(new Set());
+        setCheckoutItems([]);
+        setIsCheckoutOpen(false);
     };
 
     if (loading) {
@@ -438,6 +380,8 @@ export default function Cart() {
             </>
         );
     }
+
+    const hasSelectedItems = selectedItems.size > 0;
 
     return (
         <>
@@ -528,15 +472,6 @@ export default function Cart() {
                         </div>
                         );
                     })}
-                    
-                    <div className="order-notes">
-                        <h3>Ghi chú đơn hàng</h3>
-                        <textarea
-                            value={orderNote}
-                            onChange={(e) => setOrderNote(e.target.value)}
-                            placeholder="Nhập ghi chú cho đơn hàng..."
-                        />
-                    </div>
                 </div>
                 
                 <div className="cart-right">
@@ -551,19 +486,20 @@ export default function Cart() {
                         <button 
                             className="checkout-btn"
                             onClick={handleCheckout}
-                            disabled={isOrdering}
+                            disabled={!hasSelectedItems}
                         >
-                            {isOrdering ? 'Đang đặt hàng...' : 'Đặt hàng'}
+                            Đặt hàng
                         </button>
                     </div>
-                    
-                    <CartAddr />
                 </div>
-
-
-
             </div>
         </div>
+        <Checkout
+            open={isCheckoutOpen}
+            items={checkoutItems}
+            onClose={() => setIsCheckoutOpen(false)}
+            onOrderSuccess={handleOrderSuccess}
+        />
         </>
     );
 }

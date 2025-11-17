@@ -5,10 +5,12 @@ import { base } from '../../../service/Base';
 import './Address.css';
 import { X, MapPin, Trash2, CheckCircle } from 'lucide-react';
 
-export default function Address({ open, onClose }) {
+export default function Address({ open, onClose, onSelect, selectedId }) {
 	if (!open) return null;
 
 	const [addresses, setAddresses] = useState([]);
+	const selectionEnabled = typeof onSelect === 'function';
+
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [street, setStreet] = useState('');
@@ -250,65 +252,66 @@ export default function Address({ open, onClose }) {
 
 					{!loading && addresses.length > 0 && (
 						<ul className="addr-list">
-							{addresses.map((addr) => (
-								<li key={addr.address_id} className="addr-item">
-									<div className="addr-row">
-										<div className="addr-info">
-											<div className="addr-line">
-												<span className="addr-street">{addr.street}</span>
+							{addresses.map((addr) => {
+								const isSelected = selectedId === addr.address_id;
+								return (
+									<li
+										key={addr.address_id}
+										className={`addr-item${isSelected ? ' selected' : ''}`}
+									>
+										<div className="addr-header">
+											{selectionEnabled && (
+												<label className="addr-radio">
+													<input
+														type="radio"
+														name="address-select"
+														checked={isSelected}
+														onChange={() => onSelect?.(addr)}
+													/>
+													<span className="addr-radio-indicator" />
+												</label>
+											)}
+											<div className="addr-info">
+												<div className="addr-line">{addr.street}</div>
+												<div className="addr-sub">
+													{addr.ward} • {addr.city}
+												</div>
 											</div>
-											<div className="addr-sub">
-												<span>{addr.ward}</span>
-												<span> • </span>
-												<span>{addr.city}</span>
+											<div className="addr-chip-group">
+												{addr._default && (
+													<span className="addr-chip addr-chip-default">Mặc định</span>
+												)}
 											</div>
 										</div>
-										<div className="addr-right">
-											{addr._default && (
-												<span className="addr-badge">Mặc định</span>
+
+										<div className="addr-actions-inline">
+											{!addr._default && (
+												<button
+													type="button"
+													className="addr-small-btn"
+													onClick={(e) => handleSetDefault(e, addr.address_id)}
+													disabled={updatingId === addr.address_id}
+												>
+													<CheckCircle size={14} />
+													<span>Đặt mặc định</span>
+												</button>
 											)}
 											{!addr._default && (
-												<div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-													<button
-														type="button"
-														onClick={(e) => handleSetDefault(e, addr.address_id)}
-														disabled={updatingId === addr.address_id}
-														aria-label="Đặt làm mặc định"
-														title="Đặt làm mặc định"
-														style={{ 
-															display: 'flex',
-															alignItems: 'center',
-															gap: '4px',
-															padding: '4px 8px',
-															border: '1px solid #1890ff',
-															borderRadius: '4px',
-															background: 'transparent',
-															color: updatingId === addr.address_id ? '#ccc' : '#1890ff',
-															cursor: updatingId === addr.address_id ? 'not-allowed' : 'pointer',
-															opacity: updatingId === addr.address_id ? 0.5 : 1,
-															fontSize: '12px',
-															transition: 'all 0.2s'
-														}}
-													>
-														<CheckCircle size={14} />
-														<span>Đặt mặc định</span>
-													</button>
-													<button
-														type="button"
-														className="addr-delete-btn"
-														onClick={(e) => handleDelete(e, addr.address_id)}
-														disabled={deletingId === addr.address_id}
-														aria-label="Xóa địa chỉ"
-														title="Xóa địa chỉ"
-													>
-														<Trash2 size={16} />
-													</button>
-												</div>
+												<button
+													type="button"
+													className="addr-delete-btn"
+													onClick={(e) => handleDelete(e, addr.address_id)}
+													disabled={deletingId === addr.address_id}
+													aria-label="Xóa địa chỉ"
+													title="Xóa địa chỉ"
+												>
+													<Trash2 size={16} />
+												</button>
 											)}
 										</div>
-									</div>
-								</li>
-							))}
+									</li>
+								);
+							})}
 						</ul>
 					)}
 				</div>

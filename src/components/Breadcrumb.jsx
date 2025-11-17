@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "./Breadcrumb.css";
+import "../assets/style/Breadcrumb.css";
 
 /**
  * Breadcrumb Component
