@@ -5,6 +5,7 @@ import { base } from "../../service/Base.jsx";
 import { App } from "antd";
 import ProductFeedback from "./FeedBack/ProductFeedback";
 import ProductCard from "../../components/ProductCard";
+import Checkout from "../../components/Checkout/Checkout";
 import Breadcrumb from "../../components/Breadcrumb";
 import "./ProductDetail.css";
 
@@ -17,6 +18,8 @@ export default function ProductDetail() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [addingToCart, setAddingToCart] = useState(false);
+	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+	const [checkoutItems, setCheckoutItems] = useState([]);
 	const [viewHistory, setViewHistory] = useState([]);
 	const [relatedProducts, setRelatedProducts] = useState([]);
 const relatedRowRef = useRef(null);
@@ -404,6 +407,58 @@ useEffect(() => {
 		}
 	};
 
+	const handleBuyNow = () => {
+		const token = localStorage.getItem('token');
+		if (!token) {
+			message.warning('Vui lòng đăng nhập để mua hàng');
+			navigate('/login');
+			return;
+		}
+
+		const matched = selectedVariation?.list?.find(i => i.size === selectedSize);
+		if (!matched) {
+			message.error('Vui lòng chọn kích thước hợp lệ');
+			return;
+		}
+
+		const variationId = matched.id_variation || matched.idVariation || matched.id;
+		if (!variationId) {
+			message.error('Không tìm thấy ID biến thể. Vui lòng thử lại.');
+			return;
+		}
+
+		const stockQty = matched.stock_quantity || matched.stockQuantity || 0;
+		if (stockQty <= 0) {
+			message.error('Sản phẩm đã hết hàng');
+			return;
+		}
+
+		if (qty > stockQty) {
+			message.error(`Chỉ còn ${stockQty} sản phẩm trong kho`);
+			return;
+		}
+
+		const item = {
+			product_id: RESPONSE.id,
+			product_variation_id: variationId,
+			quantity: qty,
+			product: {
+				title: RESPONSE.title,
+				price: RESPONSE.price,
+				discount: RESPONSE.discount || 0,
+				thumbnail: activeImg || RESPONSE.thumbnail,
+			},
+			selectedVariation: {
+				color: selectedColor,
+				size: selectedSize,
+				image: activeImg || RESPONSE.thumbnail,
+			},
+		};
+
+		setCheckoutItems([item]);
+		setIsCheckoutOpen(true);
+	};
+
 	// Breadcrumb items
 	const breadcrumbItems = useMemo(() => {
 		const items = [{ label: "Trang chủ", path: "/" }];
@@ -494,6 +549,16 @@ useEffect(() => {
 			</>
 		);
 	}
+
+	const handleCloseCheckout = () => {
+		setIsCheckoutOpen(false);
+	};
+
+	const handleCheckoutSuccess = () => {
+		setIsCheckoutOpen(false);
+		setCheckoutItems([]);
+		setQty(1);
+	};
 
 	return (
 		<>
@@ -589,7 +654,7 @@ useEffect(() => {
 					>
 						{addingToCart ? 'Đang thêm...' : 'Add to cart'}
 					</button>
-					<button className="btn secondary" type="button">Buy now</button>
+					<button className="btn secondary" type="button" onClick={handleBuyNow}>Buy now</button>
 				</div>
 			</div>
 
@@ -662,6 +727,12 @@ useEffect(() => {
 				)}
 			</div>
 		)}
+		<Checkout
+			open={isCheckoutOpen}
+			items={checkoutItems}
+			onClose={handleCloseCheckout}
+			onOrderSuccess={handleCheckoutSuccess}
+		/>
 		</>
 	);
 }

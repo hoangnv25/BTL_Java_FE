@@ -3,12 +3,14 @@ import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { base } from '../../../service/Base';
 import './Address.css';
-import { X, MapPin, Trash2 } from 'lucide-react';
+import { X, MapPin, Trash2, CheckCircle } from 'lucide-react';
 
-export default function Address({ open, onClose }) {
+export default function Address({ open, onClose, onSelect, selectedId }) {
 	if (!open) return null;
 
 	const [addresses, setAddresses] = useState([]);
+	const selectionEnabled = typeof onSelect === 'function';
+
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [street, setStreet] = useState('');
@@ -18,6 +20,7 @@ export default function Address({ open, onClose }) {
 	const [creating, setCreating] = useState(false);
 	const [showCreate, setShowCreate] = useState(false);
 	const [deletingId, setDeletingId] = useState(null);
+	const [updatingId, setUpdatingId] = useState(null);
 
 	useEffect(() => {
 		let mounted = true;
@@ -125,6 +128,33 @@ export default function Address({ open, onClose }) {
 		}
 	};
 
+	const handleSetDefault = async (e, id) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setError('');
+		const token = localStorage.getItem('token');
+		try {
+			setUpdatingId(id);
+			await axios.put(
+				`${base}/address/${id}`,
+				{
+					defaultAddress: true,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+			await reloadAddresses();
+		} catch (e) {
+			setError('Không thể đặt địa chỉ mặc định. Vui lòng thử lại.');
+		} finally {
+			setUpdatingId(null);
+		}
+	};
+
 	const modalContent = (
 		<div className="addr-modal-backdrop" onClick={onClose}>
 			<div className="addr-modal" onClick={(e) => e.stopPropagation()}>
@@ -222,22 +252,49 @@ export default function Address({ open, onClose }) {
 
 					{!loading && addresses.length > 0 && (
 						<ul className="addr-list">
-							{addresses.map((addr) => (
-								<li key={addr.address_id} className="addr-item">
-									<div className="addr-row">
-										<div className="addr-info">
-											<div className="addr-line">
-												<span className="addr-street">{addr.street}</span>
+							{addresses.map((addr) => {
+								const isSelected = selectedId === addr.address_id;
+								return (
+									<li
+										key={addr.address_id}
+										className={`addr-item${isSelected ? ' selected' : ''}`}
+									>
+										<div className="addr-header">
+											{selectionEnabled && (
+												<label className="addr-radio">
+													<input
+														type="radio"
+														name="address-select"
+														checked={isSelected}
+														onChange={() => onSelect?.(addr)}
+													/>
+													<span className="addr-radio-indicator" />
+												</label>
+											)}
+											<div className="addr-info">
+												<div className="addr-line">{addr.street}</div>
+												<div className="addr-sub">
+													{addr.ward} • {addr.city}
+												</div>
 											</div>
-											<div className="addr-sub">
-												<span>{addr.ward}</span>
-												<span> • </span>
-												<span>{addr.city}</span>
+											<div className="addr-chip-group">
+												{addr._default && (
+													<span className="addr-chip addr-chip-default">Mặc định</span>
+												)}
 											</div>
 										</div>
-										<div className="addr-right">
-											{addr._default && (
-												<span className="addr-badge">Mặc định</span>
+
+										<div className="addr-actions-inline">
+											{!addr._default && (
+												<button
+													type="button"
+													className="addr-small-btn"
+													onClick={(e) => handleSetDefault(e, addr.address_id)}
+													disabled={updatingId === addr.address_id}
+												>
+													<CheckCircle size={14} />
+													<span>Đặt mặc định</span>
+												</button>
 											)}
 											{!addr._default && (
 												<button
@@ -252,9 +309,9 @@ export default function Address({ open, onClose }) {
 												</button>
 											)}
 										</div>
-									</div>
-								</li>
-							))}
+									</li>
+								);
+							})}
 						</ul>
 					)}
 				</div>

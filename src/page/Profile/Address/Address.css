@@ -161,23 +161,59 @@
 
 .addr-item {
   border: 1px solid #eee;
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.addr-row {
+.addr-item.selected {
+  border-color: #111;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.addr-header {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  cursor: default;
+  gap: 12px;
 }
 
-.addr-right {
-  display: flex;
+.addr-radio {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.addr-radio input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.addr-radio-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.addr-radio input:checked + .addr-radio-indicator {
+  background: #111;
+}
+
+.addr-chip-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .addr-info {
@@ -193,30 +229,56 @@
   font-size: 14px;
 }
 
-.addr-badge {
-  background: #111;
-  color: #fff;
-  padding: 4px 8px;
+.addr-chip {
+  padding: 2px 10px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.addr-chip-default {
+  background: #111;
+  color: #fff;
+}
+
+.addr-actions-inline {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.addr-small-btn {
+  border: 1px solid #1677ff;
+  background: transparent;
+  color: #1677ff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.addr-small-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .addr-delete-btn {
-  border: none;
+  border: 1px solid #f5c6cb;
   background: transparent;
   color: #b71c1c;
   cursor: pointer;
-  padding: 6px;
+  padding: 6px 10px;
   border-radius: 6px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
 }
-.addr-delete-btn:hover {
+.addr-delete-btn:hover:not(:disabled) {
   background: #fdecea;
-}
-.addr-item:hover .addr-delete-btn {
-  opacity: 1;
 }
 .addr-delete-btn:disabled {
   opacity: 0.4;

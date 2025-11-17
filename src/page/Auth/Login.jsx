@@ -3,9 +3,8 @@ import anhTheLC from '../../assets/image/anh_the_LC.jpg';
 import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { base } from '../../service/Base';
 import { App } from 'antd';
+import { login } from '../../service/Auth';
 import { OAuthConfig } from '../../configurations/configuration';
 
 export default function Login() {
@@ -34,16 +33,11 @@ export default function Login() {
         e.preventDefault();
         const payload = { fullName: formData.fullName, password: formData.password };
         try {
-            const response = await axios.post(`${base}/auth/token`, payload);
-            if (response.status === 200) {
-                message.success('Đăng nhập thành công');
-                localStorage.setItem('token', response.data.result.token);
-                window.location.href = '/';
-                return;
-            }
-            message.error('Đăng nhập thất bại');
+            await login(payload);
+            message.success('Đăng nhập thành công');
+            window.location.href = '/';
         } catch (error) {
-            message.error(error?.response?.data?.message || 'Đăng nhập thất bại');
+            message.error(error?.message || 'Đăng nhập thất bại');
         }
     }
 

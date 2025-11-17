@@ -11,6 +11,7 @@ import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
 import Review from './Review/Review';
 import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare, MapPin } from 'lucide-react';
+import { logout } from '../../service/Auth';
 import ReviewList from './Review/ReviewList';
 
 export default function Information() {
@@ -109,7 +110,15 @@ export default function Information() {
                                 <span>Địa chỉ</span>
                             </button>
                                 
-                            <button className="logout" onClick={() => { localStorage.removeItem('token'); window.location.href = '/'; }}>
+                            <button className="logout" onClick={async () => {
+                                try {
+                                    await logout();
+                                } catch (error) {
+                                    console.error(error);
+                                } finally {
+                                    window.location.href = '/';
+                                }
+                            }}>
                                 <LogOut size={18} />
                                 <span>Đăng xuất</span>
                             </button>
