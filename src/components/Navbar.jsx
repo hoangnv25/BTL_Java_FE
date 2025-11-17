@@ -3,8 +3,7 @@ import '../assets/style/Navbar.css'
 import { App, Modal } from 'antd'
 import { useState, useEffect } from 'react'
 import { jwtDecode } from "jwt-decode";
-import axios from 'axios'
-import { base } from '../service/Base'
+import { logout } from '../service/Auth'
 import NavbarPC from './NavbarPC'
 import NavbarMobile from './NavbarMobile'
 
@@ -27,29 +26,16 @@ function Navbar() {
   }
 
   const confirmLogout = async () => {
-    const currentToken = localStorage.getItem('token')
-    if (!currentToken) {
-      message.error('Không tìm thấy token')
-      setIsLogoutModalOpen(false)
-      return
-    }
-
     setIsLoggingOut(true)
     try {
-      const response = await axios.post(`${base}/auth/logout`, {
-        token: currentToken
-      })
-      
-      if (response.status === 200) {
-        localStorage.clear()
-        message.success('Đăng xuất thành công')
-        setIsLoggedIn(false)
-        setIsAdmin(false)
-        setIsLogoutModalOpen(false)
-        navigate('/')
-      }
+      await logout()
+      message.success('Đăng xuất thành công')
+      setIsLoggedIn(false)
+      setIsAdmin(false)
+      setIsLogoutModalOpen(false)
+      navigate('/')
     } catch (error) {
-      message.error(error?.response?.data?.message || 'Đăng xuất thất bại')
+      message.error(error?.message || 'Đăng xuất thất bại')
     } finally {
       setIsLoggingOut(false)
     }
