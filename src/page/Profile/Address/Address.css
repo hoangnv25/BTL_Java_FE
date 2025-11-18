@@ -1,0 +1,308 @@
+/* Modal backdrop */
+.addr-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+/* Modal container */
+.addr-modal {
+  width: 92%;
+  max-width: 560px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 10001;
+}
+
+.addr-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.addr-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.addr-icon-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #555;
+  padding: 6px;
+  border-radius: 6px;
+}
+.addr-icon-btn:hover {
+  background: #f3f3f3;
+}
+
+.addr-modal-body {
+  max-height: 60vh;
+  overflow: auto;
+  padding: 12px 16px;
+  /* Hide scrollbar but allow scrolling */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.addr-modal-body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
+}
+
+.addr-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+.addr-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.addr-form-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.addr-label {
+  font-weight: 600;
+}
+.addr-input {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 10px;
+  outline: none;
+}
+.addr-input:focus {
+  border-color: #111;
+}
+.addr-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.addr-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.addr-btn-secondary {
+  background: #fff;
+  color: #111;
+  border: 1px solid #ddd;
+}
+.addr-btn-secondary:hover {
+  background: #f7f7f7;
+  color: #111;
+}
+
+.addr-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 0;
+  color: #666;
+}
+.addr-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #eee;
+  border-top-color: #111;
+  border-radius: 50%;
+  animation: addr-spin 0.9s linear infinite;
+}
+@keyframes addr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.addr-error {
+  color: #b71c1c;
+  background: #fdecea;
+  border: 1px solid #f5c6cb;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.addr-empty {
+  color: #666;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.addr-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.addr-item {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.addr-item.selected {
+  border-color: #111;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.addr-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.addr-radio {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.addr-radio input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.addr-radio-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.addr-radio input:checked + .addr-radio-indicator {
+  background: #111;
+}
+
+.addr-chip-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.addr-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.addr-line {
+  font-weight: 600;
+}
+.addr-sub {
+  color: #666;
+  font-size: 14px;
+}
+
+.addr-chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.addr-chip-default {
+  background: #111;
+  color: #fff;
+}
+
+.addr-actions-inline {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.addr-small-btn {
+  border: 1px solid #1677ff;
+  background: transparent;
+  color: #1677ff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.addr-small-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.addr-delete-btn {
+  border: 1px solid #f5c6cb;
+  background: transparent;
+  color: #b71c1c;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.addr-delete-btn:hover:not(:disabled) {
+  background: #fdecea;
+}
+.addr-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.addr-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #eee;
+}
+
+.addr-btn {
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.addr-btn:hover {
+  opacity: 0.9;
+}
+
+

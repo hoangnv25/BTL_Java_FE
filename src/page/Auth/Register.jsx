@@ -3,10 +3,9 @@ import anhTheLC from '../../assets/image/anh_the_LC.jpg';
 import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { base } from '../../service/Base';
 import { App } from 'antd';
 import { setToken } from '../../service/LocalStorage';
+import { login as loginService, register as registerService } from '../../service/Auth';
 
 export default function Register() {
     const { message } = App.useApp();
@@ -20,8 +19,7 @@ export default function Register() {
         roles: ["USER1"]
     });
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
+    const autoLogin = async () => {
         const payload = { 
             fullName: formData.fullName, 
             password: formData.password
@@ -29,17 +27,11 @@ export default function Register() {
         
         try {
             message.loading('Đang đăng nhập...');
-            const response = await axios.post(`${base}/auth/token`, payload);
-            if (response.status === 200) {
-                message.success('Đăng nhập thành công');
-                // Sử dụng setToken để lưu và trigger event
-                setToken(response.data.result.token);
-                window.location.href = '/';
-                return;
-            }
-            message.error('Đăng nhập thất bại');
+            await loginService(payload);
+            message.success('Đăng nhập thành công');
+            window.location.href = '/';
         } catch (error) {
-            message.error(error?.response?.data?.message || 'Đăng nhập thất bại');
+            message.error(error?.message || 'Đăng nhập thất bại');
         }
     };
 
@@ -69,15 +61,11 @@ export default function Register() {
         // payload.append("roles", ["USER"]);
 
         try {
-            const response = await axios.post(`${base}/users`, payload);
-            if (response.status === 200) {
-                message.success('Đăng ký thành công!');
-                handleLogin(e);
-                return;
-            }
-            message.error('Đăng ký thất bại!');
+            await registerService(payload);
+            message.success('Đăng ký thành công!');
+            await autoLogin();
         } catch (error) {
-            message.error(error?.response?.data?.message || 'Đăng ký thất bại!');
+            message.error(error?.message || 'Đăng ký thất bại!');
         }
     };
 

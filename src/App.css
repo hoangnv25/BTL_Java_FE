@@ -1,8 +1,8 @@
 .app-main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  height: 90vh; /* cho phép cuộn trong app-main */
+  /* padding: 20px; */
+  height: 86vh; /* cho phép cuộn trong app-main */
   overflow-y: auto;
   -ms-overflow-style: none; /* IE/legacy Edge */
   scrollbar-width: none; /* Firefox */
@@ -14,9 +14,15 @@
   height: 0;
 }
 
-/* Tránh nội dung bị che bởi bottom-nav trên mobile */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .app-main {
-    padding-bottom: 80px; /* dư một chút so với 64px */
+    height: 100vh;
+  }
+}
+
+/* Tránh nội dung bị che bởi bottom-nav trên mobile */
+@media (max-width: 1024px) {
+  body.has-bottom-nav .app-main {
+    padding-bottom: 80px;
   }
 }

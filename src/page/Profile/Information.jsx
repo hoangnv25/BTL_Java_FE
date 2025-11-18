@@ -5,11 +5,16 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom'
 import NotLoggedIn from '../../components/NotLoggedIn';
 import Breadcrumb from '../../components/Breadcrumb';
+import Address from './Address/Address';
+import Order from './Order/Order';
 import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
+
 import ReviewList from './Review/ReviewList';
-import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare } from 'lucide-react';
+import Review from './Review/Review';
 import { getToken, removeToken } from '../../service/LocalStorage';
+import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare, MapPin } from 'lucide-react';
+import { logout } from '../../service/Auth';
 
 export default function Information() {
     const token = getToken()
@@ -20,6 +25,7 @@ export default function Information() {
     const [showUpdate, setShowUpdate] = useState(false);
     const [showUpdatePassword, setShowUpdatePassword] = useState(false);
     const [showReview, setShowReview] = useState(false);
+    const [showAddress, setShowAddress] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 900)
@@ -101,9 +107,24 @@ export default function Information() {
                                 <MessageSquare size={18} />
                                 <span>Review</span>
                             </button>
-                            <button className="logout" onClick={() => { removeToken(); window.location.href = '/'; }}>
+
+                            <button className="primary" onClick={() => setShowAddress(true)}>
+                                <MapPin size={18} />
+                                <span>Địa chỉ</span>
+                            </button>
+                                
+                            <button className="logout" onClick={async () => {
+                                try {
+                                    await logout();
+                                } catch (error) {
+                                    console.error(error);
+                                } finally {
+                                    window.location.href = '/';
+                                }
+                            }}>
                                 <LogOut size={18} />
                                 <span>Đăng xuất</span>
+
                             </button>
                         </nav>
                     </aside>
@@ -154,27 +175,9 @@ export default function Information() {
                                 </div>
                             </div>
                         </section>
-
-                        <div className="orders-section">
-                            <h3 className="orders-title">
-                                <Package size={20} />
-                                <span>Đơn hàng của bạn</span>
-                            </h3>
-                            <div className="orders-table">
-                                <div className="orders-head">
-                                    <span>Mã đơn hàng</span>
-                                    <span>Ngày đặt</span>
-                                    <span>Thành tiền</span>
-                                    <span>TT thanh toán</span>
-                                    <span>TT vận chuyển</span>
-                                </div>
-                                <div className="orders-empty">
-                                    <Package size={48} />
-                                    <p>Không có đơn hàng nào</p>
-                                </div>
-                            </div>
-                        </div>
                     </main>
+
+                    <Order />
                 </div>
             </div>
 
@@ -201,6 +204,12 @@ export default function Information() {
                 <ReviewList
                     open={showReview}
                     onClose={() => setShowReview(false)}
+                />
+            )}
+            {showAddress && (
+                <Address
+                    open={showAddress}
+                    onClose={() => setShowAddress(false)}
                 />
             )}
         </>

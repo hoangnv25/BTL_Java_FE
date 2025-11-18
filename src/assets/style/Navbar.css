@@ -44,6 +44,14 @@
   margin-bottom: 0;
 }
 
+.navbar-separator {
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  background: #e5e7eb;
+  align-self: center;
+}
+
 .navbar-link {
   color: #444444;
   text-decoration: none;

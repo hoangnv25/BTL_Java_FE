@@ -5,6 +5,7 @@ import AdminCategory from './AdminCategory/AdminCategory'
 import AdminSale from './AdminSale/AdminSale'
 import GetProduct from './AdminProduct/GetProduct/GetProduct'
 import AdminReview from './AdminReview/AdminReview'
+import AdminOrder from './AdminOrder/AdminOrder'
 
 export default function Admin() {
     return (
@@ -17,7 +18,7 @@ export default function Admin() {
                     <Route path="products" element={<GetProduct />} />
                     <Route path="sales" element={<AdminSale />} />
                     <Route path="cart" element={<div>Cart</div>} />
-                    <Route path="orders" element={<div>Orders</div>} />
+                    <Route path="orders" element={<AdminOrder />} />
                     <Route path="categories" element={<AdminCategory />} />
                     <Route path="feedback" element={<div>Feedback</div>} />
                     <Route path="reviews" element={<AdminReview />} />
