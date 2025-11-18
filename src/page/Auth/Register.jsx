@@ -4,6 +4,7 @@ import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
+import { setToken } from '../../service/LocalStorage';
 import { login as loginService, register as registerService } from '../../service/Auth';
 
 export default function Register() {

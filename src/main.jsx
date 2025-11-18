@@ -8,13 +8,13 @@ import 'antd/dist/reset.css';
 import { App as AntApp } from 'antd'
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode>
     <BrowserRouter>
       <AntApp>
         <App />
       </AntApp>
     </BrowserRouter>
-  </StrictMode>,
+  // </StrictMode>,
 )
 
 // Configure global antd message (ensures visibility and consistent behavior)

@@ -1,23 +1,32 @@
 import { AlertTriangle } from 'lucide-react'
 import './ConfirmDialog.css'
 
-export default function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
+export default function ConfirmDialog({ 
+    open, 
+    title, 
+    message, 
+    onConfirm, 
+    onCancel,
+    confirmText = 'OK',
+    cancelText = 'Hủy',
+    type = 'danger' // 'danger', 'warning', 'info'
+}) {
     if (!open) return null
 
     return (
         <div className="confirm-overlay" onClick={onCancel}>
             <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
-                <div className="confirm-icon">
-                    <AlertTriangle size={48} color="#dc3545" />
+                <div className={`confirm-icon ${type}`}>
+                    <AlertTriangle size={48} />
                 </div>
                 <h2 className="confirm-title">{title}</h2>
                 <p className="confirm-message">{message}</p>
                 <div className="confirm-actions">
                     <button className="btn-confirm-cancel" onClick={onCancel}>
-                        Hủy
+                        {cancelText}
                     </button>
-                    <button className="btn-confirm-ok" onClick={onConfirm}>
-                        OK
+                    <button className={`btn-confirm-ok ${type}`} onClick={onConfirm}>
+                        {confirmText}
                     </button>
                 </div>
             </div>

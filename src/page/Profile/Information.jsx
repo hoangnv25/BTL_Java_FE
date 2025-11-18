@@ -9,12 +9,15 @@ import Address from './Address/Address';
 import Order from './Order/Order';
 import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
+
+import ReviewList from './Review/ReviewList';
 import Review from './Review/Review';
+import { getToken, removeToken } from '../../service/LocalStorage';
 import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare, MapPin } from 'lucide-react';
 import { logout } from '../../service/Auth';
 
 export default function Information() {
-    const token = localStorage.getItem('token')
+    const token = getToken()
     
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -104,6 +107,7 @@ export default function Information() {
                                 <MessageSquare size={18} />
                                 <span>Review</span>
                             </button>
+
                             <button className="primary" onClick={() => setShowAddress(true)}>
                                 <MapPin size={18} />
                                 <span>Địa chỉ</span>
@@ -120,6 +124,7 @@ export default function Information() {
                             }}>
                                 <LogOut size={18} />
                                 <span>Đăng xuất</span>
+
                             </button>
                         </nav>
                     </aside>
@@ -196,7 +201,7 @@ export default function Information() {
                 />
             )}
             {showReview && (
-                <Review
+                <ReviewList
                     open={showReview}
                     onClose={() => setShowReview(false)}
                 />

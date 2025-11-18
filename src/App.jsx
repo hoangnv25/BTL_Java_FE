@@ -4,6 +4,7 @@ import Navbar from './components/Navbar.jsx'
 import HomePage from './page/Home/HomePage.jsx'
 import Login from './page/Auth/Login.jsx'
 import Register from './page/Auth/Register.jsx'
+import OAuthCallback from './page/Auth/OAuthCallback.jsx'
 import Information from './page/Profile/Information.jsx'
 import NAinPage from './page/Home/NewArrivals/NAinPage.jsx'
 import ProductDetail from './page/ProductDetail/ProductDetail.jsx'
@@ -31,7 +32,7 @@ function App() {
 
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          
+          <Route path="/auth/OAuth" element={<OAuthCallback />} />
           <Route path="/user" element={<Information />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/chat/*" element={<Chat />} />

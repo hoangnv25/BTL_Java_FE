@@ -123,15 +123,7 @@
 }
 
 .sidebar-nav button::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 3px;
-    background: #111827;
-    transform: scaleY(0);
-    transition: transform 0.3s ease;
+    display: none;
 }
 
 .sidebar-nav button:hover {
@@ -148,7 +140,7 @@
 }
 
 .sidebar-nav button:hover::before {
-    transform: scaleY(1);
+    display: none;
 }
 
 .sidebar-nav button.active {
@@ -159,8 +151,7 @@
 }
 
 .sidebar-nav button.active::before {
-    transform: scaleY(1);
-    background: #ffffff;
+    display: none;
 }
 
 .sidebar-nav button.active svg {
@@ -189,6 +180,10 @@
     filter: contrast(1.1);
 }
 
+.sidebar-nav button.primary:hover::before {
+    display: none;
+}
+
 .sidebar-nav button.primary:hover svg {
     color: #ffffff;
 }
@@ -205,15 +200,19 @@
 }
 
 .sidebar-nav button.logout:hover {
-    background: #374151;
-    color: #ffffff;
-    border-color: #374151;
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
     transform: translateX(4px);
     filter: contrast(1.1);
 }
 
+.sidebar-nav button.logout:hover::before {
+    display: none;
+}
+
 .sidebar-nav button.logout:hover svg {
-    color: #ffffff;
+    color: #dc2626;
 }
 
 .sidebar-nav button.logout svg {

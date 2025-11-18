@@ -6,11 +6,11 @@ import { jwtDecode } from "jwt-decode";
 import { logout } from '../service/Auth'
 import NavbarPC from './NavbarPC'
 import NavbarMobile from './NavbarMobile'
+import { getToken, removeToken } from '../service/LocalStorage'
 
 
 function Navbar() {
   const { message } = App.useApp();
-  const token = localStorage.getItem('token')
 
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -46,15 +46,17 @@ function Navbar() {
   }
 
   const checkLogin = () => {
+    const token = getToken()
     if (token) {
       setIsLoggedIn(true)
+      decodeToken(token)
     } else {
       setIsLoggedIn(false)
       setIsAdmin(false)
     }
   }
 
-  const decodeToken = () => {
+  const decodeToken = (token) => {
     if (token) {
       const decodedToken = jwtDecode(token)
       localStorage.setItem('userId', decodedToken.userId)
@@ -65,16 +67,27 @@ function Navbar() {
         localStorage.setItem('isAdmin', false)
         setIsAdmin(false)
       }
-      
     }
   }
 
   useEffect(() => {
     checkLogin()
+    
+    // Lắng nghe sự kiện thay đổi token
+    const handleTokenChange = () => {
+      checkLogin()
+    }
+    
+    window.addEventListener('tokenChanged', handleTokenChange)
+    
     decodeToken()
     const handleResize = () => setIsMobile(window.innerWidth <= 1024)
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    
+    return () => {
+      window.removeEventListener('tokenChanged', handleTokenChange)
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   const handleSearchToggle = () => {
