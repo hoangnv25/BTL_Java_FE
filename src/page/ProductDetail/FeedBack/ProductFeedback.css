@@ -392,48 +392,96 @@
     }
 }
 
-/* Nút hành động feedback */
-.pf-btn-edit {
+/* Nút menu 3 chấm và dropdown */
+.pf-feedback-menu-wrapper {
+    position: relative;
+}
+
+.pf-btn-menu {
     background: transparent;
     border: none;
-    color: #2563eb;
+    color: #6b7280;
     cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s, color 0.2s;
+    transition: all 0.2s;
 }
 
-.pf-btn-edit:hover {
-    background: #e0e7ff;
+.pf-btn-menu:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.pf-btn-menu:active {
+    background: #e5e7eb;
+}
+
+.pf-feedback-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 160px;
+    z-index: 100;
+    overflow: hidden;
+    animation: menuFadeIn 0.15s ease-out;
+}
+
+@keyframes menuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pf-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+    transition: background 0.15s;
+    text-align: left;
+}
+
+.pf-menu-item:hover {
+    background: #f9fafb;
+}
+
+.pf-menu-item svg {
+    flex-shrink: 0;
+}
+
+.pf-menu-item-edit {
+    color: #2563eb;
+}
+
+.pf-menu-item-edit:hover {
+    background: #eff6ff;
     color: #1d4ed8;
 }
 
-.pf-btn-edit:active {
-    background: #c7d2fe;
-}
-
-.pf-btn-delete {
-    background: transparent;
-    border: none;
+.pf-menu-item-delete {
     color: #ef4444;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s;
 }
 
-.pf-btn-delete:hover {
-    background: #fee2e2;
+.pf-menu-item-delete:hover {
+    background: #fef2f2;
     color: #dc2626;
-}
-
-.pf-btn-delete:active {
-    background: #fecaca;
 }
 

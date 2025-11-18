@@ -3,7 +3,10 @@ import axios from "axios";
 import { base } from "../../../service/Base.jsx";
 import { App } from "antd";
 import { jwtDecode } from "jwt-decode";
-import { Trash2, Edit2 } from "lucide-react";
+import { Trash2, Edit2, MoreVertical } from "lucide-react";
+import { handleDeleteFeedback } from "./DeleteFeedback";
+import { handleUpdateFeedback } from "./UpdateFeedback";
+import ConfirmDialog from "../../Profile/Review/ConfirmDialog";
 import "./ProductFeedback.css";
 
 const STAR_LEVELS = [5, 4, 3, 2, 1];
@@ -45,15 +48,16 @@ export default function ProductFeedback({ productId }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editingFeedbackId, setEditingFeedbackId] = useState(null);
     const [formData, setFormData] = useState({
         rating: 0,
-        comment: "",
-        images: []
+        comment: ""
     });
     const [submitting, setSubmitting] = useState(false);
-    const [userAvatars, setUserAvatars] = useState(new Map()); // Map userId -> avatar
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingFeedbackId, setEditingFeedbackId] = useState(null);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [selectedFeedbackToDelete, setSelectedFeedbackToDelete] = useState(null);
+    const [openMenuId, setOpenMenuId] = useState(null); // Track which feedback's menu is open
 
     const totalFeedbacks = feedbackData?.totalFeedbacks || 0;
 
@@ -65,6 +69,99 @@ export default function ProductFeedback({ productId }) {
         }));
     }, [feedbackData]);
 
+    // API Get Feedback
+    const handleGetFeedback = async (productIdParam) => {
+        if (!productIdParam) {
+            return { success: false, error: 'NO_PRODUCT_ID' };
+        }
+
+        try {
+            const response = await axios.get(`${base}/feedback/${productIdParam}`, {
+                headers: {
+                    // Không cần authentication cho API get feedback
+                }
+            });
+
+            // Kiểm tra response status
+            if (response.status === 200) {
+                const responseData = response.data;
+
+                // Kiểm tra code response
+                if (responseData?.code === 1000 && responseData?.result) {
+                    const result = responseData.result;
+
+                    // Format data theo đúng structure
+                    const formattedData = {
+                        productId: result.productId || productIdParam,
+                        productName: result.productName || '',
+                        averageRating: Number(result.averageRating) || 0,
+                        totalFeedbacks: Number(result.totalFeedbacks) || 0,
+                        ratingDistribution: result.ratingDistribution || {
+                            "1": 0,
+                            "2": 0,
+                            "3": 0,
+                            "4": 0,
+                            "5": 0
+                        },
+                        feedbacks: Array.isArray(result.feedbacks) 
+                            ? result.feedbacks.map(fb => ({
+                                id: fb.id,
+                                userId: fb.userId,
+                                userFullName: fb.userFullName || 'Khách hàng',
+                                productId: fb.productId || productIdParam,
+                                productName: fb.productName || result.productName || '',
+                                rating: Number(fb.rating) || 0,
+                                note: fb.note || '',
+                                createdAt: fb.createdAt || null
+                            }))
+                            : []
+                    };
+
+                    return { success: true, data: formattedData };
+                } else {
+                    const errorMsg = responseData?.message || 'Không thể tải đánh giá sản phẩm';
+                    return { success: false, error: errorMsg };
+                }
+            } else {
+                const errorMsg = response.data?.message || 'Không thể tải đánh giá sản phẩm';
+                return { success: false, error: errorMsg };
+            }
+        } catch (err) {
+            console.error('[Feedback] Error getting feedback:', err);
+            
+            const errorMsg = err?.response?.data?.message 
+                || err?.response?.data?.error 
+                || 'Có lỗi khi tải đánh giá sản phẩm';
+            
+            return { success: false, error: errorMsg };
+        }
+    };
+
+    // Refresh feedback data (sau khi create/update/delete)
+    const fetchFeedbackData = async () => {
+        if (!productId) return;
+        
+        try {
+            setLoading(true);
+            setError(null);
+            
+            const result = await handleGetFeedback(productId);
+            
+            if (result.success && result.data) {
+                setFeedbackData(result.data);
+            } else {
+                setError(result.error || 'Không thể tải đánh giá sản phẩm');
+                setFeedbackData(null);
+            }
+        } catch (err) {
+            console.error('[Feedback] Error refreshing feedback:', err);
+            setError('Có lỗi khi tải đánh giá sản phẩm');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // useEffect để fetch feedback khi productId thay đổi
     useEffect(() => {
         if (!productId) {
             setFeedbackData(null);
@@ -73,89 +170,25 @@ export default function ProductFeedback({ productId }) {
 
         let cancelled = false;
 
-        const fetchFeedback = async () => {
+        const loadFeedback = async () => {
             setLoading(true);
             setError(null);
 
             try {
-                const response = await axios.get(`${base}/feedback/${productId}`, {
-                    headers: {
-                        // Không cần authentication cho API get feedback
-                    }
-                });
+                const result = await handleGetFeedback(productId);
+
                 if (!cancelled) {
-                    if (response.status === 200 && response.data?.code === 1000) {
-                        const result = response.data.result;
-                        setFeedbackData(result);
-                        
-                        // Fetch avatars cho các user trong feedback
-                        if (Array.isArray(result.feedbacks) && result.feedbacks.length > 0) {
-                            const userIds = [...new Set(result.feedbacks.map(fb => fb.userId).filter(Boolean))];
-                            console.log('Fetching avatars for userIds:', userIds);
-                            if (userIds.length > 0 && !cancelled) {
-                                // Fetch avatars
-                                const avatarMap = new Map();
-                                const promises = userIds.map(async (userId) => {
-                                    try {
-                                        // Thử không cần auth trước
-                                        let userResponse;
-                                        try {
-                                            userResponse = await axios.get(`${base}/users/${userId}`, {
-                                                headers: {}
-                                            });
-                                        } catch (authErr) {
-                                            // Nếu lỗi 401/403, thử với token
-                                            const token = localStorage.getItem('token');
-                                            if (token) {
-                                                userResponse = await axios.get(`${base}/users/${userId}`, {
-                                                    headers: {
-                                                        'Authorization': `Bearer ${token}`
-                                                    }
-                                                });
-                                            } else {
-                                                throw authErr;
-                                            }
-                                        }
-                                        
-                                        if (userResponse && userResponse.status === 200) {
-                                            const userData = userResponse.data?.result || userResponse.data?.data || userResponse.data;
-                                            console.log(`User ${userId} data:`, userData);
-                                            if (userData?.avatar) {
-                                                // Đảm bảo avatar là URL đầy đủ
-                                                const avatarUrl = userData.avatar.startsWith('http') || userData.avatar.startsWith('/')
-                                                    ? userData.avatar
-                                                    : `${base}/${userData.avatar}`;
-                                                console.log(`Setting avatar for user ${userId}:`, avatarUrl);
-                                                avatarMap.set(userId, avatarUrl);
-                                            } else {
-                                                console.log(`No avatar found for user ${userId}`);
-                                            }
-                                        }
-                                    } catch (err) {
-                                        console.log(`Failed to fetch avatar for user ${userId}:`, err?.response?.status || err.message);
-                                        // Ignore error, sẽ dùng placeholder
-                                    }
-                                });
-                                await Promise.all(promises);
-                                if (!cancelled) {
-                                    setUserAvatars(prev => {
-                                        const newMap = new Map(prev);
-                                        avatarMap.forEach((avatar, userId) => {
-                                            newMap.set(userId, avatar);
-                                        });
-                                        return newMap;
-                                    });
-                                }
-                            }
-                        }
+                    if (result.success && result.data) {
+                        setFeedbackData(result.data);
                     } else {
-                        setError(response.data?.message || "Không thể tải đánh giá sản phẩm");
+                        setError(result.error || 'Không thể tải đánh giá sản phẩm');
                         setFeedbackData(null);
                     }
                 }
             } catch (err) {
                 if (!cancelled) {
-                    setError(err?.response?.data?.message || "Có lỗi khi tải đánh giá sản phẩm");
+                    console.error('[Feedback] Unexpected error:', err);
+                    setError('Có lỗi không mong muốn xảy ra');
                     setFeedbackData(null);
                 }
             } finally {
@@ -165,152 +198,94 @@ export default function ProductFeedback({ productId }) {
             }
         };
 
-        fetchFeedback();
+        loadFeedback();
 
         return () => {
             cancelled = true;
         };
     }, [productId]);
 
-    const fetchFeedbackData = async () => {
-        if (!productId) return;
-        try {
-            setLoading(true);
-            setError(null);
-            const response = await axios.get(`${base}/feedback/${productId}`, {
-                headers: {}
-            });
-            if (response.status === 200 && response.data?.code === 1000) {
-                const result = response.data.result;
-                setFeedbackData(result);
-                
-                // Fetch avatars cho các user trong feedback
-                if (Array.isArray(result.feedbacks) && result.feedbacks.length > 0) {
-                    const userIds = [...new Set(result.feedbacks.map(fb => fb.userId).filter(Boolean))];
-                    if (userIds.length > 0) {
-                        // Fetch avatars
-                        const avatarMap = new Map();
-                        const promises = userIds.map(async (userId) => {
-                            try {
-                                // Thử không cần auth trước
-                                let userResponse;
-                                try {
-                                    userResponse = await axios.get(`${base}/users/${userId}`, {
-                                        headers: {}
-                                    });
-                                } catch (authErr) {
-                                    // Nếu lỗi 401/403, thử với token
-                                    const token = localStorage.getItem('token');
-                                    if (token) {
-                                        userResponse = await axios.get(`${base}/users/${userId}`, {
-                                            headers: {
-                                                'Authorization': `Bearer ${token}`
-                                            }
-                                        });
-                                    } else {
-                                        throw authErr;
-                                    }
-                                }
-                                
-                                if (userResponse && userResponse.status === 200) {
-                                    const userData = userResponse.data?.result || userResponse.data?.data || userResponse.data;
-                                    if (userData?.avatar) {
-                                        // Đảm bảo avatar là URL đầy đủ
-                                        const avatarUrl = userData.avatar.startsWith('http') || userData.avatar.startsWith('/')
-                                            ? userData.avatar
-                                            : `${base}/${userData.avatar}`;
-                                        avatarMap.set(userId, avatarUrl);
-                                    }
-                                }
-                            } catch (err) {
-                                console.log(`Failed to fetch avatar for user ${userId}:`, err?.response?.status || err.message);
-                                // Ignore error, sẽ dùng placeholder
-                            }
-                        });
-                        await Promise.all(promises);
-                        setUserAvatars(prev => {
-                            const newMap = new Map(prev);
-                            avatarMap.forEach((avatar, userId) => {
-                                newMap.set(userId, avatar);
-                            });
-                            return newMap;
-                        });
-                    }
-                }
-            }
-        } catch (err) {
-            setError(err?.response?.data?.message || "Có lỗi khi tải đánh giá sản phẩm");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSubmitFeedback = async (e) => {
-        e.preventDefault();
+    // API Create Feedback
+    const handleCreateFeedback = async (rating, note) => {
         const token = localStorage.getItem('token');
         if (!token) {
             message.warning('Vui lòng đăng nhập để đánh giá sản phẩm');
-            return;
+            return { success: false, error: 'UNAUTHORIZED' };
         }
 
-        if (isEditing && !editingFeedbackId) {
-            message.error('Không xác định được đánh giá cần chỉnh sửa');
-            return;
+        if (!productId) {
+            message.error('Không tìm thấy sản phẩm');
+            return { success: false, error: 'NO_PRODUCT_ID' };
         }
 
-        if (formData.rating === 0) {
+        if (!rating || rating === 0) {
             message.warning('Vui lòng chọn số sao đánh giá');
-            return;
+            return { success: false, error: 'NO_RATING' };
         }
 
-        if (!formData.comment.trim()) {
-            message.warning('Vui lòng nhập đánh giá');
-            return;
+        if (!note || !note.trim()) {
+            message.warning('Vui lòng nhập nhận xét');
+            return { success: false, error: 'NO_NOTE' };
         }
 
-        setSubmitting(true);
         try {
             const payload = {
-                rating: String(formData.rating),
-                note: formData.comment.trim()
+                rating: String(rating), // API yêu cầu rating là string
+                note: note.trim()
             };
-            let response;
 
-            if (isEditing && editingFeedbackId) {
-                response = await axios.put(`${base}/feedback/${productId}/${editingFeedbackId}`, payload, {
+            const response = await axios.post(
+                `${base}/feedback/${productId}`,
+                payload,
+                {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
-                });
-            } else {
-                response = await axios.post(`${base}/feedback/${productId}`, payload, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-            }
+                }
+            );
 
+            // Kiểm tra response thành công
             if (response.status === 200 || response.status === 201) {
-                message.success(isEditing ? 'Đã cập nhật đánh giá thành công!' : 'Đã gửi đánh giá thành công!');
-                setFormData({ rating: 0, comment: "", images: [] });
-                setShowForm(false);
-                setIsEditing(false);
-                setEditingFeedbackId(null);
-                // Refresh danh sách feedback
-                await fetchFeedbackData();
+                const responseData = response.data;
+                
+                // Kiểm tra code response (nếu API trả về format {code, message, result})
+                if (responseData?.code === 1000 || response.status === 200 || response.status === 201) {
+                    message.success('Đã gửi đánh giá thành công!');
+                    return { success: true, data: responseData };
+                } else {
+                    const errorMsg = responseData?.message || 'Không thể gửi đánh giá';
+                    message.error(errorMsg);
+                    return { success: false, error: errorMsg };
+                }
             } else {
-                message.error(response.data?.message || 'Không thể gửi đánh giá');
+                const errorMsg = response.data?.message || 'Không thể gửi đánh giá';
+                message.error(errorMsg);
+                return { success: false, error: errorMsg };
             }
         } catch (err) {
-            console.error('Error submitting feedback:', err);
-            message.error(err?.response?.data?.message || 'Có lỗi khi gửi đánh giá');
-        } finally {
-            setSubmitting(false);
+            console.error('[Feedback] Error creating feedback:', err);
+            
+            // Xử lý các lỗi cụ thể
+            if (err?.response?.status === 401) {
+                message.error('Vui lòng đăng nhập lại');
+                return { success: false, error: 'UNAUTHORIZED' };
+            } else if (err?.response?.status === 403) {
+                message.error('Bạn không có quyền thực hiện hành động này');
+                return { success: false, error: 'FORBIDDEN' };
+            } else if (err?.response?.status === 400) {
+                const errorMsg = err?.response?.data?.message || 'Dữ liệu không hợp lệ';
+                message.error(errorMsg);
+                return { success: false, error: errorMsg };
+            } else {
+                const errorMsg = err?.response?.data?.message || 'Có lỗi khi gửi đánh giá. Vui lòng thử lại sau.';
+                message.error(errorMsg);
+                return { success: false, error: errorMsg };
+            }
         }
     };
 
+    // Kiểm tra quyền quản lý feedback
     const checkIsAdmin = () => {
         const token = localStorage.getItem('token');
         if (!token) return false;
@@ -327,9 +302,7 @@ export default function ProductFeedback({ productId }) {
         if (!token) return null;
         try {
             const decodedToken = jwtDecode(token);
-            // Thử nhiều field có thể chứa userId
-            const userId = decodedToken.sub || decodedToken.userId || decodedToken.id || decodedToken.user_id || null;
-            return userId;
+            return decodedToken.sub || decodedToken.userId || decodedToken.id || decodedToken.user_id || decodedToken.username || null;
         } catch {
             return null;
         }
@@ -343,71 +316,112 @@ export default function ProductFeedback({ productId }) {
         if (isAdmin) return true; // Admin có thể chỉnh sửa/xóa mọi feedback
 
         const currentUserId = getCurrentUserId();
-        // API trả về userId trực tiếp trong feedback item
-        const feedbackUserId = feedbackItem.userId || feedbackItem.user_id || feedbackItem.user?.id;
+        const feedbackUserId = feedbackItem.userId;
         
         // Chỉ user tạo feedback mới được chỉnh sửa/xóa
-        const canModify = currentUserId && feedbackUserId && String(currentUserId) === String(feedbackUserId);
-        
-        return canModify;
+        return currentUserId && feedbackUserId && String(currentUserId) === String(feedbackUserId);
     };
 
     const canEditFeedback = (feedbackItem) => canManageFeedback(feedbackItem);
     const canDeleteFeedback = (feedbackItem) => canManageFeedback(feedbackItem);
 
+    // Handle edit feedback
     const handleEditFeedback = (feedbackItem) => {
         if (!canEditFeedback(feedbackItem)) return;
-        const feedbackId = feedbackItem.id || feedbackItem.feedbackId || feedbackItem.feedback_id;
+        const feedbackId = feedbackItem.id;
         if (!feedbackId) {
             message.error('Không tìm thấy mã đánh giá để chỉnh sửa');
             return;
         }
-        const currentRating = Number(feedbackItem.rating || feedbackItem.star || 0);
         setFormData({
-            rating: Number.isNaN(currentRating) ? 0 : currentRating,
-            comment: feedbackItem.note || feedbackItem.feedback || ""
+            rating: Number(feedbackItem.rating) || 0,
+            comment: feedbackItem.note || ""
         });
         setIsEditing(true);
         setEditingFeedbackId(feedbackId);
         setShowForm(true);
     };
 
-    const handleDeleteFeedback = async (feedbackId) => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            message.warning('Vui lòng đăng nhập');
+    // Handle delete feedback click
+    const handleDeleteClick = (feedbackItem) => {
+        if (!canDeleteFeedback(feedbackItem)) {
+            message.error('Bạn không có quyền xóa đánh giá này');
             return;
         }
+        setSelectedFeedbackToDelete(feedbackItem);
+        setShowConfirmDelete(true);
+    };
 
-        if (!window.confirm('Bạn có chắc chắn muốn xóa đánh giá này?')) {
-            return;
-        }
+    // Handle confirm delete
+    const handleConfirmDelete = async () => {
+        if (!selectedFeedbackToDelete) return;
 
-        try {
-            const response = await axios.delete(`${base}/feedback/${productId}/${feedbackId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+        const feedbackId = selectedFeedbackToDelete.id;
+        const result = await handleDeleteFeedback(productId, feedbackId);
 
-            if (response.status === 200 || response.status === 204) {
-                message.success('Đã xóa đánh giá thành công!');
-                if (isEditing && editingFeedbackId === feedbackId) {
-                    setIsEditing(false);
-                    setEditingFeedbackId(null);
-                    setFormData({ rating: 0, comment: "", images: [] });
-                    setShowForm(false);
-                }
-                // Refresh danh sách feedback
-                await fetchFeedbackData();
-            } else {
-                message.error(response.data?.message || 'Không thể xóa đánh giá');
-            }
-        } catch (err) {
-            console.error('Error deleting feedback:', err);
-            message.error(err?.response?.data?.message || 'Có lỗi khi xóa đánh giá');
+        if (result?.success) {
+            setShowConfirmDelete(false);
+            setSelectedFeedbackToDelete(null);
+            // Refresh danh sách feedback
+            await fetchFeedbackData();
         }
     };
+
+    // Handle submit form (create hoặc update)
+    const handleSubmitFeedback = async (e) => {
+        e.preventDefault();
+        
+        setSubmitting(true);
+        
+        try {
+            let result;
+            
+            if (isEditing && editingFeedbackId) {
+                // Update feedback
+                result = await handleUpdateFeedback(
+                    productId,
+                    editingFeedbackId,
+                    formData.rating,
+                    formData.comment
+                );
+            } else {
+                // Create feedback
+                result = await handleCreateFeedback(
+                    formData.rating,
+                    formData.comment
+                );
+            }
+
+            if (result?.success) {
+                // Reset form
+                setFormData({ rating: 0, comment: "" });
+                setShowForm(false);
+                setIsEditing(false);
+                setEditingFeedbackId(null);
+                
+                // Refresh danh sách feedback
+                await fetchFeedbackData();
+            }
+        } catch (err) {
+            console.error('[Feedback] Unexpected error:', err);
+            message.error('Có lỗi không mong muốn xảy ra');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (openMenuId && !event.target.closest('.pf-feedback-menu-wrapper')) {
+                setOpenMenuId(null);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [openMenuId]);
 
     if (!productId) return null;
 
@@ -429,17 +443,17 @@ export default function ProductFeedback({ productId }) {
                                 setShowForm(false);
                                 setIsEditing(false);
                                 setEditingFeedbackId(null);
-                                setFormData({ rating: 0, comment: "", images: [] });
+                                setFormData({ rating: 0, comment: "" });
                             } else {
                                 setShowForm(true);
                                 setIsEditing(false);
                                 setEditingFeedbackId(null);
-                                setFormData({ rating: 0, comment: "", images: [] });
+                                setFormData({ rating: 0, comment: "" });
                             }
                         }}
                         className="pf-btn-add"
                     >
-                        {showForm ? (isEditing ? 'Hủy chỉnh sửa' : 'Hủy') : 'Viết đánh giá'}
+                        {showForm ? 'Hủy' : 'Viết đánh giá'}
                     </button>
                 </div>
             </div>
@@ -494,113 +508,145 @@ export default function ProductFeedback({ productId }) {
                 <div className="pf-error">{error}</div>
             ) : (
                 <>
-                    <div className="pf-summary">
-                        <div className="pf-summary-score">
-                            <span className="pf-score-number">
-                                {Number(feedbackData?.averageRating || 0).toFixed(1)}
-                            </span>
-                            {renderStars(feedbackData?.averageRating || 0)}
-                            <span className="pf-score-label">
-                                {totalFeedbacks > 0 ? `Dựa trên ${totalFeedbacks} đánh giá` : "Chưa có đánh giá"}
-                            </span>
-                        </div>
-                        <div className="pf-distribution">
-                            {distribution.map(({ level, count }) => {
-                                const width = totalFeedbacks > 0 ? (count / totalFeedbacks) * 100 : 0;
-                                return (
-                                    <div className="pf-distribution-row" key={level}>
-                                        <span className="pf-distribution-label">{level}</span>
-                                        <div className="pf-distribution-bar">
-                                            <div
-                                                className="pf-distribution-bar-fill"
-                                                style={{ width: `${width}%` }}
-                                            />
-                                        </div>
-                                        <span className="pf-distribution-count">{count}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    <div className="pf-feedback-list">
-                        {Array.isArray(feedbackData?.feedbacks) && feedbackData.feedbacks.length > 0 ? (
-                            feedbackData.feedbacks.map((item, index) => (
-                                <div className="pf-feedback-card" key={item.id || index}>
-                                    <div className="pf-feedback-header">
-                                        <div className="pf-feedback-user">
-                                            <div className="pf-feedback-avatar">
-                                                {(userAvatars.get(item.userId) || item.user?.avatar) ? (
-                                                    <img 
-                                                        src={userAvatars.get(item.userId) || item.user?.avatar} 
-                                                        alt={item.userFullName || "avatar"}
-                                                        onError={(e) => {
-                                                            e.target.style.display = 'none';
-                                                            e.target.nextSibling.style.display = 'flex';
-                                                        }}
-                                                    />
-                                                ) : null}
-                                                <span 
-                                                    className="pf-feedback-avatar-placeholder"
-                                                    style={{ display: (userAvatars.get(item.userId) || item.user?.avatar) ? 'none' : 'flex' }}
-                                                >
-                                                    {(item.userFullName || item.user?.name || "KH")[0]?.toUpperCase() || "KH"}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <div className="pf-feedback-name">
-                                                    {item.userFullName || item.user?.name || item.userName || "Khách hàng"}
-                                                </div>
-                                                <div className="pf-feedback-date">
-                                                    {formatDate(item.createdAt) || "—"}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                            {renderStars(item.rating || item.star || 0)}
-                                            {canEditFeedback(item) && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleEditFeedback(item)}
-                                                    className="pf-btn-edit"
-                                                    title="Chỉnh sửa đánh giá"
-                                                >
-                                                    <Edit2 size={16} />
-                                                </button>
-                                            )}
-                                            {canDeleteFeedback(item) && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleDeleteFeedback(item.id || item.feedbackId || item.feedback_id)}
-                                                    className="pf-btn-delete"
-                                                    title="Xóa đánh giá"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {item.note && (
-                                        <p className="pf-feedback-comment">{item.note}</p>
-                                    )}
-                                    {item.images && item.images.length > 0 && (
-                                        <div className="pf-feedback-images">
-                                            {item.images.map((img, idx) => (
-                                                <img key={idx} src={img} alt={`feedback-${idx}`} />
-                                            ))}
-                                        </div>
-                                    )}
+                    {feedbackData && (
+                        <>
+                            <div className="pf-summary">
+                                <div className="pf-summary-score">
+                                    <span className="pf-score-number">
+                                        {Number(feedbackData.averageRating || 0).toFixed(1)}
+                                    </span>
+                                    {renderStars(feedbackData.averageRating || 0)}
+                                    <span className="pf-score-label">
+                                        {totalFeedbacks > 0 ? `Dựa trên ${totalFeedbacks} đánh giá` : "Chưa có đánh giá"}
+                                    </span>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="pf-empty">
-                                <p>Chưa có đánh giá nào cho sản phẩm này.</p>
-                                <p>Hãy là người đầu tiên chia sẻ cảm nhận của bạn!</p>
+                                <div className="pf-distribution">
+                                    {distribution.map(({ level, count }) => {
+                                        const width = totalFeedbacks > 0 ? (count / totalFeedbacks) * 100 : 0;
+                                        return (
+                                            <div className="pf-distribution-row" key={level}>
+                                                <span className="pf-distribution-label">{level}</span>
+                                                <div className="pf-distribution-bar">
+                                                    <div
+                                                        className="pf-distribution-bar-fill"
+                                                        style={{ width: `${width}%` }}
+                                                    />
+                                                </div>
+                                                <span className="pf-distribution-count">{count}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        )}
-                    </div>
+
+                            <div className="pf-feedback-list">
+                                {Array.isArray(feedbackData.feedbacks) && feedbackData.feedbacks.length > 0 ? (
+                                    feedbackData.feedbacks.map((item, index) => (
+                                        <div className="pf-feedback-card" key={item.id || index}>
+                                            <div className="pf-feedback-header">
+                                                <div className="pf-feedback-user">
+                                                    <div className="pf-feedback-avatar">
+                                                        <span className="pf-feedback-avatar-placeholder">
+                                                            {(item.userFullName || "KH")[0]?.toUpperCase() || "KH"}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <div className="pf-feedback-name">
+                                                            {item.userFullName || "Khách hàng"}
+                                                        </div>
+                                                        <div className="pf-feedback-date">
+                                                            {formatDate(item.createdAt) || "—"}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
+                                                    {renderStars(item.rating || 0)}
+                                                    {(canEditFeedback(item) || canDeleteFeedback(item)) && (
+                                                        <div className="pf-feedback-menu-wrapper">
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setOpenMenuId(openMenuId === item.id ? null : item.id);
+                                                                }}
+                                                                className="pf-btn-menu"
+                                                                title="Tùy chọn"
+                                                            >
+                                                                <MoreVertical size={18} />
+                                                            </button>
+                                                            {openMenuId === item.id && (
+                                                                <div className="pf-feedback-menu">
+                                                                    {canEditFeedback(item) && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleEditFeedback(item);
+                                                                                setOpenMenuId(null);
+                                                                            }}
+                                                                            className="pf-menu-item pf-menu-item-edit"
+                                                                        >
+                                                                            <Edit2 size={16} />
+                                                                            <span>Chỉnh sửa</span>
+                                                                        </button>
+                                                                    )}
+                                                                    {canDeleteFeedback(item) && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleDeleteClick(item);
+                                                                                setOpenMenuId(null);
+                                                                            }}
+                                                                            className="pf-menu-item pf-menu-item-delete"
+                                                                        >
+                                                                            <Trash2 size={16} />
+                                                                            <span>Xóa</span>
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {item.note && (
+                                                <p className="pf-feedback-comment">{item.note}</p>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="pf-empty">
+                                        <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+                                        <p>Hãy là người đầu tiên chia sẻ cảm nhận của bạn!</p>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                    {!feedbackData && !loading && !error && (
+                        <div className="pf-empty">
+                            <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+                            <p>Hãy là người đầu tiên chia sẻ cảm nhận của bạn!</p>
+                        </div>
+                    )}
                 </>
             )}
+
+            <ConfirmDialog
+                open={showConfirmDelete}
+                title="Xác nhận xóa đánh giá"
+                message="Bạn có chắc chắn muốn xóa đánh giá này? Hành động này không thể hoàn tác."
+                confirmText="Xóa đánh giá"
+                cancelText="Hủy"
+                type="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => {
+                    setShowConfirmDelete(false);
+                    setSelectedFeedbackToDelete(null);
+                }}
+            />
         </section>
     );
 }
+

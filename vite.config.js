@@ -7,4 +7,14 @@ export default defineConfig({
   define: {
     global: "window",   // ⭐ CHÌA KHÓA ⭐
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://befinal.up.railway.app',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        secure: true,
+      }
+    }
+  }
 })
