@@ -8,4 +8,4 @@
 //     : 'https://befinal.up.railway.app'; // Direct URL trong production
 
 export const base = 'https://befinal.up.railway.app'
-export const localhost = 'http://localhost:8080'
+export const localhost = 'http://befinal.up.railway.app'
