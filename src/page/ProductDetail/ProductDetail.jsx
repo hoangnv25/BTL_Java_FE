@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { base } from "../../service/Base.jsx";
 import { App } from "antd";
-import ProductFeedback from "./ProductFeedback";
+import ProductFeedback from "./FeedBack/ProductFeedback";
 import ProductCard from "../../components/ProductCard";
 import Checkout from "../../components/Checkout/Checkout";
 import Breadcrumb from "../../components/Breadcrumb";
@@ -657,9 +657,9 @@ useEffect(() => {
 					</button>
 					<button className="btn secondary" type="button" onClick={handleBuyNow}>Buy now</button>
 				</div>
-
-				<ProductFeedback />
 			</div>
+
+			<ProductFeedback productId={RESPONSE?.id} />
 		</div>
 		{(relatedProducts.length > 0 || historyToShow.length > 0) && (
 			<div style={{ marginTop: 48 }}>

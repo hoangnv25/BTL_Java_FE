@@ -11,9 +11,8 @@ import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
 
 import ReviewList from './Review/ReviewList';
-import Review from './Review/Review';
-import { getToken, removeToken } from '../../service/LocalStorage';
-import { User, Phone, Mail, UserCircle, Lock, LogOut, Package, MessageSquare, MapPin } from 'lucide-react';
+import { getToken } from '../../service/LocalStorage';
+import { User, Phone, Mail, UserCircle, Lock, LogOut, MessageSquare, MapPin } from 'lucide-react';
 import { logout } from '../../service/Auth';
 
 export default function Information() {
@@ -141,9 +140,11 @@ export default function Information() {
                                 <div className="user-avatar">
                                     <img src={userData.avatar || '/ava_user.webp'} alt="User avatar" />
                                 </div>
-                                <div className="avatar-badge">
-                                    <User size={16} />
-                                </div>
+                                {!userData.avatar && (
+                                    <div className="avatar-badge">
+                                        <User size={16} />
+                                    </div>
+                                )}
                             </div>
                             <div className="user-details">
                                 <div className="detail-item">

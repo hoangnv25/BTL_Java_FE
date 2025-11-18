@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { base } from '../../../../service/Base'
 import { App } from 'antd'
-import { Search, Package, Eye } from 'lucide-react'
+import { Search, Package, Eye, X } from 'lucide-react'
 import './UpdateSale.css'
 
 export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale, existingSales = [] }) {
@@ -219,11 +219,32 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
 
     if (!open || !sale) return null
 
+    const handleOverlayClick = (e) => {
+        // Chỉ đóng khi click vào overlay, không đóng khi click vào modal content
+        if (e.target === e.currentTarget && !submitting) {
+            handleCancel()
+        }
+    }
+
     return (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
-            <div className="modal update-modal">
+        <div 
+            className="modal-overlay" 
+            role="dialog" 
+            aria-modal="true"
+            onClick={handleOverlayClick}
+        >
+            <div className="modal update-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2 className="modal-title">Cập nhật khuyến mãi: {sale.name}</h2>
+                    <button
+                        type="button"
+                        className="modal-close-btn"
+                        onClick={handleCancel}
+                        disabled={submitting}
+                        aria-label="Đóng"
+                    >
+                        <X size={20} />
+                    </button>
                 </div>
                 <form className="modal-body" onSubmit={handleSubmit}>
                     <div className="form-row">

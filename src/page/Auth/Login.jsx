@@ -4,9 +4,8 @@ import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { OAuthConfig } from '../../configurations/configuration';
-import { setToken } from '../../service/LocalStorage';
 import { login } from '../../service/Auth';
+import { OAuthConfig } from '../../configurations/configuration';
 
 export default function Login() {
     const { message } = App.useApp();
