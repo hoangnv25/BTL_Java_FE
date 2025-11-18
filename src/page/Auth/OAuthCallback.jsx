@@ -2,9 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { App } from "antd";
 import axios from "axios";
-// import { base } from "../../service/Base";
 import "./Login.css";
-import { localhost } from "../../service/Base";
+import { base } from "../../service/Base";
 import { setToken } from "../../service/LocalStorage";
 
 export default function OAuthCallback() {
@@ -28,7 +27,7 @@ export default function OAuthCallback() {
       
       setProvider('Google');
 
-      const apiEndpoint = `${localhost}/auth/outbound/authentication?code=${authCode}`;
+      const apiEndpoint = `${base}/auth/outbound/authentication?code=${authCode}`;
       const successMessage = "Đăng nhập Google thành công!";
       const errorMessage = "Đăng nhập Google thất bại";
 
