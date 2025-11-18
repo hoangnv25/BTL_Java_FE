@@ -13,17 +13,17 @@ export default function OAuthCallback() {
   const [provider, setProvider] = useState('Google');
 
   useEffect(() => {
-    console.log("OAuth Callback URL:", window.location.href);
+    // console.log("OAuth Callback URL:", window.location.href);
 
     const authCodeRegex = /code=([^&]+)/;
     const isMatch = window.location.href.match(authCodeRegex);
 
     if (isMatch) {
       const authCode = isMatch[1];
-      console.log("Authorization Code:", authCode);
+      // console.log("Authorization Code:", authCode);
 
       const oauthProvider = sessionStorage.getItem('oauthProvider') || 'google';
-      console.log("OAuth Provider:", oauthProvider);
+      // console.log("OAuth Provider:", oauthProvider);
       
       setProvider('Google');
 
@@ -34,7 +34,7 @@ export default function OAuthCallback() {
       axios
         .post(apiEndpoint)
         .then((response) => {
-          console.log("OAuth Response:", response.data);
+          // console.log("OAuth Response:", response.data);
 
           if (response.data.result?.token) {
             // Sử dụng setToken để lưu và trigger event

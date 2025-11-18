@@ -155,7 +155,7 @@ export default function NAinPage() {
 
     const now = new Date();
     const tenDaysAgo = new Date(now);
-    tenDaysAgo.setDate(now.getDate() - 10);
+    tenDaysAgo.setDate(now.getDate() - 30);
 
     // Lọc sản phẩm có createdAt trong vòng 10 ngày
     const filtered = products.filter(product => {
