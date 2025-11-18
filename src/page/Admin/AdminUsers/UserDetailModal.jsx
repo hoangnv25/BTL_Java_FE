@@ -2,7 +2,7 @@ import './UserDetailModal.css'
 import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 import { base } from '../../../service/Base'
-import { X, User, Mail, Phone, Upload, Save } from 'lucide-react'
+import { X, User, Mail, Phone, Upload, Save, Lock } from 'lucide-react'
 import { App } from 'antd'
 
 export default function UserDetailModal({ open, onClose, user, onUpdated }) {
@@ -17,6 +17,13 @@ export default function UserDetailModal({ open, onClose, user, onUpdated }) {
     const [avatarFile, setAvatarFile] = useState(null)
     const [submitting, setSubmitting] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
+    const [showChangePassword, setShowChangePassword] = useState(false)
+    const [passwordData, setPasswordData] = useState({
+        newPassword: '',
+        confirmPassword: ''
+    })
+    const [passwordErrors, setPasswordErrors] = useState({})
+    const [changingPassword, setChangingPassword] = useState(false)
 
     // Initialize form data when user changes
     useEffect(() => {
@@ -28,6 +35,12 @@ export default function UserDetailModal({ open, onClose, user, onUpdated }) {
             })
             setAvatarFile(null)
             setIsEditing(false)
+            setShowChangePassword(false)
+            setPasswordData({
+                newPassword: '',
+                confirmPassword: ''
+            })
+            setPasswordErrors({})
         }
     }, [user])
 
@@ -140,6 +153,81 @@ export default function UserDetailModal({ open, onClose, user, onUpdated }) {
             setAvatarFile(null)
         }
         setIsEditing(false)
+        setShowChangePassword(false)
+        setPasswordData({
+            newPassword: '',
+            confirmPassword: ''
+        })
+        setPasswordErrors({})
+    }
+
+    const validatePassword = () => {
+        const newErrors = {}
+        
+        if (!passwordData.newPassword.trim()) {
+            newErrors.newPassword = 'Vui lòng nhập mật khẩu mới'
+        } else if (passwordData.newPassword.length < 6) {
+            newErrors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự'
+        }
+        
+        if (!passwordData.confirmPassword.trim()) {
+            newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu mới'
+        } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+            newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp'
+        }
+        
+        setPasswordErrors(newErrors)
+        return Object.keys(newErrors).length === 0
+    }
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault()
+        
+        if (!validatePassword()) {
+            return
+        }
+        
+        if (!token) {
+            message.error('Bạn chưa đăng nhập')
+            return
+        }
+
+        if (!user) {
+            message.error('Không tìm thấy thông tin người dùng')
+            return
+        }
+
+        try {
+            setChangingPassword(true)
+            const formDataToSend = new FormData()
+            formDataToSend.append('password', passwordData.newPassword)
+
+            const userId = user.id || user.userId
+            const response = await axios.put(`${base}/users/${userId}`, formDataToSend, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+
+            if (response?.status === 200) {
+                message.success('Đổi mật khẩu thành công!')
+                setPasswordData({
+                    newPassword: '',
+                    confirmPassword: ''
+                })
+                setPasswordErrors({})
+                setShowChangePassword(false)
+            } else {
+                message.error(response.data?.message || 'Đổi mật khẩu thất bại')
+            }
+        } catch (err) {
+            console.error('Change password error:', err)
+            const errorMsg = err?.response?.data?.message || 'Có lỗi xảy ra khi đổi mật khẩu'
+            message.error(errorMsg)
+        } finally {
+            setChangingPassword(false)
+        }
     }
 
     const handleOverlayClick = (e) => {
@@ -281,6 +369,109 @@ export default function UserDetailModal({ open, onClose, user, onUpdated }) {
                             <div className="form-display">
                                 {user.id || user.userId || 'N/A'}
                             </div>
+                        </div>
+
+                        {/* Change Password Section */}
+                        <div className="form-group password-section">
+                            <div className="password-section-header">
+                                <label>
+                                    <Lock size={16} />
+                                    Mật khẩu
+                                </label>
+                                {!showChangePassword && (
+                                    <button
+                                        type="button"
+                                        className="btn-change-password"
+                                        onClick={() => setShowChangePassword(true)}
+                                    >
+                                        Đổi mật khẩu
+                                    </button>
+                                )}
+                            </div>
+                            
+                            {showChangePassword && (
+                                <div className="password-change-form">
+                                    <div className="form-group">
+                                        <label htmlFor="newPassword">
+                                            Mật khẩu mới <span className="required">*</span>
+                                        </label>
+                                        <input
+                                            id="newPassword"
+                                            type="password"
+                                            className={`form-control ${passwordErrors.newPassword ? 'error' : ''}`}
+                                            value={passwordData.newPassword}
+                                            onChange={(e) => {
+                                                setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))
+                                                if (passwordErrors.newPassword) {
+                                                    setPasswordErrors(prev => ({ ...prev, newPassword: '' }))
+                                                }
+                                            }}
+                                            placeholder="Nhập mật khẩu mới"
+                                        />
+                                        {passwordErrors.newPassword && (
+                                            <span className="error-text">{passwordErrors.newPassword}</span>
+                                        )}
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="confirmPassword">
+                                            Xác nhận mật khẩu mới <span className="required">*</span>
+                                        </label>
+                                        <input
+                                            id="confirmPassword"
+                                            type="password"
+                                            className={`form-control ${passwordErrors.confirmPassword ? 'error' : ''}`}
+                                            value={passwordData.confirmPassword}
+                                            onChange={(e) => {
+                                                setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))
+                                                if (passwordErrors.confirmPassword) {
+                                                    setPasswordErrors(prev => ({ ...prev, confirmPassword: '' }))
+                                                }
+                                            }}
+                                            placeholder="Nhập lại mật khẩu mới"
+                                        />
+                                        {passwordErrors.confirmPassword && (
+                                            <span className="error-text">{passwordErrors.confirmPassword}</span>
+                                        )}
+                                    </div>
+
+                                    <div className="password-form-actions">
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            onClick={() => {
+                                                setShowChangePassword(false)
+                                                setPasswordData({
+                                                    newPassword: '',
+                                                    confirmPassword: ''
+                                                })
+                                                setPasswordErrors({})
+                                            }}
+                                            disabled={changingPassword}
+                                        >
+                                            Hủy
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            onClick={handleChangePassword}
+                                            disabled={changingPassword}
+                                        >
+                                            {changingPassword ? (
+                                                <>
+                                                    <div className="spinner-small"></div>
+                                                    <span>Đang xử lý...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Save size={18} />
+                                                    <span>Lưu mật khẩu</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
