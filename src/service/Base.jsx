@@ -9,3 +9,6 @@
 
 export const base = 'https://befinal.up.railway.app'
 export const localhost = 'http://befinal.up.railway.app'
+
+// export const base = 'https://bephevch.up.railway.app'
+// export const localhost = 'http://bephevch.up.railway.app'

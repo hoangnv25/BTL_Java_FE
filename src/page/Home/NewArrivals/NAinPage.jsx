@@ -149,24 +149,27 @@ export default function NAinPage() {
     return Object.values(colorMap);
   }, []);
 
-  // Transform và lọc sản phẩm mới (trong 10 ngày gần nhất)
+  // Transform và lọc sản phẩm mới (18 sản phẩm mới nhất)
   const newArrivalsProducts = useMemo(() => {
     if (!products || products.length === 0) return [];
 
-    const now = new Date();
-    const tenDaysAgo = new Date(now);
-    tenDaysAgo.setDate(now.getDate() - 30);
-
-    // Lọc sản phẩm có createdAt trong vòng 10 ngày
-    const filtered = products.filter(product => {
-      if (!product.createdAt) return false;
-
-      const createdAt = new Date(product.createdAt);
-      return createdAt >= tenDaysAgo && createdAt <= now;
+    // Sắp xếp sản phẩm theo createdAt (mới nhất trước)
+    const sorted = [...products].sort((a, b) => {
+      // Sản phẩm không có createdAt sẽ đặt xuống cuối
+      if (!a.createdAt && !b.createdAt) return 0;
+      if (!a.createdAt) return 1;
+      if (!b.createdAt) return -1;
+      
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA; // DESC: mới nhất trước
     });
 
+    // Lấy 18 sản phẩm mới nhất
+    const top18 = sorted.slice(0, 18);
+
     // Transform data để phù hợp với ProductCard
-    return filtered.map(product => {
+    return top18.map(product => {
       // Transform variations: Group theo COLOR, mỗi màu chỉ 1 ảnh đại diện
       const list_product_variation = [];
       
@@ -269,7 +272,7 @@ export default function NAinPage() {
         ) : error ? (
           <div className="na-error">{error}</div>
         ) : newArrivalsProducts.length === 0 ? (
-          <div className="na-empty">Chưa có sản phẩm mới trong 10 ngày qua</div>
+          <div className="na-empty">Chưa có sản phẩm mới</div>
         ) : (
           <>
             <div className={showBreadcrumb ? "na-layout" : ""}>
