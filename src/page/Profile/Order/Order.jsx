@@ -2,8 +2,9 @@ import './Order.css';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { base } from '../../../service/Base';
-import { Package, ChevronDown, ChevronUp } from 'lucide-react';
+import { Package, ChevronDown, ChevronUp, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import FeedbackModal from '../../ProductDetail/FeedBack/FeedbackModal';
 
 export default function Order() {
 	const [loading, setLoading] = useState(true);
@@ -14,6 +15,8 @@ export default function Order() {
 	const [canceling, setCanceling] = useState(false);
 	const [cancelError, setCancelError] = useState('');
 	const [viewProduct, setViewProduct] = useState(null);
+	const [feedbackProduct, setFeedbackProduct] = useState(null);
+	const [productFeedbackStatus, setProductFeedbackStatus] = useState({});
 	const navigate = useNavigate();
 
 	const fetchOrders = async (mounted = true) => {
@@ -41,11 +44,60 @@ export default function Order() {
 		}
 	};
 
+	// Kiểm tra user đã đánh giá sản phẩm chưa
+	const checkUserFeedbackForProduct = async (productId) => {
+		const token = localStorage.getItem('token');
+		if (!token) return false;
+
+		try {
+			const decodedToken = JSON.parse(atob(token.split('.')[1]));
+			const currentUserId = decodedToken.sub || decodedToken.userId || decodedToken.id;
+
+			const res = await axios.get(`${base}/feedback/${productId}`);
+			if (res.status === 200 && res.data?.result?.feedbacks) {
+				const feedbacks = res.data.result.feedbacks;
+				return feedbacks.some(fb => String(fb.userId) === String(currentUserId));
+			}
+			return false;
+		} catch (e) {
+			console.error('Error checking feedback:', e);
+			return false;
+		}
+	};
+
+	// Load trạng thái feedback cho các sản phẩm trong đơn hàng COMPLETED
+	const loadFeedbackStatus = async (ordersList) => {
+		const token = localStorage.getItem('token');
+		if (!token) return;
+
+		const statusMap = {};
+		for (const order of ordersList) {
+			if (order.status === 'COMPLETED' && order.orderDetails) {
+				for (const detail of order.orderDetails) {
+					if (detail.productId && !statusMap[detail.productId]) {
+						const hasReviewed = await checkUserFeedbackForProduct(detail.productId);
+						statusMap[detail.productId] = hasReviewed;
+					}
+				}
+			}
+		}
+		setProductFeedbackStatus(statusMap);
+	};
+
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
 			try {
 				await fetchOrders(mounted);
+				// Load trạng thái feedback sau khi load orders
+				if (mounted) {
+					const currentOrders = await axios.get(`${base}/orders`, {
+						headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+					});
+					if (currentOrders.status === 200 && currentOrders.data?.result) {
+						await loadFeedbackStatus(currentOrders.data.result);
+					}
+				}
 			} catch (e) {
 				// handled in fetchOrders
 			} finally {
@@ -165,65 +217,109 @@ export default function Order() {
 									</button>
 
 									<div className={`profile-order-details ${isOpen ? 'open' : ''}`}>
-											{canCancel && (
-												<div className="profile-order-actions">
-													<button
-														type="button"
-														className="profile-btn profile-btn-danger"
-														onClick={(e) => {
-															e.stopPropagation();
-															setCancelError('');
-															setCancelId(o.id);
-														}}
-													>
-														Hủy đơn
-													</button>
+										{canCancel && (
+											<div className="profile-order-actions">
+												<button
+													type="button"
+													className="profile-btn profile-btn-danger"
+													onClick={(e) => {
+														e.stopPropagation();
+														setCancelError('');
+														setCancelId(o.id);
+													}}
+												>
+													Hủy đơn
+												</button>
+											</div>
+										)}
+										<div className="profile-order-meta">
+											<div>
+												<strong>Người nhận:</strong> {o.userFullName}
+											</div>
+											<div>
+												<strong>Điện thoại:</strong> {o.phoneNumber}
+											</div>
+											<div>
+												<strong>Địa chỉ:</strong> {o.fullAddress}
+											</div>
+											{Boolean(o.note) && (
+												<div>
+													<strong>Ghi chú:</strong> {o.note}
 												</div>
 											)}
-											<div className="profile-order-meta">
-												<div>
-													<strong>Người nhận:</strong> {o.userFullName}
-												</div>
-												<div>
-													<strong>Điện thoại:</strong> {o.phoneNumber}
-												</div>
-												<div>
-													<strong>Địa chỉ:</strong> {o.fullAddress}
-												</div>
-												{Boolean(o.note) && (
-													<div>
-														<strong>Ghi chú:</strong> {o.note}
-													</div>
-												)}
-											</div>
-											<div className="profile-order-products">
-												{(o.orderDetails || []).map((d, idx) => (
-													<div
-														key={`${o.id}-${idx}`}
-														className="profile-order-product"
+										</div>
+										<div className="profile-order-products">
+											{(o.orderDetails || []).map((d, idx) => (
+												<div
+													key={`${o.id}-${idx}`}
+													className="profile-order-product"
+													style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '16px' }}
+												>
+													<img
+														src={d.image}
+														alt={d.productName}
 														onClick={(e) => {
 															e.stopPropagation();
 															setViewProduct({ id: d.productId, name: d.productName });
 														}}
-														style={{ cursor: 'pointer' }}
-													>
-														<img src={d.image} alt={d.productName} />
-														<div className="profile-order-product-info">
-															<div className="name">{d.productName}</div>
-															<div className="sub">
-																<span>{d.color}</span>
-																<span> • </span>
-																<span>Size {d.size}</span>
-																<span> • </span>
-																<span>x{d.quantity}</span>
-															</div>
-														</div>
-														<div className="profile-order-product-price">
-															{formatCurrency(d.price)}
+													/>
+													<div className="profile-order-product-info">
+														<div className="name">{d.productName}</div>
+														<div className="sub">
+															<span>{d.color}</span>
+															<span> • </span>
+															<span>Size {d.size}</span>
+															<span> • </span>
+															<span>x{d.quantity}</span>
 														</div>
 													</div>
-												))}
-											</div>
+													<div className="profile-order-product-price">
+														{formatCurrency(d.price)}
+													</div>
+													{o.status === 'COMPLETED' && !productFeedbackStatus[d.productId] && (
+														<button
+															type="button"
+															className="profile-btn-feedback"
+															onClick={(e) => {
+																e.stopPropagation();
+																setFeedbackProduct({
+																	productId: d.productId,
+																	productName: d.productName
+																});
+															}}
+															style={{
+																marginLeft: 'auto',
+																padding: '8px 16px',
+																borderRadius: '8px',
+																border: 'none',
+																background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+																color: 'white',
+																cursor: 'pointer',
+																display: 'flex',
+																alignItems: 'center',
+																gap: '6px',
+																fontSize: '14px',
+																fontWeight: 600,
+																boxShadow: '0 2px 8px rgba(251, 191, 36, 0.3)',
+																transition: 'all 0.3s ease',
+																whiteSpace: 'nowrap'
+															}}
+															onMouseEnter={(e) => {
+																e.currentTarget.style.transform = 'translateY(-2px)';
+																e.currentTarget.style.boxShadow = '0 4px 12px rgba(251, 191, 36, 0.4)';
+															}}
+															onMouseLeave={(e) => {
+																e.currentTarget.style.transform = 'translateY(0)';
+																e.currentTarget.style.boxShadow = '0 2px 8px rgba(251, 191, 36, 0.3)';
+															}}
+														>
+															<Star size={16} fill="white" />
+															Đánh giá
+														</button>
+													)}
+												</div>
+											))}
+										</div>
 									</div>
 								</div>
 							);
@@ -245,7 +341,7 @@ export default function Order() {
 							<h4>Xem sản phẩm</h4>
 						</div>
 						<div className="profile-order-modal-body">
-							<p>Bạn có muốn mở trang sản phẩm “{viewProduct.name}”?</p>
+							<p>Bạn có muốn mở trang sản phẩm "{viewProduct.name}"?</p>
 						</div>
 						<div className="profile-order-modal-footer">
 							<button
@@ -317,8 +413,23 @@ export default function Order() {
 					</div>
 				</div>
 			)}
+
+			{feedbackProduct && (
+				<FeedbackModal
+					productId={feedbackProduct.productId}
+					productName={feedbackProduct.productName}
+					onClose={() => setFeedbackProduct(null)}
+					onSuccess={async () => {
+						// Refresh lại trạng thái feedback
+						const currentOrders = await axios.get(`${base}/orders`, {
+							headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+						});
+						if (currentOrders.status === 200 && currentOrders.data?.result) {
+							await loadFeedbackStatus(currentOrders.data.result);
+						}
+					}}
+				/>
+			)}
 		</div>
 	);
 }
-
-

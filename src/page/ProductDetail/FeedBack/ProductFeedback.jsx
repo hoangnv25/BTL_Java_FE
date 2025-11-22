@@ -103,7 +103,7 @@ export default function ProductFeedback({ productId }) {
                             "4": 0,
                             "5": 0
                         },
-                        feedbacks: Array.isArray(result.feedbacks) 
+                        feedbacks: Array.isArray(result.feedbacks)
                             ? result.feedbacks.map(fb => ({
                                 id: fb.id,
                                 userId: fb.userId,
@@ -128,11 +128,11 @@ export default function ProductFeedback({ productId }) {
             }
         } catch (err) {
             console.error('[Feedback] Error getting feedback:', err);
-            
-            const errorMsg = err?.response?.data?.message 
-                || err?.response?.data?.error 
+
+            const errorMsg = err?.response?.data?.message
+                || err?.response?.data?.error
                 || 'Có lỗi khi tải đánh giá sản phẩm';
-            
+
             return { success: false, error: errorMsg };
         }
     };
@@ -140,13 +140,13 @@ export default function ProductFeedback({ productId }) {
     // Refresh feedback data (sau khi create/update/delete)
     const fetchFeedbackData = async () => {
         if (!productId) return;
-        
+
         try {
             setLoading(true);
             setError(null);
-            
+
             const result = await handleGetFeedback(productId);
-            
+
             if (result.success && result.data) {
                 setFeedbackData(result.data);
             } else {
@@ -248,7 +248,7 @@ export default function ProductFeedback({ productId }) {
             // Kiểm tra response thành công
             if (response.status === 200 || response.status === 201) {
                 const responseData = response.data;
-                
+
                 // Kiểm tra code response (nếu API trả về format {code, message, result})
                 if (responseData?.code === 1000 || response.status === 200 || response.status === 201) {
                     message.success('Đã gửi đánh giá thành công!');
@@ -265,7 +265,7 @@ export default function ProductFeedback({ productId }) {
             }
         } catch (err) {
             console.error('[Feedback] Error creating feedback:', err);
-            
+
             // Xử lý các lỗi cụ thể
             if (err?.response?.status === 401) {
                 message.error('Vui lòng đăng nhập lại');
@@ -311,13 +311,13 @@ export default function ProductFeedback({ productId }) {
     const canManageFeedback = (feedbackItem) => {
         const token = localStorage.getItem('token');
         if (!token) return false;
-        
+
         const isAdmin = checkIsAdmin();
         if (isAdmin) return true; // Admin có thể chỉnh sửa/xóa mọi feedback
 
         const currentUserId = getCurrentUserId();
         const feedbackUserId = feedbackItem.userId;
-        
+
         // Chỉ user tạo feedback mới được chỉnh sửa/xóa
         return currentUserId && feedbackUserId && String(currentUserId) === String(feedbackUserId);
     };
@@ -370,12 +370,12 @@ export default function ProductFeedback({ productId }) {
     // Handle submit form (create hoặc update)
     const handleSubmitFeedback = async (e) => {
         e.preventDefault();
-        
+
         setSubmitting(true);
-        
+
         try {
             let result;
-            
+
             if (isEditing && editingFeedbackId) {
                 // Update feedback
                 result = await handleUpdateFeedback(
@@ -398,7 +398,7 @@ export default function ProductFeedback({ productId }) {
                 setShowForm(false);
                 setIsEditing(false);
                 setEditingFeedbackId(null);
-                
+
                 // Refresh danh sách feedback
                 await fetchFeedbackData();
             }
@@ -431,30 +431,6 @@ export default function ProductFeedback({ productId }) {
                 <h2>Đánh giá sản phẩm</h2>
                 <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                     {totalFeedbacks > 0 && <span>{totalFeedbacks} đánh giá</span>}
-                    <button 
-                        type="button"
-                        onClick={() => {
-                            const token = localStorage.getItem('token');
-                            if (!token) {
-                                message.warning('Vui lòng đăng nhập để đánh giá sản phẩm');
-                                return;
-                            }
-                            if (showForm) {
-                                setShowForm(false);
-                                setIsEditing(false);
-                                setEditingFeedbackId(null);
-                                setFormData({ rating: 0, comment: "" });
-                            } else {
-                                setShowForm(true);
-                                setIsEditing(false);
-                                setEditingFeedbackId(null);
-                                setFormData({ rating: 0, comment: "" });
-                            }
-                        }}
-                        className="pf-btn-add"
-                    >
-                        {showForm ? 'Hủy' : 'Viết đánh giá'}
-                    </button>
                 </div>
             </div>
 
