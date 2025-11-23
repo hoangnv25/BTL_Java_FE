@@ -3,7 +3,7 @@ import Review from "./Review/Page";
 import Sale from "./Sale/Sale";
 import homeimg from "../../assets/image/homeimg.png";
 import "./HomePage.css";
-
+import Footer from "./Footer/Footer";
 
 export default function HomePage() {
     return (
@@ -12,6 +12,7 @@ export default function HomePage() {
             <Sale />
             <NewArrivals />
             <Review />
+            <Footer />
         </div>
     )
 }

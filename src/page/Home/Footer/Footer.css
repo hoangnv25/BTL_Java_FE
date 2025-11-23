@@ -1,0 +1,364 @@
+.footer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    color: #333333;
+    margin-top: 60px;
+    padding: 0;
+    width: 100%;
+    border-top: 1px solid #e0e0e0;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 50px 20px 20px;
+}
+
+/* Phần trên */
+.footer-top {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.footer-description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #666666;
+    margin-bottom: 20px;
+}
+
+/* Icon mạng xã hội */
+.footer-social-icons {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.footer-social-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 50%;
+    color: #333333;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.footer-social-icon:hover {
+    background: rgba(74, 158, 255, 0.1);
+    color: #4a9eff;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.footer-social-icon:active {
+    transform: translateY(-1px);
+}
+
+/* Hệ thống cửa hàng */
+.footer-store-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.footer-store-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.footer-store-icon {
+    color: #4a9eff;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.footer-store-item strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+}
+
+.footer-store-item p {
+    font-size: 13px;
+    color: #666666;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Liên kết hữu ích */
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.footer-links li a {
+    color: #666666;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-links li a:hover {
+    color: #4a9eff;
+    padding-left: 5px;
+}
+
+/* Thông tin liên hệ */
+.footer-contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.footer-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #666666;
+}
+
+.footer-contact-icon {
+    color: #4a9eff;
+    flex-shrink: 0;
+}
+
+.footer-support-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.footer-support-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #666666;
+}
+
+.footer-support-item svg {
+    color: #4a9eff;
+}
+
+/* Phần giữa - Phương thức thanh toán */
+.footer-middle {
+    padding: 30px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.footer-payment-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.footer-payment-methods {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-payment-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+.footer-payment-item:hover {
+    background: rgba(74, 158, 255, 0.1);
+    transform: translateY(-3px);
+}
+
+.footer-payment-item span {
+    font-size: 12px;
+    color: #666666;
+}
+
+.footer-payment-item svg {
+    color: #4a9eff;
+}
+
+.footer-payment-icon {
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    text-align: center;
+}
+
+.footer-payment-icon-visa {
+    background: linear-gradient(135deg, #1a1f71 0%, #192f7a 100%);
+}
+
+.footer-payment-icon-mastercard {
+    background: linear-gradient(135deg, #eb001b 0%, #f79e1b 100%);
+}
+
+.footer-payment-icon-paypal {
+    background: linear-gradient(135deg, #003087 0%, #009cde 100%);
+}
+
+.footer-payment-icon-momo {
+    background: linear-gradient(135deg, #a50064 0%, #c41e3a 100%);
+}
+
+.footer-payment-icon-zalopay {
+    background: linear-gradient(135deg, #0068ff 0%, #00a8ff 100%);
+}
+
+.footer-payment-icon-cod {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* Phần dưới - Bản quyền */
+.footer-bottom {
+    padding-top: 20px;
+}
+
+.footer-bottom-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    text-align: center;
+}
+
+.footer-bottom-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #999999;
+}
+
+.footer-bottom-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-bottom-links a {
+    color: #666666;
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.3s ease;
+}
+
+.footer-bottom-links a:hover {
+    color: #4a9eff;
+}
+
+.footer-bottom-links span {
+    color: #cccccc;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-container {
+        padding: 40px 15px 15px;
+    }
+
+    .footer-top {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+        padding-bottom: 30px;
+    }
+
+    .footer-title {
+        font-size: 16px;
+    }
+
+    .footer-payment-methods {
+        gap: 15px;
+    }
+
+    .footer-payment-item {
+        min-width: 80px;
+        padding: 12px 15px;
+    }
+
+    .footer-payment-icon {
+        width: 50px;
+        height: 35px;
+        font-size: 11px;
+    }
+
+    .footer-bottom-links {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .footer-bottom-links span {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-social-icons {
+        gap: 10px;
+    }
+
+    .footer-social-icon {
+        width: 35px;
+        height: 35px;
+    }
+
+    .footer-payment-methods {
+        gap: 10px;
+    }
+
+    .footer-payment-item {
+        min-width: 70px;
+        padding: 10px 12px;
+    }
+}
