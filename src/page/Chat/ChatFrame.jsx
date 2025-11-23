@@ -161,10 +161,8 @@ export default function ChatFrame() {
     const formatTime = (iso) => {
         try {
             const d = new Date(iso)
-            // Thêm 7 giờ để đúng giờ Việt Nam (UTC+7)
-            d.setHours(d.getHours() + 7)
+            d.setHours(d.getHours())
             const now = new Date()
-            // Thêm 7 giờ vào now để so sánh ngày chính xác
             now.setHours(now.getHours())
             
             // So sánh ngày
@@ -257,7 +255,7 @@ export default function ChatFrame() {
                 )}
                 <div ref={messagesEndRef} />
             </div>
-            <ChatSend receiverId={receiverId} getMessages={getMessages} onUnauthorized={handleUnauthorized} />
+            <ChatSend receiverId={receiverId} getMessages={getMessages} onUnauthorized={handleUnauthorized} conversationId={conversationId} />
         </div>
     )
 }

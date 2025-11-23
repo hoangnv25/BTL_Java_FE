@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { base } from '../../service/Base'
 import './ChatSend.css'
 import { App } from 'antd'
 
-export default function ChatSend({ receiverId: receiverIdProp, getMessages, onUnauthorized }) {
+export default function ChatSend({ receiverId: receiverIdProp, getMessages, onUnauthorized, conversationId }) {
     const senderId = localStorage.getItem('userId')
     const token = localStorage.getItem('token')
     const isAdmin = localStorage.getItem('isAdmin')
@@ -14,6 +14,7 @@ export default function ChatSend({ receiverId: receiverIdProp, getMessages, onUn
     const [receiverId, setReceiverId] = useState(receiverIdProp)
     const { message: messageApi } = App.useApp()
     const navigate = useNavigate()
+    const inputRef = useRef(null)
 
     
     useEffect(() => {
@@ -23,6 +24,16 @@ export default function ChatSend({ receiverId: receiverIdProp, getMessages, onUn
             setReceiverId(receiverIdProp)
         }
     }, [receiverIdProp, isAdmin])
+
+    // Tự động focus vào input khi component mount hoặc conversationId thay đổi
+    useEffect(() => {
+        if (inputRef.current && conversationId) {
+            // Delay nhỏ để đảm bảo component đã render xong
+            setTimeout(() => {
+                inputRef.current?.focus()
+            }, 100)
+        }
+    }, [conversationId])
     
     const handleSend = async () => {
         console.log(receiverId)
@@ -41,6 +52,10 @@ export default function ChatSend({ receiverId: receiverIdProp, getMessages, onUn
             setMessage('')
             await getMessages()
             setSending(false)
+            // Focus lại vào input sau khi gửi thành công
+            setTimeout(() => {
+                inputRef.current?.focus()
+            }, 100)
         } catch (error) {
             console.error('Failed to send message:', error)
             if (error?.response?.status === 401) {
@@ -55,6 +70,10 @@ export default function ChatSend({ receiverId: receiverIdProp, getMessages, onUn
                 }
             }
             setSending(false)
+            // Focus lại vào input ngay cả khi có lỗi
+            setTimeout(() => {
+                inputRef.current?.focus()
+            }, 100)
         }
     }
 
@@ -68,6 +87,7 @@ export default function ChatSend({ receiverId: receiverIdProp, getMessages, onUn
     return (
         <div className="chat-send">
             <input 
+                ref={inputRef}
                 type="text" 
                 value={message} 
                 onChange={(e) => setMessage(e.target.value)}
