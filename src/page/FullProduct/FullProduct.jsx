@@ -1,31 +1,24 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { base } from "../../../service/Base.jsx";
-import ProductCard from "../../../components/ProductCard";
-import Breadcrumb from "../../../components/Breadcrumb";
-import "./NewArrivals.css";
+import { base } from "../../service/Base.jsx";
+import ProductCard from "../../components/ProductCard";
+import Breadcrumb from "../../components/Breadcrumb";
+import "./FullProduct.css";
 import { Filter, X } from "lucide-react";
 
-export default function NAinPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
+export default function FullProduct() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeSales, setActiveSales] = useState([]);
   const [categories, setCategories] = useState([]);
 
-  // Sidebar filter states (chỉ hiệu lực trên trang /newArrivals)
+  // Sidebar filter states
   const [searchText, setSearchText] = useState("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
-  // Chỉ hiện breadcrumb khi ở trang /newArrivals (không phải trang chủ)
-  const showBreadcrumb = location.pathname === '/newArrivals';
-  const showViewMoreButton = !showBreadcrumb; // Chỉ hiện nút "Xem thêm" ở homepage
 
   // Fetch active sales để tính discount
   useEffect(() => {
@@ -149,27 +142,12 @@ export default function NAinPage() {
     return Object.values(colorMap);
   }, []);
 
-  // Transform và lọc sản phẩm mới (18 sản phẩm mới nhất)
-  const newArrivalsProducts = useMemo(() => {
+  // Transform products để phù hợp với ProductCard
+  const transformedProducts = useMemo(() => {
     if (!products || products.length === 0) return [];
 
-    // Sắp xếp sản phẩm theo createdAt (mới nhất trước)
-    const sorted = [...products].sort((a, b) => {
-      // Sản phẩm không có createdAt sẽ đặt xuống cuối
-      if (!a.createdAt && !b.createdAt) return 0;
-      if (!a.createdAt) return 1;
-      if (!b.createdAt) return -1;
-      
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return dateB - dateA; // DESC: mới nhất trước
-    });
-
-    // Lấy 18 sản phẩm mới nhất
-    const top18 = sorted.slice(0, 18);
-
     // Transform data để phù hợp với ProductCard
-    return top18.map(product => {
+    return products.map(product => {
       // Transform variations: Group theo COLOR, mỗi màu chỉ 1 ảnh đại diện
       const list_product_variation = [];
       
@@ -215,20 +193,19 @@ export default function NAinPage() {
 
   const breadcrumbItems = [
     { label: "Trang chủ", path: "/" },
-    { label: "NEW ARRIVALS" }
+    { label: "Tất cả sản phẩm" }
   ];
 
   // Giá min/max để gợi ý
   const [priceBoundMin, priceBoundMax] = useMemo(() => {
-    if (!newArrivalsProducts || newArrivalsProducts.length === 0) return [0, 0];
-    const prices = newArrivalsProducts.map(p => Number(p.price) || 0);
+    if (!transformedProducts || transformedProducts.length === 0) return [0, 0];
+    const prices = transformedProducts.map(p => Number(p.price) || 0);
     return [Math.min(...prices), Math.max(...prices)];
-  }, [newArrivalsProducts]);
+  }, [transformedProducts]);
 
-  // Áp dụng filter chỉ khi ở trang /newArrivals
+  // Áp dụng filter
   const filteredProducts = useMemo(() => {
-    if (!showBreadcrumb) return newArrivalsProducts;
-    let list = newArrivalsProducts;
+    let list = transformedProducts;
 
     // Tìm kiếm theo tiêu đề
     if (searchText.trim()) {
@@ -253,139 +230,117 @@ export default function NAinPage() {
     }
 
     return list;
-  }, [newArrivalsProducts, showBreadcrumb, searchText, priceMin, priceMax, selectedCategoryId]);
-
-  const displayedProducts = useMemo(() => {
-    if (showBreadcrumb) return filteredProducts;
-    return newArrivalsProducts.slice(0, 12);
-  }, [newArrivalsProducts, showBreadcrumb, filteredProducts]);
+  }, [transformedProducts, searchText, priceMin, priceMax, selectedCategoryId]);
 
   return (
     <>
-      {showBreadcrumb && <Breadcrumb items={breadcrumbItems} />}
+      <Breadcrumb items={breadcrumbItems} />
       <section className="na-section na-page">
-        <h2 className="na-title">New Arrivals</h2>
-        <p className="na-desc">Các sản phẩm mới nhất dành cho bạn</p>
+        <h2 className="na-title">Tất cả sản phẩm</h2>
+        <p className="na-desc">Khám phá bộ sưu tập đầy đủ của chúng tôi</p>
         
         {loading ? (
-          <div className="na-loading">Đang tải sản phẩm mới...</div>
+          <div className="na-loading">Đang tải sản phẩm...</div>
         ) : error ? (
           <div className="na-error">{error}</div>
-        ) : newArrivalsProducts.length === 0 ? (
-          <div className="na-empty">Chưa có sản phẩm mới</div>
+        ) : transformedProducts.length === 0 ? (
+          <div className="na-empty">Chưa có sản phẩm nào</div>
         ) : (
           <>
-            <div className={showBreadcrumb ? "na-layout" : ""}>
-              {showBreadcrumb && (
-                <aside className={`na-sidebar${isSidebarOpen ? " is-open" : ""}`}>
-                  <div className="na-sidebar-header">
-                    <div className="na-filter-title">Bộ lọc</div>
-                    <button 
-                      type="button" 
-                      className="na-sidebar-close" 
-                      aria-label="Đóng bộ lọc"
-                      onClick={() => setIsSidebarOpen(false)}
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
+            <div className="na-layout">
+              <aside className={`na-sidebar${isSidebarOpen ? " is-open" : ""}`}>
+                <div className="na-sidebar-header">
+                  <div className="na-filter-title">Bộ lọc</div>
+                  <button 
+                    type="button" 
+                    className="na-sidebar-close" 
+                    aria-label="Đóng bộ lọc"
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
 
-                  <div className="na-filter-group">
-                    <div className="na-filter-title">Tìm kiếm</div>
+                <div className="na-filter-group">
+                  <div className="na-filter-title">Tìm kiếm</div>
+                  <input
+                    type="text"
+                    className="na-input"
+                    placeholder="Tìm sản phẩm..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                </div>
+
+                <div className="na-filter-group">
+                  <div className="na-filter-title">Khoảng giá</div>
+                  <div className="na-price-row">
                     <input
-                      type="text"
+                      type="number"
                       className="na-input"
-                      placeholder="Tìm sản phẩm..."
-                      value={searchText}
-                      onChange={(e) => setSearchText(e.target.value)}
+                      placeholder={priceBoundMin ? `${priceBoundMin}` : "Từ"}
+                      value={priceMin}
+                      onChange={(e) => setPriceMin(e.target.value)}
+                      min={0}
+                    />
+                    <span className="na-price-sep">-</span>
+                    <input
+                      type="number"
+                      className="na-input"
+                      placeholder={priceBoundMax ? `${priceBoundMax}` : "Đến"}
+                      value={priceMax}
+                      onChange={(e) => setPriceMax(e.target.value)}
+                      min={0}
                     />
                   </div>
+                </div>
 
-                  <div className="na-filter-group">
-                    <div className="na-filter-title">Khoảng giá</div>
-                    <div className="na-price-row">
-                      <input
-                        type="number"
-                        className="na-input"
-                        placeholder={priceBoundMin ? `${priceBoundMin}` : "Từ"}
-                        value={priceMin}
-                        onChange={(e) => setPriceMin(e.target.value)}
-                        min={0}
-                      />
-                      <span className="na-price-sep">-</span>
-                      <input
-                        type="number"
-                        className="na-input"
-                        placeholder={priceBoundMax ? `${priceBoundMax}` : "Đến"}
-                        value={priceMax}
-                        onChange={(e) => setPriceMax(e.target.value)}
-                        min={0}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="na-filter-group">
-                    <div className="na-filter-title">Danh mục</div>
-                    <select
-                      className="na-select"
-                      value={selectedCategoryId}
-                      onChange={(e) => setSelectedCategoryId(e.target.value)}
-                    >
-                      <option value="">Tất cả</option>
-                      {categories.map((c) => (
-                        <option key={c.categoryId ?? c.id} value={c.categoryId ?? c.id}>
-                          {c.categoryName || c.name || `#${c.categoryId ?? c.id}`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </aside>
-              )}
+                <div className="na-filter-group">
+                  <div className="na-filter-title">Danh mục</div>
+                  <select
+                    className="na-select"
+                    value={selectedCategoryId}
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                  >
+                    <option value="">Tất cả</option>
+                    {categories.map((c) => (
+                      <option key={c.categoryId ?? c.id} value={c.categoryId ?? c.id}>
+                        {c.categoryName || c.name || `#${c.categoryId ?? c.id}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </aside>
 
               {/* Overlay khi mở sidebar ở màn hình trung bình */}
-              {showBreadcrumb && (
-                <div 
-                  className={`na-overlay${isSidebarOpen ? " show" : ""}`} 
-                  onClick={() => setIsSidebarOpen(false)} 
-                  aria-hidden="true"
-                />
-              )}
+              <div 
+                className={`na-overlay${isSidebarOpen ? " show" : ""}`} 
+                onClick={() => setIsSidebarOpen(false)} 
+                aria-hidden="true"
+              />
 
-              <div className={showBreadcrumb ? "na-content" : ""}>
-                {showBreadcrumb && (
-                  <div className="na-toolbar">
-                    <button 
-                      type="button" 
-                      className="na-filter-toggle" 
-                      onClick={() => setIsSidebarOpen(true)}
-                      aria-label="Mở bộ lọc"
-                      title="Bộ lọc"
-                    >
-                      <Filter size={18} />
-                      <span>Bộ lọc</span>
-                    </button>
-                  </div>
-                )}
+              <div className="na-content">
+                <div className="na-toolbar">
+                  <button 
+                    type="button" 
+                    className="na-filter-toggle" 
+                    onClick={() => setIsSidebarOpen(true)}
+                    aria-label="Mở bộ lọc"
+                    title="Bộ lọc"
+                  >
+                    <Filter size={18} />
+                    <span>Bộ lọc</span>
+                  </button>
+                </div>
                 <div className="na-grid">
-                  {displayedProducts.map((product) => (
+                  {filteredProducts.map((product) => (
                     <ProductCard 
                       key={product.id} 
                       product={product}
-                      fromPage="newArrivals"
+                      fromPage="fullproduct"
                     />
                   ))}
                 </div>
-
-                {showViewMoreButton && newArrivalsProducts.length > displayedProducts.length && (
-                  <div className="na-view-more-container">
-                    <button 
-                      className="na-view-more-btn"
-                      onClick={() => navigate('/newArrivals')}
-                    >
-                      Xem thêm
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </>

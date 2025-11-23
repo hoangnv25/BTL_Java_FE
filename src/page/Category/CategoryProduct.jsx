@@ -2,8 +2,8 @@ import { useLocation, useParams } from 'react-router-dom'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import axios from 'axios'
 import { base } from '../../service/Base.jsx'
-import ProductCard from '../../components/ProductCard'
-import Breadcrumb from '../../components/Breadcrumb'
+import ProductCard from '../../components/ProductCard.jsx'
+import Breadcrumb from '../../components/Breadcrumb.jsx'
 import './CategoryProduct.css'
 
 export default function CategoryProduct() {
