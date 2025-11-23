@@ -7,6 +7,7 @@ import GetProduct from './AdminProduct/GetProduct/GetProduct'
 import AdminOrder from './AdminOrder/AdminOrder'
 import AdminReview from './AdminReview/AdminReview'
 import AdminUser from './AdminUsers/AdminUser'
+import AdminDashboard from './AdminDashboard/AdminDashboard'
 
 export default function Admin() {
     return (
@@ -14,7 +15,7 @@ export default function Admin() {
             <AdminNavbar />
             <main className="admin-main">
                 <Routes>
-                    <Route index element={<div>Dashboard</div>} />
+                    <Route index element={<AdminDashboard />} />
                     <Route path="users" element={<AdminUser />} />
                     <Route path="products" element={<GetProduct />} />
                     <Route path="sales" element={<AdminSale />} />
