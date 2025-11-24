@@ -6,6 +6,7 @@ import { Package, ChevronDown, ChevronUp, Star, CreditCard, Banknote } from 'luc
 import { useNavigate } from 'react-router-dom';
 import FeedbackModal from '../../ProductDetail/FeedBack/FeedbackModal';
 import OrderDetailModal from './OrderDetailModal';
+import { getPendingPaymentsMap, removePendingPayment } from '../../../utils/pendingPayment';
 
 export default function Order() {
 	const [loading, setLoading] = useState(true);
@@ -19,6 +20,8 @@ export default function Order() {
 	const [feedbackProduct, setFeedbackProduct] = useState(null);
 	const [productFeedbackStatus, setProductFeedbackStatus] = useState({});
 	const [selectedOrderForModal, setSelectedOrderForModal] = useState(null);
+	const [pendingPayments, setPendingPayments] = useState({});
+	const [now, setNow] = useState(Date.now());
 	const navigate = useNavigate();
 
 	const fetchOrders = async (mounted = true) => {
@@ -110,6 +113,35 @@ export default function Order() {
 			mounted = false;
 		};
 	}, []);
+
+	// Đồng bộ danh sách thanh toán chờ trong localStorage
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		const refresh = () => {
+			setPendingPayments(getPendingPaymentsMap());
+			setNow(Date.now());
+		};
+		refresh();
+		const interval = setInterval(refresh, 15000);
+		return () => clearInterval(interval);
+	}, []);
+
+	// Loại bỏ link thanh toán khi đơn đã hoàn tất/hủy
+	useEffect(() => {
+		if (!orders.length) return;
+		const map = getPendingPaymentsMap();
+		let updated = false;
+		Object.keys(map).forEach((orderId) => {
+			const order = orders.find((o) => String(o.id) === String(orderId));
+			if (!order || order.paymentStatus === 'COMPLETED' || order.status === 'CANCELED') {
+				removePendingPayment(orderId);
+				updated = true;
+			}
+		});
+		if (updated) {
+			setPendingPayments(getPendingPaymentsMap());
+		}
+	}, [orders]);
 
 	const formatCurrency = (num) =>
 		typeof num === 'number'
@@ -214,6 +246,10 @@ export default function Order() {
 						const isOpen = expandedId === o.id;
 						const firstItem = (o.orderDetails || [])[0];
 						const totalItems = (o.orderDetails || []).reduce((sum, d) => sum + (d.quantity || 0), 0);
+						const pendingPayment = pendingPayments[o.id];
+						const remainingMs = pendingPayment ? pendingPayment.expiresAt - now : 0;
+						const hasActivePaymentLink = Boolean(pendingPayment && remainingMs > 0);
+						const remainingMinutes = hasActivePaymentLink ? Math.max(1, Math.ceil(remainingMs / 60000)) : 0;
 						// Không cho hủy nếu đã xác nhận và đã thanh toán bằng VNPAY
 						const canCancel = (o.status === 'PENDING' || o.status === 'APPROVED') && 
 							!(o.status === 'APPROVED' && o.paymentStatus === 'COMPLETED' && o.paymentMethod === 'VNPAY');
@@ -272,19 +308,38 @@ export default function Order() {
 								</button>
 
 									<div className={`profile-order-details ${isOpen ? 'open' : ''} profile-order-details-desktop`}>
-										{canCancel && (
+										{(canCancel || hasActivePaymentLink) && (
 											<div className="profile-order-actions">
-												<button
-													type="button"
-													className="profile-btn profile-btn-danger"
-													onClick={(e) => {
-														e.stopPropagation();
-														setCancelError('');
-														setCancelId(o.id);
-													}}
-												>
-													Hủy đơn
-												</button>
+												{canCancel && (
+													<button
+														type="button"
+														className="profile-btn profile-btn-danger"
+														onClick={(e) => {
+															e.stopPropagation();
+															setCancelError('');
+															setCancelId(o.id);
+														}}
+													>
+														Hủy đơn
+													</button>
+												)}
+												{hasActivePaymentLink && (
+													<div className="profile-order-pay-later">
+														<button
+															type="button"
+															className="profile-btn profile-btn-primary"
+															onClick={(e) => {
+																e.stopPropagation();
+																window.open(pendingPayment.paymentUrl, '_blank', 'noopener,noreferrer');
+															}}
+														>
+															Thanh toán ngay
+														</button>
+														<span className="profile-payment-expire">
+															Hết hạn trong khoảng {remainingMinutes} phút
+														</span>
+													</div>
+												)}
 											</div>
 										)}
 										<div className="profile-order-meta">
@@ -514,6 +569,14 @@ export default function Order() {
 					setSelectedOrderForModal(null);
 				}}
 				productFeedbackStatus={productFeedbackStatus}
+				pendingPayment={
+					selectedOrderForModal ? pendingPayments[selectedOrderForModal.id] : null
+				}
+				remainingMs={
+					selectedOrderForModal && pendingPayments[selectedOrderForModal?.id]
+						? Math.max(0, pendingPayments[selectedOrderForModal.id].expiresAt - now)
+						: 0
+				}
 			/>
 		</div>
 	);

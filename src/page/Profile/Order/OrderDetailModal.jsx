@@ -8,7 +8,9 @@ export default function OrderDetailModal({
 	onCancelOrder,
 	canCancel,
 	onFeedbackClick,
-	productFeedbackStatus
+	productFeedbackStatus,
+	pendingPayment,
+	remainingMs = 0
 }) {
 	if (!isOpen || !order) return null;
 
@@ -75,6 +77,8 @@ export default function OrderDetailModal({
 	const statusMeta = getStatusMeta(order.status);
 	const paymentMeta = getPaymentStatusMeta(order.paymentStatus, order.paymentMethod);
 	const totalItems = (order.orderDetails || []).reduce((sum, d) => sum + (d.quantity || 0), 0);
+	const hasActivePaymentLink = Boolean(pendingPayment && remainingMs > 0);
+	const remainingMinutes = hasActivePaymentLink ? Math.max(1, Math.ceil(remainingMs / 60000)) : 0;
 
 	return (
 		<div className="order-detail-modal-backdrop" onClick={onClose}>
@@ -206,6 +210,27 @@ export default function OrderDetailModal({
 										<span className="order-detail-value">{formatDateTime(order.paymentDate)}</span>
 									</div>
 								)}
+							</div>
+						</div>
+					)}
+
+					{hasActivePaymentLink && (
+						<div className="order-detail-card order-detail-card-payment-reminder">
+							<div className="order-detail-card-header">
+								<CreditCard size={20} />
+								<h3>Thanh toán đang chờ</h3>
+							</div>
+							<div className="order-detail-card-body order-detail-pay-later">
+								<p>Liên kết thanh toán sẽ hết hạn trong khoảng {remainingMinutes} phút.</p>
+								<button
+									type="button"
+									className="profile-btn profile-btn-primary"
+									onClick={() =>
+										window.open(pendingPayment.paymentUrl, '_blank', 'noopener,noreferrer')
+									}
+								>
+									Thanh toán ngay
+								</button>
 							</div>
 						</div>
 					)}

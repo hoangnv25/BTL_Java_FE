@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { base } from '../../service/Base';
+import { addPendingPayment } from '../../utils/pendingPayment';
 import AddressManager from '../../page/Profile/Address/Address';
 import './Checkout.css';
 import { App } from 'antd';
@@ -212,8 +213,9 @@ export default function Checkout({
               }
               
               message.success('Đang chuyển đến trang thanh toán...');
-              // Chuyển hướng đến trang thanh toán VNPAY
-              window.location.href = paymentResponse.data.paymentUrl;
+              addPendingPayment(orderId, paymentResponse.data.paymentUrl);
+              // Mở trang thanh toán VNPAY ở tab mới để không mất trạng thái hiện tại
+              window.open(paymentResponse.data.paymentUrl, '_blank', 'noopener,noreferrer');
               return;
             }
           } catch (paymentError) {
