@@ -11,15 +11,17 @@ import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
 
 import ReviewList from './Review/ReviewList';
-import { getToken } from '../../service/LocalStorage';
+import { getToken, removeToken } from '../../service/LocalStorage';
 import { User, Phone, Mail, UserCircle, Lock, LogOut, MessageSquare, MapPin } from 'lucide-react';
 import { logout } from '../../service/Auth';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import { useNavigate } from 'react-router-dom';
 
 export default function Information() {
     usePageTitle('Thông tin cá nhân');
     const token = getToken()
     const [searchParams] = useSearchParams()
+    const navigate = useNavigate();
     
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -56,12 +58,30 @@ export default function Information() {
             return () => { window.removeEventListener('resize', handleResize) }
         }
         (async () => {
-            const response = await axios.get(`${base}/users/myInfor`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.status === 200) {
-                setUserData(response.data);
-                setLoading(false);
+            try {
+                const response = await axios.get(`${base}/users/myInfor`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.status === 200) {
+                    setUserData(response.data);
+                    setLoading(false);
+                }
+            } catch (error) {
+                if (error?.response?.status === 401) {
+                    // Token đã hết hạn hoặc không hợp lệ
+                    localStorage.clear();
+                    setLoading(false);
+                    
+                    // Delay một chút để hiển thị message trước khi redirect
+                    setTimeout(() => {
+                        navigate('/login', { 
+                            state: { message: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' } 
+                        });
+                    }, 500);
+                } else {
+                    console.error('Error fetching user info:', error);
+                    setLoading(false);
+                }
             }
         })();
         return () => { window.removeEventListener('resize', handleResize) }

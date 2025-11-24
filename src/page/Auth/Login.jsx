@@ -125,9 +125,7 @@ export default function Login() {
                             </button>
                         </div>
                         
-                        <div className="login-forgot-password">
-                            <a href="#" className="login-forgot-link">Quên mật khẩu?</a>
-                        </div>
+                      
                         <p className="login-description">Bằng cách đăng nhập, bạn đồng ý với <a href="/terms" target="_blank" rel="noopener noreferrer">Điều khoản sử dụng</a> của chúng tôi</p>
                     </form>
                 </div>
