@@ -13,6 +13,8 @@ function NavbarMobile({
   const [showCategories, setShowCategories] = useState(false)
   const location = useLocation()
   const isChatPage = location.pathname.startsWith('/chat')
+  const isProductDetailPage = location.pathname.startsWith('/product/')
+  const shouldHideNav = isChatPage || isProductDetailPage
 
   const closeAll = () => {
     setShowCategories(false)
@@ -21,7 +23,7 @@ function NavbarMobile({
   useEffect(() => {
     if (typeof document === 'undefined') return
     const body = document.body
-    if (!isChatPage) {
+    if (!shouldHideNav) {
       body.classList.add('has-bottom-nav')
     } else {
       body.classList.remove('has-bottom-nav')
@@ -29,9 +31,9 @@ function NavbarMobile({
     return () => {
       body.classList.remove('has-bottom-nav')
     }
-  }, [isChatPage])
+  }, [shouldHideNav])
 
-  if (isChatPage) {
+  if (shouldHideNav) {
     return null
   }
 

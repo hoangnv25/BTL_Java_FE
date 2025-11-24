@@ -201,6 +201,15 @@
   box-shadow: 0 0 0 2px #1110;
 }
 
+.chip.disabled,
+.chip:disabled {
+  border-color: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.5;
+  background: #f8fafc;
+}
+
 .color-dot {
   width: 22px;
   height: 22px;
@@ -240,6 +249,56 @@
   margin-top: 12px;
 }
 
+.pd-mobile-actions {
+  display: none;
+}
+
+.pd-mobile-btn {
+  flex: 1 1 50%;
+  min-width: 0;
+  text-align: center;
+  border-radius: 999px;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pd-mobile-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pd-mobile-btn.primary {
+  background: #111;
+  color: #fff;
+}
+
+.pd-mobile-btn.ghost {
+  background: #fff;
+  border-color: #111;
+  color: #111;
+}
+
+.pd-mobile-header {
+  display: none;
+}
+
+.pd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #111;
+}
+
 .btn {
   padding: 10px 16px;
   border-radius: 10px;
@@ -266,6 +325,38 @@
 
   .pd-main img {
     max-height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pd-container {
+    padding-bottom: 96px;
+  }
+
+  .pd-mobile-header {
+    display: flex;
+    padding: 12px 16px 0;
+  }
+
+  .pd-actions {
+    display: none;
+  }
+
+  .pd-mobile-actions {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    align-items: stretch;
+    background: #fff;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
+    gap: 12px;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 1000;
   }
 }
 

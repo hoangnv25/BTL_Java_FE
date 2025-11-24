@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { base } from "../../service/Base.jsx";
 import { App } from "antd";
+import { ChevronLeft } from "lucide-react";
 import ProductFeedback from "./FeedBack/ProductFeedback";
 import ProductCard from "../../components/ProductCard";
 import Checkout from "../../components/Checkout/Checkout";
@@ -23,6 +24,10 @@ export default function ProductDetail() {
 	const [checkoutItems, setCheckoutItems] = useState([]);
 	const [viewHistory, setViewHistory] = useState([]);
 	const [relatedProducts, setRelatedProducts] = useState([]);
+	const [isMobileView, setIsMobileView] = useState(() => {
+		if (typeof window === "undefined") return false;
+		return window.innerWidth <= 768;
+	});
 const relatedRowRef = useRef(null);
 const historyRowRef = useRef(null);
 const scrollRelated = (delta) => {
@@ -115,6 +120,16 @@ useEffect(() => {
 			window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 		} catch { return; }
 	}, [id]);
+
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const handleResize = () => {
+			setIsMobileView(window.innerWidth <= 768);
+		};
+		handleResize();
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
 
 	// Fetch product data from API
 	useEffect(() => {
@@ -299,10 +314,7 @@ useEffect(() => {
 	const hasDiscount = RESPONSE?.discount && RESPONSE.discount > 0;
 	const finalPrice = RESPONSE ? (hasDiscount ? Math.round(RESPONSE.price * (1 - RESPONSE.discount / 100)) : RESPONSE.price) : 0;
 
-    const selectedVariation = activeEntry?.variation; // nh+�m theo m+�u hi�+�n tߦ�i
-    const sizes = useMemo(() => {
-        return selectedVariation?.list?.map(item => item.size) || [];
-    }, [selectedVariation]);
+    const selectedVariation = activeEntry?.variation; // nhóm theo màu hiện tại
 
     // -��+�ng b�+� color/size theo nh+�m m+�u -�ang active
 	useEffect(() => {
@@ -561,9 +573,35 @@ useEffect(() => {
 		setQty(1);
 	};
 
+	const handleBackNavigation = () => {
+		try {
+			if (window.history.length > 1) {
+				navigate(-1);
+			} else {
+				navigate('/');
+			}
+		} catch {
+			navigate('/');
+		}
+	};
+
 	return (
 		<>
-			<Breadcrumb items={breadcrumbItems} />
+			{isMobileView ? (
+				<div className="pd-mobile-header">
+					<button
+						type="button"
+						className="pd-back-btn"
+						onClick={handleBackNavigation}
+						aria-label="Quay lại"
+					>
+						<ChevronLeft size={20} />
+						<span>Quay lại</span>
+					</button>
+				</div>
+			) : (
+				<Breadcrumb items={breadcrumbItems} />
+			)}
 			<div className="pd-container">
 		{/* Gallery trái */}
 			<div className="pd-gallery">
@@ -574,7 +612,7 @@ useEffect(() => {
 
 		{/* Thông tin phải */}
 			<div>
-				<div className="pd-meta">LOK SHOP</div>
+				<div className="pd-meta">FASHCO SHOP</div>
 				<h1 className="pd-title">{RESPONSE.title}</h1>
 				<div className="pd-meta">
 					<div>
@@ -624,9 +662,32 @@ useEffect(() => {
                     <div className="opt-row" style={{ alignItems: "flex-start", flexDirection: "column" }}>
 						<span>Kích thước: <strong>{selectedSize}</strong></span>
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                            {sizes.map(s => (
-                                <button key={s} className={"chip" + (selectedSize === s ? " active" : "")} onClick={() => setSelectedSize(s)} type="button">{s}</button>
-                            ))}
+                            {(selectedVariation?.list || []).map((item) => {
+                                const sizeValue = item.size;
+                                const stockQty = item.stock_quantity ?? item.stockQuantity ?? 0;
+                                const isDisabled = stockQty <= 0;
+                                const isActive = selectedSize === sizeValue;
+                                return (
+                                    <button
+                                        key={sizeValue}
+                                        className={
+                                            "chip" +
+                                            (isActive ? " active" : "") +
+                                            (isDisabled ? " disabled" : "")
+                                        }
+                                        onClick={() => {
+                                            if (!isDisabled) {
+                                                setSelectedSize(sizeValue);
+                                            }
+                                        }}
+                                        type="button"
+                                        disabled={isDisabled}
+                                        aria-disabled={isDisabled}
+                                    >
+                                        {sizeValue}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -734,6 +795,25 @@ useEffect(() => {
 			onClose={handleCloseCheckout}
 			onOrderSuccess={handleCheckoutSuccess}
 		/>
+		{isMobileView && (
+			<div className="pd-mobile-actions">
+				<button
+					type="button"
+					className="pd-mobile-btn ghost"
+					onClick={handleAddToCart}
+					disabled={addingToCart}
+				>
+					{addingToCart ? 'Đang thêm...' : 'Thêm vào giỏ'}
+				</button>
+				<button
+					type="button"
+					className="pd-mobile-btn primary"
+					onClick={handleBuyNow}
+				>
+					Mua ngay
+				</button>
+			</div>
+		)}
 		</>
 	);
 }

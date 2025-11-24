@@ -6,7 +6,7 @@ import { addPendingPayment } from '../../utils/pendingPayment';
 import AddressManager from '../../page/Profile/Address/Address';
 import './Checkout.css';
 import { App } from 'antd';
-import { CreditCard, Banknote } from 'lucide-react';
+import { CreditCard, Banknote, ChevronLeft } from 'lucide-react';
 
 export default function Checkout({
   open,
@@ -23,6 +23,10 @@ export default function Checkout({
   const [userPhone, setUserPhone] = useState('');
   const [shippingPhone, setShippingPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState(null); // 'CASH' hoặc 'VNPAY'
+  const [isMobileView, setIsMobileView] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 768;
+  });
   const { message } = App.useApp();
 
   const loadDefaultAddress = async () => {
@@ -97,6 +101,16 @@ export default function Checkout({
       setPaymentMethod(null);
     }
   }, [open, userPhone]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth <= 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const totalAmount = useMemo(() => {
     return items.reduce((sum, item) => {
@@ -259,13 +273,23 @@ export default function Checkout({
       <div className="checkout-modal-backdrop" onClick={onClose}>
         <div className="checkout-modal" onClick={(e) => e.stopPropagation()}>
           <div className="checkout-modal-header">
-            <div>
+              {isMobileView && (
+                <button
+                  className="checkout-back-btn"
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Quay lại"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+              )}
+              <div className="checkout-modal-title">
               <h2>Xác nhận đơn hàng</h2>
               <p>Kiểm tra thông tin trước khi đặt</p>
             </div>
-            <button className="checkout-close-btn" onClick={onClose} aria-label="Đóng">
-              ×
-            </button>
+              <button className="checkout-close-btn" onClick={onClose} aria-label="Đóng">
+                ×
+              </button>
           </div>
 
           <div className="checkout-modal-body">
