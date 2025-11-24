@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { base } from '../../../service/Base';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, CreditCard, Banknote } from 'lucide-react';
 
 export default function AdminOrderItem({ order, onDeleted }) {
 	const [open, setOpen] = useState(false);
@@ -43,11 +43,32 @@ export default function AdminOrderItem({ order, onDeleted }) {
 		}
 	};
 
+	const getPaymentStatusMeta = (paymentStatus, paymentMethod, orderStatus) => {
+		if (orderStatus === 'CANCELED') {
+			return { label: 'Đã hủy', cls: 'payment-canceled', method: null };
+		}
+
+		if (!paymentStatus && !paymentMethod) {
+			return { label: 'Chưa thanh toán', cls: 'payment-none', method: null };
+		}
+
+		if (paymentStatus === 'COMPLETED') {
+			return { label: 'Đã thanh toán', cls: 'payment-completed', method: paymentMethod };
+		}
+
+		if (paymentStatus === 'PENDING') {
+			return { label: 'Chờ thanh toán', cls: 'payment-pending', method: paymentMethod };
+		}
+
+		return { label: 'Chưa thanh toán', cls: 'payment-none', method: null };
+	};
+
 	const statusMeta = getStatusMeta(localStatus);
 	const totalItems = (order.orderDetails || []).reduce(
 		(sum, d) => sum + (d.quantity || 0),
 		0
 	);
+	const paymentMeta = getPaymentStatusMeta(order.paymentStatus, order.paymentMethod, order.status);
 
 	const doUpdateStatus = async () => {
 		setError('');
@@ -97,6 +118,18 @@ export default function AdminOrderItem({ order, onDeleted }) {
 				<span>{order.userFullName || `User ${order.userId}`}</span>
 				<span>{formatDateTime(order.orderDate)}</span>
 				<span>{formatCurrency(order.totalAmount)}</span>
+				<span>
+					<div className="admin-payment-badge-group">
+						<span className={`admin-payment-badge ${paymentMeta.cls}`}>
+							{paymentMeta.label}
+						</span>
+						{paymentMeta.method && (
+							<span className={`admin-payment-method admin-payment-method-${paymentMeta.method.toLowerCase()}`}>
+								{paymentMeta.method === 'VNPAY' ? <CreditCard size={14} /> : paymentMeta.method === 'CASH' ? <Banknote size={14} /> : null}
+							</span>
+						)}
+					</div>
+				</span>
 				<span>
 					<span className={`admin-badge ${statusMeta.cls}`}>{statusMeta.label}</span>
 				</span>

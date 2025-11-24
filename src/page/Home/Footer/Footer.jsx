@@ -105,7 +105,7 @@ export default function Footer() {
                 </div>
 
                 {/* Phần giữa - Phương thức thanh toán */}
-                <div className="footer-middle">
+                {/* <div className="footer-middle">
                     <h3 className="footer-payment-title">Phương thức thanh toán</h3>
                     <div className="footer-payment-methods">
                         <div className="footer-payment-item">
@@ -125,7 +125,7 @@ export default function Footer() {
                             <div className="footer-payment-icon footer-payment-icon-cod">COD</div>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Phần dưới - Bản quyền */}
                 <div className="footer-bottom">

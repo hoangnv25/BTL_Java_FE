@@ -56,7 +56,6 @@ function App() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/shipping" element={<Shipping />} />
         </Routes>
-        <p className="Copyright-text">Copyright © 2025 Fashco Shop. All rights reserved.</p>
       </main>
       <FloatingCartLink />
 

@@ -68,7 +68,7 @@
 }
 .admin-orders-head {
   display: grid;
-  grid-template-columns: 120px 1.4fr 1fr 1fr 1fr 40px;
+  grid-template-columns: 120px 1.4fr 1fr 1fr 1fr 1fr 40px;
   padding: 14px 16px;
   background: #f8f9fa;
   font-weight: 700;
@@ -126,7 +126,7 @@
 .admin-orders-row {
   width: 100%;
   display: grid;
-  grid-template-columns: 120px 1.4fr 1fr 1fr 1fr 40px;
+  grid-template-columns: 120px 1.4fr 1fr 1fr 1fr 1fr 40px;
   text-align: left;
   padding: 12px 16px;
   border: none;
@@ -309,11 +309,43 @@
 .admin-badge.completed { background: #e7f8ed; color: #065f46; }
 .admin-badge.canceled { background: #fdecea; color: #7f1d1d; }
 
+/* Payment badges */
+.admin-payment-badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-payment-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.admin-payment-badge.payment-completed { background: #eefcf2; color: #047857; }
+.admin-payment-badge.payment-pending { background: #fff7ed; color: #c2410c; }
+.admin-payment-badge.payment-none { background: #f4f4f5; color: #52525b; }
+.admin-payment-badge.payment-canceled { background: #fdecec; color: #7f1d1d; }
+.admin-payment-method {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  color: #1f2937;
+}
+.admin-payment-method-vnpay { background: #eef2ff; color: #4338ca; }
+.admin-payment-method-cash { background: #ecfdf5; color: #047857; }
+
 /* Responsive */
 @media (max-width: 960px) {
-  .admin-orders-head,
+.admin-orders-head,
   .admin-orders-row {
-    grid-template-columns: 90px 1fr 1fr 1fr auto 32px;
+    grid-template-columns: 90px 1fr 1fr 1fr 1fr auto 32px;
   }
   .admin-order-meta { grid-template-columns: 1fr; }
 }
