@@ -100,12 +100,34 @@
     gap: 10px;
     min-width: 0;
 }
+.profile-order-image-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
 .profile-order-summary img {
     width: 40px;
     height: 40px;
     border-radius: 8px;
     object-fit: cover;
     flex-shrink: 0;
+}
+.profile-order-review-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.6);
+    z-index: 10;
 }
 .profile-order-summary .info {
     display: flex;
@@ -260,11 +282,29 @@
     padding: 8px 10px;
     background: #fff;
 }
+.profile-order-product-image-wrapper {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+}
 .profile-order-product img {
     width: 56px;
     height: 56px;
     border-radius: 8px;
     object-fit: cover;
+}
+.profile-product-review-dot {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.6);
+    z-index: 10;
 }
 .profile-order-product-info .name {
     font-weight: 600;

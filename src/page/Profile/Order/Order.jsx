@@ -250,6 +250,9 @@ export default function Order() {
 						const remainingMs = pendingPayment ? pendingPayment.expiresAt - now : 0;
 						const hasActivePaymentLink = Boolean(pendingPayment && remainingMs > 0);
 						const remainingMinutes = hasActivePaymentLink ? Math.max(1, Math.ceil(remainingMs / 60000)) : 0;
+						// Đếm số sản phẩm chưa đánh giá trong đơn hàng đã hoàn thành
+						const unReviewedCount = o.status === 'COMPLETED' ? 
+							(o.orderDetails || []).filter(d => !productFeedbackStatus[d.productId]).length : 0;
 						// Không cho hủy nếu đã xác nhận và đã thanh toán bằng VNPAY
 						const canCancel = (o.status === 'PENDING' || o.status === 'APPROVED') && 
 							!(o.status === 'APPROVED' && o.paymentStatus === 'COMPLETED' && o.paymentMethod === 'VNPAY');
@@ -268,10 +271,17 @@ export default function Order() {
 									aria-expanded={isOpen}
 								>
 									<div className="profile-order-summary">
-										<img
-											src={firstItem?.image || '/product-placeholder.png'}
-											alt={firstItem?.productName || 'Sản phẩm'}
-										/>
+										<div className="profile-order-image-wrapper">
+											<img
+												src={firstItem?.image || '/product-placeholder.png'}
+												alt={firstItem?.productName || 'Sản phẩm'}
+											/>
+											{unReviewedCount > 0 && (
+												<span className="profile-order-review-badge" title={`${unReviewedCount} sản phẩm chưa đánh giá`}>
+													{unReviewedCount}
+												</span>
+											)}
+										</div>
 										<div className="info">
 											<div className="title">
 												{firstItem?.productName || `Đơn hàng #${o.id}`}
@@ -376,14 +386,19 @@ export default function Order() {
 													className="profile-order-product"
 													style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '16px' }}
 												>
-													<img
-														src={d.image}
-														alt={d.productName}
-														onClick={(e) => {
-															e.stopPropagation();
-															setViewProduct({ id: d.productId, name: d.productName });
-														}}
-													/>
+													<div className="profile-order-product-image-wrapper">
+														<img
+															src={d.image}
+															alt={d.productName}
+															onClick={(e) => {
+																e.stopPropagation();
+																setViewProduct({ id: d.productId, name: d.productName });
+															}}
+														/>
+														{o.status === 'COMPLETED' && !productFeedbackStatus[d.productId] && (
+															<span className="profile-product-review-dot" title="Chưa đánh giá"></span>
+														)}
+													</div>
 													<div className="profile-order-product-info">
 														<div className="name">{d.productName}</div>
 														<div className="sub">
