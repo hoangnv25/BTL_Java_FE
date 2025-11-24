@@ -373,6 +373,12 @@ export default function Cart() {
             <>
                 <Breadcrumb items={breadcrumbItems} />
                 <div className="cart-container">
+				<div className="cart-header">
+					<h1>Giỏ hàng</h1>
+					<button className="view-orders-btn" onClick={handleViewOrders}>
+						Xem đơn hàng của bạn
+					</button>
+				</div>
                 <div className="empty-cart">
                     <div className="empty-cart-icon">
                         <div className="shopping-bag">🛍️</div>
