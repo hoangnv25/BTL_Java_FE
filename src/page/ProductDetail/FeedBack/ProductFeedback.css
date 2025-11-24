@@ -93,8 +93,9 @@
 
 .pf-stars {
     display: flex;
-    gap: 4px;
-    font-size: 20px;
+    gap: 6px;
+    font-size: 24px;
+    filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.3));
 }
 
 .pf-star {
@@ -107,7 +108,7 @@
 
 .pf-star--half {
     color: #fbbf24;
-    opacity: 0.5;
+    opacity: 0.6;
 }
 
 .pf-score-label {
@@ -160,70 +161,83 @@
 .pf-feedback-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 }
 
 .pf-feedback-card {
-    padding: 16px;
-    background: #f9fafb;
-    border-radius: 8px;
+    padding: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    border-radius: 16px;
     border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .pf-feedback-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .pf-feedback-user {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     align-items: center;
 }
 
 .pf-feedback-avatar {
-    width: 40px;
-    height: 40px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     overflow: hidden;
-    background: #e5e7eb;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
 }
 
 .pf-feedback-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
 .pf-feedback-avatar-placeholder {
-    font-size: 16px;
-    font-weight: 600;
-    color: #6b7280;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .pf-feedback-name {
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 17px;
+    font-weight: 700;
     color: #111827;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
 }
 
 .pf-feedback-date {
-    font-size: 12px;
+    font-size: 13px;
     color: #6b7280;
+    font-weight: 500;
 }
 
 .pf-feedback-comment {
-    margin: 12px 0 0 0;
-    font-size: 14px;
+    margin: 16px 0 0 0;
+    font-size: 15px;
     color: #374151;
-    line-height: 1.6;
+    line-height: 1.7;
+    font-weight: 400;
 }
 
 .pf-feedback-images {
@@ -266,6 +280,28 @@
     .pf-feedback-header {
         flex-direction: column;
         gap: 12px;
+    }
+    
+    .pf-feedback-card {
+        padding: 20px;
+    }
+    
+    .pf-feedback-avatar {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .pf-feedback-avatar-placeholder {
+        font-size: 20px;
+    }
+    
+    .pf-feedback-name {
+        font-size: 16px;
+    }
+    
+    .pf-stars {
+        font-size: 20px;
+        gap: 4px;
     }
 }
 
@@ -400,10 +436,10 @@
 .pf-btn-menu {
     background: transparent;
     border: none;
-    color: #6b7280;
+    color: #9ca3af;
     cursor: pointer;
-    padding: 6px;
-    border-radius: 6px;
+    padding: 8px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -412,7 +448,7 @@
 
 .pf-btn-menu:hover {
     background: #f3f4f6;
-    color: #374151;
+    color: #111827;
 }
 
 .pf-btn-menu:active {
