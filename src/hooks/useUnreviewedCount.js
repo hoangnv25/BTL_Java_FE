@@ -77,14 +77,21 @@ export function useUnreviewedCount() {
 
         fetchUnreviewedCount();
 
-        // Refetch khi có sự thay đổi token
+        // Refetch khi có sự thay đổi token hoặc khi có feedback mới
         const handleTokenChange = () => {
             fetchUnreviewedCount();
         };
+        
+        const handleFeedbackChange = () => {
+            fetchUnreviewedCount();
+        };
+        
         window.addEventListener('tokenChanged', handleTokenChange);
+        window.addEventListener('feedbackChanged', handleFeedbackChange);
 
         return () => {
             window.removeEventListener('tokenChanged', handleTokenChange);
+            window.removeEventListener('feedbackChanged', handleFeedbackChange);
         };
     }, []);
 

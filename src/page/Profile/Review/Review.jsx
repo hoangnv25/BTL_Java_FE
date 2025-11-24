@@ -200,6 +200,9 @@ export default function Review({ onClose, open, existingReview: initialReview, i
                 setSuccess(true);
                 setSuccessMessage(hasReview ? 'Đánh giá đã được cập nhật thành công!' : 'Đánh giá của bạn đã được gửi thành công!');
                 
+                // Dispatch event để cập nhật badge trên navbar
+                window.dispatchEvent(new Event('feedbackChanged'));
+                
                 // Nếu là tạo mới, fetch lại review để có reviewId
                 if (!hasReview) {
                     try {

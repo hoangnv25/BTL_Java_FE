@@ -556,6 +556,8 @@ export default function Order() {
 					productName={feedbackProduct.productName}
 					onClose={() => setFeedbackProduct(null)}
 					onSuccess={async () => {
+						// Dispatch event để cập nhật badge trên navbar
+						window.dispatchEvent(new Event('feedbackChanged'));
 						// Refresh lại trạng thái feedback
 						const currentOrders = await axios.get(`${base}/orders`, {
 							headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

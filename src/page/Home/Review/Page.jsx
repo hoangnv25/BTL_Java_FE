@@ -310,6 +310,8 @@ export default function Page() {
                     open={showReviewForm}
                     onClose={() => {
                         setShowReviewForm(false);
+                        // Dispatch event để cập nhật badge trên navbar
+                        window.dispatchEvent(new Event('feedbackChanged'));
                         // Reload reviews sau khi tạo/cập nhật
                         window.location.reload();
                     }}
