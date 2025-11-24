@@ -35,28 +35,28 @@ export default function Sale() {
 
                     if (activeSale) {
                         setSale(activeSale);
-                        
+
                         // Fetch thông tin chi tiết sản phẩm
                         if (activeSale.list_product && activeSale.list_product.length > 0) {
                             const productIds = activeSale.list_product.map(p => p.id).filter(Boolean);
-                            
+
                             if (productIds.length > 0) {
-                                const promises = productIds.map(id => 
+                                const promises = productIds.map(id =>
                                     axios.get(`${base}/products/${id}`).catch(err => {
                                         console.log(`Error fetching product ${id}:`, err);
                                         return null;
                                     })
                                 );
-                                
+
                                 const responses = await Promise.all(promises);
                                 const details = {};
-                                
+
                                 responses.forEach((response, index) => {
                                     if (response && response.status === 200) {
                                         details[productIds[index]] = response.data.result;
                                     }
                                 });
-                                
+
                                 setProductsDetails(details);
                             }
                         }
@@ -87,22 +87,22 @@ export default function Sale() {
 
         const startDate = new Date(sale.stDate).getTime();
         const endDate = new Date(sale.endDate).getTime();
-        
+
         // Timer chạy mỗi giây để cập nhật đếm ngược
         const timer = setInterval(() => {
             const now = new Date().getTime();
-            
+
             if (now < startDate) {
                 // Giai đoạn chuẩn bị sale: đếm ngược từ hiện tại đến ngày bắt đầu sale
                 setSalePhase('preparing');
                 const difference = startDate - now;
-                
+
                 if (difference > 0) {
                     const days = Math.floor(difference / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-                    
+
                     setTimeLeft({ days, hours, minutes, seconds });
                 } else {
                     setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -111,13 +111,13 @@ export default function Sale() {
                 // Giai đoạn đang sale: đếm ngược từ hiện tại đến ngày kết thúc sale
                 setSalePhase('selling');
                 const difference = endDate - now;
-                
+
                 if (difference > 0) {
                     const days = Math.floor(difference / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-                    
+
                     setTimeLeft({ days, hours, minutes, seconds });
                 } else {
                     setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -157,7 +157,7 @@ export default function Sale() {
     const products = sale.list_product || [];
     const saleName = sale.name || 'Sale';
     const saleDescription = sale.description || '';
-    
+
     // Tính discount percentage từ value (0-1) -> (0-100%)
     const getDiscountPercent = (product) => {
         if (product.value) {
@@ -178,10 +178,13 @@ export default function Sale() {
                     <p className="sale-description">
                         {saleDescription}
                     </p>
-                    <button className="sale-btn">
+                    <button 
+                        className="sale-btn"
+                        onClick={() => navigate(`/sale/${sale.id || sale.saleId}`)}
+                    >
                         Mua ngay
                     </button>
-                    
+
                     {/* Phần đếm ngược thời gian */}
                     <div className="countdown-section">
                         <h3 className="countdown-title">
@@ -213,62 +216,64 @@ export default function Sale() {
                 </div>
 
                 {/* Cột phải: Carousel sản phẩm */}
-                {products.length > 0 && (
-                    <div className="sale-carousel">
-                        {/* Container chứa các slide */}
-                        <div className="carousel-container">
-                            {/* Track chứa tất cả slide, di chuyển theo currentSlide */}
-                            <div 
-                                className="carousel-track" 
-                                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-                            >
-                                {/* Render từng slide sản phẩm */}
-                                {products.map((product, index) => {
-                                    const productDetail = productsDetails[product.id];
-                                    const productName = productDetail?.title || productDetail?.name || `Sản phẩm ${product.id || index + 1}`;
-                                    const productId = productDetail?.productId || product.id;
-                                    
-                                    return (
-                                        <div 
-                                            key={product.id || index} 
-                                            className="carousel-slide"
-                                            onClick={() => {
-                                                if (productId) {
-                                                    navigate(`/product/${productId}`);
-                                                }
-                                            }}
-                                            style={{ cursor: productId ? 'pointer' : 'default' }}
-                                        >
-                                            <img src={product.image || productDetail?.image} alt={productName} />
-                                            {/* Overlay hiển thị thông tin khuyến mãi */}
-                                            <div className="slide-overlay">
-                                                <span className="slide-number">{productName}</span>
-                                                <span className="slide-discount">{getDiscountPercent(product)}% OFF</span>
+                {
+                    products.length > 0 && (
+                        <div className="sale-carousel">
+                            {/* Container chứa các slide */}
+                            <div className="carousel-container">
+                                {/* Track chứa tất cả slide, di chuyển theo currentSlide */}
+                                <div
+                                    className="carousel-track"
+                                    style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                                >
+                                    {/* Render từng slide sản phẩm */}
+                                    {products.map((product, index) => {
+                                        const productDetail = productsDetails[product.id];
+                                        const productName = productDetail?.title || productDetail?.name || `Sản phẩm ${product.id || index + 1}`;
+                                        const productId = productDetail?.productId || product.id;
+
+                                        return (
+                                            <div
+                                                key={product.id || index}
+                                                className="carousel-slide"
+                                                onClick={() => {
+                                                    if (productId) {
+                                                        navigate(`/product/${productId}`);
+                                                    }
+                                                }}
+                                                style={{ cursor: productId ? 'pointer' : 'default' }}
+                                            >
+                                                <img src={product.image || productDetail?.image} alt={productName} />
+                                                {/* Overlay hiển thị thông tin khuyến mãi */}
+                                                <div className="slide-overlay">
+                                                    <span className="slide-number">{productName}</span>
+                                                    <span className="slide-discount">{getDiscountPercent(product)}% OFF</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Điều khiển carousel: nút prev/next và dots indicator */}
+                            <div className="carousel-controls">
+                                <button className="carousel-btn prev" onClick={prevSlide}>‹</button>
+                                <button className="carousel-btn next" onClick={nextSlide}>›</button>
+                                {/* Dots indicator - hiển thị slide hiện tại */}
+                                <div className="carousel-dots">
+                                    {products.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            className={`dot ${index === currentSlide ? 'active' : ''}`}
+                                            onClick={() => setCurrentSlide(index)}
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                        
-                        {/* Điều khiển carousel: nút prev/next và dots indicator */}
-                        <div className="carousel-controls">
-                            <button className="carousel-btn prev" onClick={prevSlide}>‹</button>
-                            <button className="carousel-btn next" onClick={nextSlide}>›</button>
-                            {/* Dots indicator - hiển thị slide hiện tại */}
-                            <div className="carousel-dots">
-                                {products.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        className={`dot ${index === currentSlide ? 'active' : ''}`}
-                                        onClick={() => setCurrentSlide(index)}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </section>
+                    )
+                }
+            </div >
+        </section >
     );
 }

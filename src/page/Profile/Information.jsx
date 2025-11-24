@@ -2,7 +2,7 @@ import './Information.css'
 import axios from 'axios';
 import { base } from '../../service/Base';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import NotLoggedIn from '../../components/NotLoggedIn';
 import Breadcrumb from '../../components/Breadcrumb';
 import Address from './Address/Address';
@@ -17,6 +17,7 @@ import { logout } from '../../service/Auth';
 
 export default function Information() {
     const token = getToken()
+    const [searchParams] = useSearchParams()
     
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -25,6 +26,14 @@ export default function Information() {
     const [showUpdatePassword, setShowUpdatePassword] = useState(false);
     const [showReview, setShowReview] = useState(false);
     const [showAddress, setShowAddress] = useState(false);
+
+    // Check query params để tự động mở tab
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab === 'review') {
+            setShowReview(true);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 900)

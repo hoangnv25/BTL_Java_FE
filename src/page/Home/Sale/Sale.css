@@ -285,3 +285,143 @@
         font-size: 20px;
     }
 }
+
+/* SalePage Styles */
+.sale-page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.sale-page-header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 40px;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.sale-page-info {
+    margin-bottom: 32px;
+}
+
+.sale-page-title {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 0 0 16px;
+    line-height: 1.2;
+}
+
+.sale-page-description {
+    font-size: 18px;
+    margin: 0;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+.sale-page-countdown {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 32px;
+}
+
+.sale-page-countdown .countdown-title {
+    color: white;
+    margin-bottom: 16px;
+}
+
+.sale-page-countdown .countdown-timer {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sale-page-countdown .time-box {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sale-page-countdown .time-number {
+    color: white;
+}
+
+.sale-page-countdown .time-label {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.sale-page-products {
+    padding: 20px 0;
+}
+
+.sale-page-products .na-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: stretch;
+}
+
+.sale-page-loading,
+.sale-page-error,
+.sale-page-empty {
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 18px;
+    color: #64748b;
+}
+
+.sale-page-error {
+    color: #dc2626;
+}
+
+/* Responsive for SalePage */
+@media (max-width: 1024px) {
+    .sale-page-products .na-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sale-page-header {
+        padding: 30px 20px;
+    }
+
+    .sale-page-title {
+        font-size: 32px;
+    }
+
+    .sale-page-description {
+        font-size: 16px;
+    }
+
+    .sale-page-countdown .countdown-timer {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 640px) {
+    .sale-page-products .na-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sale-page-container {
+        padding: 20px 16px;
+    }
+
+    .sale-page-header {
+        padding: 24px 16px;
+        margin-bottom: 30px;
+    }
+
+    .sale-page-title {
+        font-size: 24px;
+    }
+
+    .sale-page-description {
+        font-size: 14px;
+    }
+}

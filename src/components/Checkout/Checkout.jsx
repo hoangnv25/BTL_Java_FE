@@ -20,6 +20,7 @@ export default function Checkout({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userPhone, setUserPhone] = useState('');
   const [shippingPhone, setShippingPhone] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState(null); // 'CASH' hoặc 'VNPAY'
   const { message } = App.useApp();
 
   const loadDefaultAddress = async () => {
@@ -91,6 +92,7 @@ export default function Checkout({
     if (open) {
       setNote('');
       setShippingPhone(prev => prev || userPhone || '');
+      setPaymentMethod(null);
     }
   }, [open, userPhone]);
 
@@ -123,6 +125,11 @@ export default function Checkout({
 
     if (!selectedAddress?.address_id) {
       message.error('Vui lòng chọn địa chỉ giao hàng');
+      return;
+    }
+
+    if (!paymentMethod) {
+      message.error('Vui lòng chọn phương thức thanh toán');
       return;
     }
 
@@ -173,8 +180,48 @@ export default function Checkout({
             console.error('Failed to update order info', patchError);
             message.warning('Đặt hàng xong nhưng không cập nhật được thông tin giao hàng.');
           }
+
+          // Xử lý thanh toán sau khi tạo đơn thành công
+          try {
+            let paymentUrl = `${base}/api/payment/create?orderId=${orderId}&paymentMethod=${paymentMethod}`;
+            if (paymentMethod === 'VNPAY') {
+              paymentUrl += '&bankCode=NCB';
+            }
+            
+            const paymentResponse = await axios.post(paymentUrl, {}, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            // Nếu là VNPAY và có paymentUrl trong response, chuyển hướng đến trang thanh toán
+            if (paymentMethod === 'VNPAY' && paymentResponse.data?.paymentUrl) {
+              // Xóa giỏ hàng trước khi chuyển hướng
+              try {
+                await Promise.allSettled(
+                  items.map((it) =>
+                    axios.delete(`${base}/cart/${it.product_variation_id}`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    })
+                  )
+                );
+              } catch (cleanupError) {
+                console.error('Failed to clean up cart items', cleanupError);
+              }
+              
+              message.success('Đang chuyển đến trang thanh toán...');
+              // Chuyển hướng đến trang thanh toán VNPAY
+              window.location.href = paymentResponse.data.paymentUrl;
+              return;
+            }
+          } catch (paymentError) {
+            console.error('Failed to create payment', paymentError);
+            message.warning('Đặt hàng thành công nhưng không tạo được thanh toán. Vui lòng liên hệ hỗ trợ.');
+          }
         }
 
+        // Xóa giỏ hàng cho trường hợp thanh toán tiền mặt
         try {
           await Promise.allSettled(
             items.map((it) =>
@@ -317,6 +364,38 @@ export default function Checkout({
             </section>
 
             <section className="checkout-section">
+              <h3>Phương thức thanh toán</h3>
+              <div className="checkout-payment-methods">
+                <label className="checkout-payment-option">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="CASH"
+                    checked={paymentMethod === 'CASH'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <span className="checkout-payment-label">
+                    <strong>Tiền mặt</strong>
+                    <span>Thanh toán khi nhận hàng</span>
+                  </span>
+                </label>
+                <label className="checkout-payment-option">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="VNPAY"
+                    checked={paymentMethod === 'VNPAY'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <span className="checkout-payment-label">
+                    <strong>Thẻ</strong>
+                    <span>Thanh toán qua VNPAY</span>
+                  </span>
+                </label>
+              </div>
+            </section>
+
+            <section className="checkout-section">
               <h3>Ghi chú đơn hàng</h3>
               <textarea
                 value={note}
@@ -338,7 +417,7 @@ export default function Checkout({
               <button
                 className="checkout-primary-btn"
                 onClick={handleConfirm}
-                disabled={isSubmitting || !items.length}
+                disabled={isSubmitting || !items.length || !paymentMethod}
               >
                 {isSubmitting ? 'Đang đặt hàng...' : 'Xác nhận đặt hàng'}
               </button>
