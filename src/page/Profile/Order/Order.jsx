@@ -208,7 +208,7 @@ export default function Order() {
 	};
 
 	return (
-		<div className="profile-orders-section">
+		<div className="profile-orders-section" id="orders">
 			<h3 className="profile-orders-title">
 				<Package size={20} />
 				<span>Đơn hàng của bạn</span>

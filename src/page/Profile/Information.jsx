@@ -2,7 +2,7 @@ import './Information.css'
 import axios from 'axios';
 import { base } from '../../service/Base';
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams, useLocation } from 'react-router-dom'
 import NotLoggedIn from '../../components/NotLoggedIn';
 import Breadcrumb from '../../components/Breadcrumb';
 import Address from './Address/Address';
@@ -26,6 +26,7 @@ export default function Information() {
     const [showUpdatePassword, setShowUpdatePassword] = useState(false);
     const [showReview, setShowReview] = useState(false);
     const [showAddress, setShowAddress] = useState(false);
+    const location = useLocation();
 
     // Check query params để tự động mở tab
     useEffect(() => {
@@ -34,6 +35,15 @@ export default function Information() {
             setShowReview(true);
         }
     }, [searchParams]);
+
+    useEffect(() => {
+        if (!loading && location.hash === '#orders') {
+            const ordersEl = document.getElementById('orders');
+            if (ordersEl) {
+                ordersEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }, [location, loading]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 900)

@@ -347,6 +347,16 @@ export default function Cart() {
         setIsCheckoutOpen(false);
     };
 
+    const handleViewOrders = () => {
+        const token = getToken();
+        if (!token) {
+            message.error('Vui lòng đăng nhập để xem đơn hàng của bạn');
+            navigate('/login');
+            return;
+        }
+        navigate('/user#orders');
+    };
+
     if (loading) {
         return (
             <>
@@ -388,7 +398,12 @@ export default function Cart() {
         <>
             <Breadcrumb items={breadcrumbItems} />
             <div className="cart-container">
-            <h1>Giỏ hàng</h1>
+            <div className="cart-header">
+                <h1>Giỏ hàng</h1>
+                <button className="view-orders-btn" onClick={handleViewOrders}>
+                    Xem đơn hàng của bạn
+                </button>
+            </div>
             
             <div className="cart-content">
                 <div className="cart-items">
