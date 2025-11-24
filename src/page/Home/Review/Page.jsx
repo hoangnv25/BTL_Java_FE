@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { base } from '../../../service/Base'
-import { Star } from 'lucide-react'
+import { Star, Edit3 } from 'lucide-react'
+import Review from '../../Profile/Review/Review'
 import './Page.css'
 
 
 export default function Page() {
+    const navigate = useNavigate()
     const [currentIndex, setCurrentIndex] = useState(0)
     const [reviews, setReviews] = useState([])
     const [loading, setLoading] = useState(true)
+    const [showReviewForm, setShowReviewForm] = useState(false)
 
     useEffect(() => {
         const fetchReviews = async () => {
@@ -267,6 +271,24 @@ export default function Page() {
                 </div>
             </div>
 
+            {/* Nút viết đánh giá */}
+            <div className="write-review-section">
+                <button 
+                    className="write-review-btn"
+                    onClick={() => {
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                            navigate('/login', { state: { from: '/', message: 'Vui lòng đăng nhập để viết đánh giá' } });
+                        } else {
+                            setShowReviewForm(true);
+                        }
+                    }}
+                >
+                    <Edit3 size={18} />
+                    <span>Viết đánh giá của bạn</span>
+                </button>
+            </div>
+
             <div className="carousel-nav">
                 <button
                     className="nav-btn"
@@ -281,6 +303,20 @@ export default function Page() {
                     ›
                 </button>
             </div>
+
+            {/* Form tạo review */}
+            {showReviewForm && (
+                <Review
+                    open={showReviewForm}
+                    onClose={() => {
+                        setShowReviewForm(false);
+                        // Reload reviews sau khi tạo/cập nhật
+                        window.location.reload();
+                    }}
+                    existingReview={null}
+                    isCreateMode={true}
+                />
+            )}
         </div>
     )
 }

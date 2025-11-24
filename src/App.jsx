@@ -7,6 +7,7 @@ import Register from './page/Auth/Register.jsx'
 import OAuthCallback from './page/Auth/OAuthCallback.jsx'
 import Information from './page/Profile/Information.jsx'
 import NAinPage from './page/Home/NewArrivals/NAinPage.jsx'
+import SalePage from './page/Home/Sale/SalePage.jsx'
 import ProductDetail from './page/ProductDetail/ProductDetail.jsx'
 import Cart from './page/Cart/Cart.jsx'
 import FloatingCartLink from './components/FloatingCartLink.jsx'
@@ -26,6 +27,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/newArrivals" element={<NAinPage />} /> {/*tạm để ở đây*/}
+          <Route path="/sale/:saleId" element={<SalePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/category/:id" element={<CategoryProduct />} />
           <Route path="/search" element={<SearchResults />} />
