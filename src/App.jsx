@@ -34,7 +34,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/newArrivals" element={<NAinPage />} /> {/*tạm để ở đây*/}
-          <Route path="/sale/:saleId" element={<SalePage />} />
+          <Route path="/sale" element={<SalePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/category" element={<FullProduct />} />
           <Route path="/category/:id" element={<CategoryProduct />} />

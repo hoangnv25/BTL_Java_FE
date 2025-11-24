@@ -1,4 +1,3 @@
-import { useParams } from 'react-router-dom';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { base } from '../../../service/Base.jsx';
@@ -7,7 +6,6 @@ import Breadcrumb from '../../../components/Breadcrumb';
 import './Sale.css';
 
 export default function SalePage() {
-    const { saleId } = useParams();
     const [sale, setSale] = useState(null);
     const [allProducts, setAllProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -31,23 +29,15 @@ export default function SalePage() {
         fetchProducts();
     }, []);
 
-    // Fetch sale information
+    // Fetch sale information (always pick the active one)
     useEffect(() => {
         const fetchSale = async () => {
-            if (!saleId) return;
-            
             try {
                 const response = await axios.get(`${base}/sales`);
                 if (response.status === 200 && response.data?.result) {
                     const sales = response.data.result;
-                    // Thử cả 'id' và 'saleId' field
-                    const currentSale = sales.find(s => 
-                        (s.id == saleId || s.saleId == saleId)
-                    );
-                    console.log('All sales:', sales);
-                    console.log('Looking for saleId:', saleId);
-                    console.log('Found sale:', currentSale);
-                    setSale(currentSale || null);
+                    const activeSale = sales.find((s) => s.active);
+                    setSale(activeSale || null);
                 }
             } catch (err) {
                 console.error('Error fetching sale:', err);
@@ -58,7 +48,7 @@ export default function SalePage() {
         };
 
         fetchSale();
-    }, [saleId]);
+    }, []);
 
     // Countdown timer
     useEffect(() => {

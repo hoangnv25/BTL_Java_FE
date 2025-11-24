@@ -400,28 +400,28 @@
     }
 }
 
-@media (max-width: 640px) {
+/* @media (max-width: 640px) {
     .sale-page-products .na-grid {
         grid-template-columns: 1fr;
         gap: 16px;
     }
-}
+} */
 
 @media (max-width: 480px) {
     .sale-page-container {
-        padding: 20px 16px;
+        padding: 12px 8px;
     }
 
     .sale-page-header {
-        padding: 24px 16px;
+        padding: 12px 8px;
         margin-bottom: 30px;
     }
 
     .sale-page-title {
-        font-size: 24px;
+        font-size: 20px;
     }
 
     .sale-page-description {
-        font-size: 14px;
+        font-size: 12px;
     }
 }

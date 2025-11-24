@@ -180,7 +180,7 @@ export default function Sale() {
                     </p>
                     <button 
                         className="sale-btn"
-                        onClick={() => navigate(`/sale/${sale.id || sale.saleId}`)}
+                        onClick={() => navigate(`/sale`)}
                     >
                         Mua ngay
                     </button>
