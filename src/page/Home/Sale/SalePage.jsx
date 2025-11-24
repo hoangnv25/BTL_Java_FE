@@ -3,9 +3,11 @@ import axios from 'axios';
 import { base } from '../../../service/Base.jsx';
 import ProductCard from '../../../components/ProductCard';
 import Breadcrumb from '../../../components/Breadcrumb';
+import { usePageTitle } from '../../../hooks/usePageTitle';
 import './Sale.css';
 
 export default function SalePage() {
+    usePageTitle('Khuyến mãi');
     const [sale, setSale] = useState(null);
     const [allProducts, setAllProducts] = useState([]);
     const [loading, setLoading] = useState(true);

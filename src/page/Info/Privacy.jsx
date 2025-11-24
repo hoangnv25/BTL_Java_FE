@@ -2,8 +2,10 @@ import React from 'react';
 import './Privacy.css';
 import Breadcrumb from '../../components/Breadcrumb';
 import { Shield, Lock, Eye, FileText } from 'lucide-react';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function Privacy() {
+    usePageTitle('Chính sách bảo mật');
     const breadcrumbItems = [
         { label: "Trang chủ", path: "/" },
         { label: "Chính sách bảo mật" }

@@ -3,8 +3,10 @@ import './Contact.css';
 import Breadcrumb from '../../components/Breadcrumb';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
 import { message } from 'antd';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function Contact() {
+    usePageTitle('Liên hệ');
     const [formData, setFormData] = useState({
         name: '',
         email: '',

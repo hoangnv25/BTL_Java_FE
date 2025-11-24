@@ -9,6 +9,7 @@ import ProductCard from "../../components/ProductCard";
 import Checkout from "../../components/Checkout/Checkout";
 import Breadcrumb from "../../components/Breadcrumb";
 import { getToken } from "../../service/LocalStorage";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import "./ProductDetail.css";
 
 export default function ProductDetail() {
@@ -19,6 +20,9 @@ export default function ProductDetail() {
 	const [product, setProduct] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	
+	// Update page title based on product name
+	usePageTitle(product?.title || 'Sản phẩm');
 	const [addingToCart, setAddingToCart] = useState(false);
 	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 	const [checkoutItems, setCheckoutItems] = useState([]);

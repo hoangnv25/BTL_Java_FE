@@ -7,8 +7,10 @@ import homeimg2 from "../../assets/image/homeimg2.png";
 import "./HomePage.css";
 import Footer from "./Footer/Footer";
 import { useNavigate } from 'react-router-dom';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function HomePage() {
+    usePageTitle('Home');
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 740 : false);
     const navigate = useNavigate();
     useEffect(() => {

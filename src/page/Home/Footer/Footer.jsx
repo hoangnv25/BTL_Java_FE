@@ -130,7 +130,7 @@ export default function Footer() {
                 {/* Phần dưới - Bản quyền */}
                 <div className="footer-bottom">
                     <div className="footer-bottom-content">
-                        <p>&copy; 2025 FASHCO. Tất cả quyền được bảo lưu.</p>
+                        <p>&copy; 2025 FASHCO. All rights reserved.</p>
                         <div className="footer-bottom-links">
                             <Link to="/privacy">Chính sách bảo mật</Link>
                             <span>|</span>

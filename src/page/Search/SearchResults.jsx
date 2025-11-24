@@ -4,12 +4,15 @@ import axios from 'axios';
 import { base } from '../../service/Base.jsx';
 import ProductCard from '../../components/ProductCard';
 import Breadcrumb from '../../components/Breadcrumb';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './SearchResults.css';
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const searchQuery = searchParams.get('q') || '';
+  
+  usePageTitle(searchQuery ? `Tìm kiếm: ${searchQuery}` : 'Tìm kiếm');
 
   const [products, setProducts] = useState([]);
   const [activeSales, setActiveSales] = useState([]);

@@ -6,8 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { login } from '../../service/Auth';
 import { OAuthConfig } from '../../configurations/configuration';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function Login() {
+    usePageTitle('Đăng nhập');
     const { message } = App.useApp();
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();

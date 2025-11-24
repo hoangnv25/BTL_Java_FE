@@ -14,8 +14,10 @@ import ReviewList from './Review/ReviewList';
 import { getToken } from '../../service/LocalStorage';
 import { User, Phone, Mail, UserCircle, Lock, LogOut, MessageSquare, MapPin } from 'lucide-react';
 import { logout } from '../../service/Auth';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function Information() {
+    usePageTitle('Thông tin cá nhân');
     const token = getToken()
     const [searchParams] = useSearchParams()
     

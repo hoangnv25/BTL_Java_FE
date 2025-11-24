@@ -4,10 +4,12 @@ import axios from "axios";
 import { base } from "../../../service/Base.jsx";
 import ProductCard from "../../../components/ProductCard";
 import Breadcrumb from "../../../components/Breadcrumb";
+import { usePageTitle } from "../../../hooks/usePageTitle";
 import "./NewArrivals.css";
 import { Filter, X } from "lucide-react";
 
 export default function NAinPage() {
+    usePageTitle('New Arrivals');
   const navigate = useNavigate();
   const location = useLocation();
   const [products, setProducts] = useState([]);

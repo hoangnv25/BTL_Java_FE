@@ -2,8 +2,10 @@ import React from 'react';
 import './About.css';
 import Breadcrumb from '../../components/Breadcrumb';
 import { Building2, Users, Award, Heart, Target, Mail } from 'lucide-react';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function About() {
+    usePageTitle('Về chúng tôi');
     const breadcrumbItems = [
         { label: "Trang chủ", path: "/" },
         { label: "Về chúng tôi" }

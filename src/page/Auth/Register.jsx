@@ -7,8 +7,10 @@ import { App } from 'antd';
 import { setToken } from '../../service/LocalStorage';
 import { login as loginService, register as registerService } from '../../service/Auth';
 import { OAuthConfig } from '../../configurations/configuration';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function Register() {
+    usePageTitle('Đăng ký');
     const { message } = App.useApp();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);

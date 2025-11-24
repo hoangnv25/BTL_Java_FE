@@ -3,10 +3,12 @@ import axios from "axios";
 import { base } from "../../service/Base.jsx";
 import ProductCard from "../../components/ProductCard";
 import Breadcrumb from "../../components/Breadcrumb";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import "./FullProduct.css";
 import { Filter, X } from "lucide-react";
 
 export default function FullProduct() {
+    usePageTitle('Tất cả sản phẩm');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

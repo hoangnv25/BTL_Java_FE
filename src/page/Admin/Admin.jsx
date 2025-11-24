@@ -8,8 +8,10 @@ import AdminOrder from './AdminOrder/AdminOrder'
 import AdminReview from './AdminReview/AdminReview'
 import AdminUser from './AdminUsers/AdminUser'
 import AdminDashboard from './AdminDashboard/AdminDashboard'
+import { usePageTitle } from '../../hooks/usePageTitle'
 
 export default function Admin() {
+    usePageTitle('Quản trị');
     return (
         <div className="admin-page">
             <AdminNavbar />

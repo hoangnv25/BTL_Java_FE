@@ -7,10 +7,12 @@ import { Trash2 } from "lucide-react";
 import Breadcrumb from "../../components/Breadcrumb";
 import { getToken, removeToken } from "../../service/LocalStorage";
 import Checkout from "../../components/Checkout/Checkout";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import "./Cart.css";
 
 
 export default function Cart() {
+    usePageTitle('Giỏ hàng');
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItems, setSelectedItems] = useState(new Set());
