@@ -248,7 +248,11 @@ export default function Order() {
 						const totalItems = (o.orderDetails || []).reduce((sum, d) => sum + (d.quantity || 0), 0);
 						const pendingPayment = pendingPayments[o.id];
 						const remainingMs = pendingPayment ? pendingPayment.expiresAt - now : 0;
-						const hasActivePaymentLink = Boolean(pendingPayment && remainingMs > 0);
+						const hasActivePaymentLink = Boolean(
+							pendingPayment &&
+							remainingMs > 0 &&
+							o.paymentStatus !== 'COMPLETED'
+						);
 						const remainingMinutes = hasActivePaymentLink ? Math.max(1, Math.ceil(remainingMs / 60000)) : 0;
 						// Không cho hủy nếu đã xác nhận và đã thanh toán bằng VNPAY
 						const canCancel = (o.status === 'PENDING' || o.status === 'APPROVED') && 

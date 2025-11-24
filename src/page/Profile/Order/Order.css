@@ -217,12 +217,17 @@
     display: flex;
     justify-content: flex-end;
     padding-bottom: 8px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 .profile-btn {
-    padding: 8px 12px;
-    border-radius: 10px;
+    padding: 8px 16px;
+    border-radius: 16px;
     cursor: pointer;
     border: 1px solid transparent;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
 }
 .profile-btn-secondary {
     background: #fff;
@@ -230,12 +235,55 @@
     border-color: #ddd;
 }
 .profile-btn-secondary:hover { background: #f7f7f7; }
-.profile-btn-danger {
-    background: #b91c1c;
-    border-color: #b91c1c;
+.profile-btn-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+    border-color: #0284c7;
     color: #fff;
+    box-shadow: 0 6px 18px rgba(14, 165, 233, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.profile-btn-danger:hover { opacity: 0.9; }
+.profile-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(3, 105, 161, 0.35);
+}
+.profile-btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(3, 105, 161, 0.3);
+}
+.profile-btn-danger {
+    background: #fff5f5;
+    border-color: #f87171;
+    color: #b91c1c;
+    box-shadow: 0 4px 10px rgba(248, 113, 113, 0.2);
+}
+.profile-btn-danger:hover {
+    background: #ffe4e6;
+    border-color: #ef4444;
+    color: #b91c1c;
+}
+.profile-order-pay-later {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(255, 247, 237, 0.95), rgba(255, 237, 213, 0.95));
+    border: 1px solid rgba(251, 146, 60, 0.4);
+    padding: 10px 14px;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.15);
+    color: #9a3412;
+}
+.profile-payment-expire {
+    font-size: 13px;
+    font-weight: 600;
+    color: #c2410c;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+/* .profile-payment-expire::before {
+    content: '⏳';
+    font-size: 14px;
+} */
 .profile-order-meta {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
