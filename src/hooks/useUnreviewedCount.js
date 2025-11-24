@@ -40,27 +40,41 @@ export function useUnreviewedCount() {
                         return;
                     }
 
-                    // Get user ID from token
-                    const decodedToken = JSON.parse(atob(token.split('.')[1]));
-                    const currentUserId = decodedToken.sub || decodedToken.userId || decodedToken.id;
+                    // Fetch all user's feedbacks at once (much more efficient)
+                    let reviewedProductIds = new Set();
+                    try {
+                        // Try to get all user's feedbacks from a single endpoint
+                        const userFeedbackRes = await axios.get(`${base}/reviews/user`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        
+                        // Parse response (handle different formats)
+                        let userFeedbacks = [];
+                        if (userFeedbackRes.status === 200) {
+                            if (Array.isArray(userFeedbackRes.data)) {
+                                userFeedbacks = userFeedbackRes.data;
+                            } else if (userFeedbackRes.data?.data) {
+                                userFeedbacks = userFeedbackRes.data.data;
+                            } else if (userFeedbackRes.data?.result) {
+                                userFeedbacks = userFeedbackRes.data.result;
+                            }
+                        }
 
-                    // Check which products have been reviewed
+                        // Extract reviewed product IDs
+                        userFeedbacks.forEach(feedback => {
+                            if (feedback.productId) {
+                                reviewedProductIds.add(feedback.productId);
+                            }
+                        });
+                    } catch {
+                        // If endpoint doesn't exist or error, skip
+                        console.log('Could not fetch user feedbacks');
+                    }
+
+                    // Count unreviewed products
                     let unreviewed = 0;
                     for (const productId of productIds) {
-                        try {
-                            const feedbackRes = await axios.get(`${base}/feedback/${productId}`);
-                            if (feedbackRes.status === 200 && feedbackRes.data?.result?.feedbacks) {
-                                const hasReviewed = feedbackRes.data.result.feedbacks.some(
-                                    fb => String(fb.userId) === String(currentUserId)
-                                );
-                                if (!hasReviewed) {
-                                    unreviewed++;
-                                }
-                            } else {
-                                unreviewed++;
-                            }
-                        } catch {
-                            // If error, assume not reviewed
+                        if (!reviewedProductIds.has(productId)) {
                             unreviewed++;
                         }
                     }
