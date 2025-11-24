@@ -5,6 +5,7 @@ import { base } from '../../service/Base';
 import AddressManager from '../../page/Profile/Address/Address';
 import './Checkout.css';
 import { App } from 'antd';
+import { CreditCard, Banknote } from 'lucide-react';
 
 export default function Checkout({
   open,
@@ -366,7 +367,7 @@ export default function Checkout({
             <section className="checkout-section">
               <h3>Phương thức thanh toán</h3>
               <div className="checkout-payment-methods">
-                <label className="checkout-payment-option">
+                <label className={`checkout-payment-option ${paymentMethod === 'CASH' ? 'checkout-payment-selected' : ''}`}>
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -374,12 +375,15 @@ export default function Checkout({
                     checked={paymentMethod === 'CASH'}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   />
+                  <div className="checkout-payment-icon checkout-payment-icon-cash">
+                    <Banknote size={28} />
+                  </div>
                   <span className="checkout-payment-label">
                     <strong>Tiền mặt</strong>
                     <span>Thanh toán khi nhận hàng</span>
                   </span>
                 </label>
-                <label className="checkout-payment-option">
+                <label className={`checkout-payment-option ${paymentMethod === 'VNPAY' ? 'checkout-payment-selected' : ''}`}>
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -387,6 +391,9 @@ export default function Checkout({
                     checked={paymentMethod === 'VNPAY'}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   />
+                  <div className="checkout-payment-icon checkout-payment-icon-card">
+                    <CreditCard size={28} />
+                  </div>
                   <span className="checkout-payment-label">
                     <strong>Thẻ</strong>
                     <span>Thanh toán qua VNPAY</span>
