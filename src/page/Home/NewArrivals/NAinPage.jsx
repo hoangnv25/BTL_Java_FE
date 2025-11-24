@@ -15,6 +15,9 @@ export default function NAinPage() {
   const [error, setError] = useState(null);
   const [activeSales, setActiveSales] = useState([]);
   const [categories, setCategories] = useState([]);
+  const getCategoryId = (category) => String(category?.categoryId ?? category?.id ?? "");
+  const getCategoryName = (category) =>
+    category?.categoryName || category?.name || category?.title || `Danh mục #${category?.categoryId ?? category?.id ?? ""}`;
 
   // Sidebar filter states (chỉ hiệu lực trên trang /newArrivals)
   const [searchText, setSearchText] = useState("");
@@ -22,6 +25,30 @@ export default function NAinPage() {
   const [priceMax, setPriceMax] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const parentCategories = useMemo(
+    () =>
+      categories.filter((cat) => {
+        const parentValue = Number(cat?.parentId ?? 0);
+        return !parentValue || parentValue === 0;
+      }),
+    [categories]
+  );
+  const childCategoriesMap = useMemo(() => {
+    const map = {};
+    categories.forEach((cat) => {
+      const parentValue = Number(cat?.parentId ?? 0);
+      if (parentValue && parentValue !== 0) {
+        if (!map[parentValue]) {
+          map[parentValue] = [];
+        }
+        map[parentValue].push(cat);
+      }
+    });
+    return map;
+  }, [categories]);
+  const handleCategorySelect = (categoryId) => {
+    setSelectedCategoryId((prev) => (prev === categoryId ? "" : categoryId));
+  };
   
   // Chỉ hiện breadcrumb khi ở trang /newArrivals (không phải trang chủ)
   const showBreadcrumb = location.pathname === '/newArrivals';
@@ -326,18 +353,48 @@ export default function NAinPage() {
 
                   <div className="na-filter-group">
                     <div className="na-filter-title">Danh mục</div>
-                    <select
-                      className="na-select"
-                      value={selectedCategoryId}
-                      onChange={(e) => setSelectedCategoryId(e.target.value)}
-                    >
-                      <option value="">Tất cả</option>
-                      {categories.map((c) => (
-                        <option key={c.categoryId ?? c.id} value={c.categoryId ?? c.id}>
-                          {c.categoryName || c.name || `#${c.categoryId ?? c.id}`}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="na-category-list">
+                      <button
+                        type="button"
+                        className={`na-category-chip na-category-chip--all${selectedCategoryId === "" ? " is-active" : ""}`}
+                        onClick={() => setSelectedCategoryId("")}
+                      >
+                        Tất cả
+                      </button>
+                      {parentCategories.map((parent) => {
+                        const parentId = Number(parent?.categoryId ?? parent?.id ?? 0);
+                        const children = childCategoriesMap[parentId] || [];
+                        if (!children.length) {
+                          return (
+                            <div key={`parent-${parentId}`} className="na-category-section">
+                              <div className="na-category-parent">{getCategoryName(parent)}</div>
+                              <div className="na-category-empty">Chưa có danh mục con</div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={`parent-${parentId}`} className="na-category-section">
+                            <div className="na-category-parent">{getCategoryName(parent)}</div>
+                            <div className="na-category-children">
+                              {children.map((child) => {
+                                const childId = getCategoryId(child);
+                                const isActive = selectedCategoryId === childId;
+                                return (
+                                  <button
+                                    key={childId}
+                                    type="button"
+                                    className={`na-category-chip${isActive ? " is-active" : ""}`}
+                                    onClick={() => handleCategorySelect(childId)}
+                                  >
+                                    {getCategoryName(child)}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </aside>
               )}
