@@ -125,7 +125,7 @@ export default function AdminOrderItem({ order, onDeleted }) {
 						</span>
 						{paymentMeta.method && (
 							<span className={`admin-payment-method admin-payment-method-${paymentMeta.method.toLowerCase()}`}>
-								{paymentMeta.method === 'VNPAY' ? <CreditCard size={14} /> : paymentMeta.method === 'CASH' ? <Banknote size={14} /> : null}
+								{paymentMeta.method === 'VNPAY' ? <CreditCard size={12} /> : paymentMeta.method === 'CASH' ? <Banknote size={12} /> : null}
 							</span>
 						)}
 					</div>
