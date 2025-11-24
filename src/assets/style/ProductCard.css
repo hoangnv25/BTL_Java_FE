@@ -98,10 +98,20 @@
 	display: flex;
 	gap: 8px;
 	align-items: center;
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE/Edge */
+}
+.variant-list::-webkit-scrollbar {
+	display: none; /* Chrome/Safari */
 }
 .variant-thumb {
 	width: 28px;
 	height: 28px;
+	min-width: 28px; /* Không cho bóp ảnh */
+	flex-shrink: 0; /* Không cho co lại */
 	border-radius: 50%;
 	border: 2px solid transparent;
 	padding: 0;
@@ -141,4 +151,126 @@
 	pointer-events: none;
 	z-index: 10;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+	.product-body {
+		padding: 10px 12px;
+		gap: 8px;
+	}
+	
+	.product-title {
+		font-size: 14px;
+		min-height: 40px;
+		line-height: 1.3;
+	}
+	
+	.price-old {
+		font-size: 12px;
+	}
+	
+	.price-now,
+	.price-normal {
+		font-size: 16px;
+	}
+	
+	.badge-discount {
+		font-size: 12px;
+		padding: 3px 8px;
+		top: 6px;
+		left: 6px;
+	}
+	
+	.variant-list {
+		gap: 6px;
+		margin-top: 8px;
+	}
+	
+	.variant-thumb {
+		width: 24px;
+		height: 24px;
+		min-width: 24px;
+	}
+}
+
+@media (max-width: 500px) {
+	.product-body {
+		padding: 8px 10px;
+		gap: 6px;
+	}
+	
+	.product-title {
+		font-size: 12px;
+		min-height: 34px;
+		line-height: 1.25;
+	}
+	
+	.price-old {
+		font-size: 11px;
+	}
+	
+	.price-now,
+	.price-normal {
+		font-size: 15px;
+	}
+	
+	.badge-discount {
+		font-size: 11px;
+		padding: 2px 6px;
+		top: 4px;
+		left: 4px;
+	}
+	
+	.variant-list {
+		gap: 5px;
+		margin-top: 6px;
+	}
+	
+	.variant-thumb {
+		width: 22px;
+		height: 22px;
+		min-width: 22px;
+	}
+}
+
+@media (max-width: 400px) {
+	.product-body {
+		padding: 6px 8px;
+		gap: 5px;
+	}
+	
+	.product-title {
+		font-size: 12px;
+		min-height: 32px;
+		line-height: 1.2;
+	}
+	
+	.price-old {
+		font-size: 10px;
+	}
+	
+	.price-now,
+	.price-normal {
+		font-size: 14px;
+	}
+	
+	.badge-discount {
+		font-size: 10px;
+		padding: 2px 5px;
+		top: 4px;
+		left: 4px;
+		border-radius: 8px;
+	}
+	
+	.variant-list {
+		gap: 4px;
+		margin-top: 5px;
+	}
+	
+	.variant-thumb {
+		width: 20px;
+		height: 20px;
+		min-width: 20px;
+	}
 }
