@@ -2,9 +2,10 @@ import './Order.css';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { base } from '../../../service/Base';
-import { Package, ChevronDown, ChevronUp, Star } from 'lucide-react';
+import { Package, ChevronDown, ChevronUp, Star, CreditCard, Banknote } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import FeedbackModal from '../../ProductDetail/FeedBack/FeedbackModal';
+import OrderDetailModal from './OrderDetailModal';
 
 export default function Order() {
 	const [loading, setLoading] = useState(true);
@@ -17,6 +18,7 @@ export default function Order() {
 	const [viewProduct, setViewProduct] = useState(null);
 	const [feedbackProduct, setFeedbackProduct] = useState(null);
 	const [productFeedbackStatus, setProductFeedbackStatus] = useState({});
+	const [selectedOrderForModal, setSelectedOrderForModal] = useState(null);
 	const navigate = useNavigate();
 
 	const fetchOrders = async (mounted = true) => {
@@ -141,6 +143,34 @@ export default function Order() {
 		}
 	};
 
+	const getPaymentStatusMeta = (paymentStatus, paymentMethod) => {
+		if (!paymentStatus && !paymentMethod) {
+			return { label: 'Chưa thanh toán', cls: 'payment-none', method: null, methodLabel: null };
+		}
+
+		if (paymentStatus === 'COMPLETED') {
+			const methodLabel = paymentMethod === 'VNPAY' ? 'VNPAY' : paymentMethod === 'CASH' ? 'Tiền mặt' : null;
+			return { 
+				label: 'Đã thanh toán', 
+				cls: 'payment-completed',
+				method: paymentMethod,
+				methodLabel: methodLabel
+			};
+		}
+
+		if (paymentStatus === 'PENDING') {
+			const methodLabel = paymentMethod === 'VNPAY' ? 'VNPAY' : paymentMethod === 'CASH' ? 'Tiền mặt' : null;
+			return { 
+				label: 'Chờ thanh toán', 
+				cls: 'payment-pending',
+				method: paymentMethod,
+				methodLabel: methodLabel
+			};
+		}
+
+		return { label: 'Chưa thanh toán', cls: 'payment-none', method: null, methodLabel: null };
+	};
+
 	return (
 		<div className="profile-orders-section">
 			<h3 className="profile-orders-title">
@@ -178,45 +208,70 @@ export default function Order() {
 
 				{!loading && !error && orders.length > 0 && (
 					<div className="profile-orders-body">
-						{orders.map((o) => {
-							const statusMeta = getStatusMeta(o.status);
-							const isOpen = expandedId === o.id;
-							const firstItem = (o.orderDetails || [])[0];
-							const totalItems = (o.orderDetails || []).reduce((sum, d) => sum + (d.quantity || 0), 0);
-							const canCancel = o.status === 'PENDING' || o.status === 'APPROVED';
-							return (
-								<div key={o.id} className="profile-orders-item">
-									<button
-										className="profile-orders-row"
-										onClick={() => setExpandedId(isOpen ? null : o.id)}
-										aria-expanded={isOpen}
-									>
-										<div className="profile-order-summary">
-											<img
-												src={firstItem?.image || '/product-placeholder.png'}
-												alt={firstItem?.productName || 'Sản phẩm'}
-											/>
-											<div className="info">
-												<div className="title">
-													{firstItem?.productName || `Đơn hàng #${o.id}`}
-												</div>
-												<div className="sub">{totalItems} sản phẩm</div>
+					{orders.map((o) => {
+						const statusMeta = getStatusMeta(o.status);
+						const paymentMeta = getPaymentStatusMeta(o.paymentStatus, o.paymentMethod);
+						const isOpen = expandedId === o.id;
+						const firstItem = (o.orderDetails || [])[0];
+						const totalItems = (o.orderDetails || []).reduce((sum, d) => sum + (d.quantity || 0), 0);
+						// Không cho hủy nếu đã xác nhận và đã thanh toán bằng VNPAY
+						const canCancel = (o.status === 'PENDING' || o.status === 'APPROVED') && 
+							!(o.status === 'APPROVED' && o.paymentStatus === 'COMPLETED' && o.paymentMethod === 'VNPAY');
+						return (
+							<div key={o.id} className="profile-orders-item">
+								<button
+									className="profile-orders-row"
+									onClick={() => {
+										// Trên mobile, mở modal; trên desktop, expand inline
+										if (window.innerWidth <= 768) {
+											setSelectedOrderForModal(o);
+										} else {
+											setExpandedId(isOpen ? null : o.id);
+										}
+									}}
+									aria-expanded={isOpen}
+								>
+									<div className="profile-order-summary">
+										<img
+											src={firstItem?.image || '/product-placeholder.png'}
+											alt={firstItem?.productName || 'Sản phẩm'}
+										/>
+										<div className="info">
+											<div className="title">
+												{firstItem?.productName || `Đơn hàng #${o.id}`}
 											</div>
+											<div className="sub">{totalItems} sản phẩm</div>
 										</div>
-										<span>{formatDateTime(o.orderDate)}</span>
-										<span>{formatCurrency(o.totalAmount)}</span>
-										<span>—</span>
-										<span>
-											<span className={`profile-badge ${statusMeta.cls}`}>
-												{statusMeta.label}
+									</div>
+									<span>{formatDateTime(o.orderDate)}</span>
+									<span>{formatCurrency(o.totalAmount)}</span>
+									<span>
+										<div className="profile-payment-badge-group">
+											<span className={`profile-badge ${paymentMeta.cls}`}>
+												{paymentMeta.label}
 											</span>
+											{paymentMeta.method && (
+												<span className={`profile-badge-method profile-badge-method-${paymentMeta.method?.toLowerCase()}`}>
+													{paymentMeta.method === 'VNPAY' ? (
+														<CreditCard size={14} />
+													) : paymentMeta.method === 'CASH' ? (
+														<Banknote size={14} />
+													) : null}
+												</span>
+											)}
+										</div>
+									</span>
+									<span>
+										<span className={`profile-badge ${statusMeta.cls}`}>
+											{statusMeta.label}
 										</span>
-										<span className="profile-row-expander">
-											{isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-										</span>
-									</button>
+									</span>
+									<span className="profile-row-expander">
+										{isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+									</span>
+								</button>
 
-									<div className={`profile-order-details ${isOpen ? 'open' : ''}`}>
+									<div className={`profile-order-details ${isOpen ? 'open' : ''} profile-order-details-desktop`}>
 										{canCancel && (
 											<div className="profile-order-actions">
 												<button
@@ -245,6 +300,17 @@ export default function Order() {
 											{Boolean(o.note) && (
 												<div>
 													<strong>Ghi chú:</strong> {o.note}
+												</div>
+											)}
+											<div>
+												<strong>Phương thức thanh toán:</strong>{' '}
+												{o.paymentMethod === 'VNPAY' ? 'Thẻ (VNPAY)' : 
+												 o.paymentMethod === 'CASH' ? 'Tiền mặt' : 
+												 'Chưa chọn'}
+											</div>
+											{o.paymentDate && (
+												<div>
+													<strong>Ngày thanh toán:</strong> {formatDateTime(o.paymentDate)}
 												</div>
 											)}
 										</div>
@@ -279,7 +345,7 @@ export default function Order() {
 													{o.status === 'COMPLETED' && !productFeedbackStatus[d.productId] && (
 														<button
 															type="button"
-															className="profile-btn-feedback"
+															className="profile-btn-feedback profile-btn-feedback-desktop"
 															onClick={(e) => {
 																e.stopPropagation();
 																setFeedbackProduct({
@@ -430,6 +496,25 @@ export default function Order() {
 					}}
 				/>
 			)}
+
+			<OrderDetailModal
+				order={selectedOrderForModal}
+				isOpen={!!selectedOrderForModal}
+				onClose={() => setSelectedOrderForModal(null)}
+				onCancelOrder={(orderId) => {
+					setCancelError('');
+					setCancelId(orderId);
+				}}
+				canCancel={selectedOrderForModal ? 
+					((selectedOrderForModal.status === 'PENDING' || selectedOrderForModal.status === 'APPROVED') && 
+					 !(selectedOrderForModal.status === 'APPROVED' && selectedOrderForModal.paymentStatus === 'COMPLETED' && selectedOrderForModal.paymentMethod === 'VNPAY')) 
+					: false}
+				onFeedbackClick={(product) => {
+					setFeedbackProduct(product);
+					setSelectedOrderForModal(null);
+				}}
+				productFeedbackStatus={productFeedbackStatus}
+			/>
 		</div>
 	);
 }
