@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { base } from '../../../service/Base'
 import { App } from 'antd'
+import { Upload, X } from 'lucide-react'
 
 export default function Modal({ open = false, onClose, parentIdDefault = 0, onCreated, onUpdated, mode = 'create', category = null }) {
     const [categoryName, setCategoryName] = useState('')
@@ -72,6 +73,26 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
     const handleCancel = () => {
         if (submitting) return
         if (typeof onClose === 'function') onClose()
+    }
+
+    const handleImageSelect = (e) => {
+        const file = e.target.files && e.target.files[0] ? e.target.files[0] : null
+        if (!file) {
+            setImageFile(null)
+            return
+        }
+        if (!file.type?.startsWith('image/')) {
+            message.error('Vui lòng chọn file ảnh hợp lệ')
+            e.target.value = ''
+            return
+        }
+        setImageFile(file)
+    }
+
+    const handleRemoveImage = () => {
+        if (submitting) return
+        setImageFile(null)
+        setPreviewUrl('')
     }
 
     const handleCreate = async (e) => {
@@ -155,7 +176,7 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
                         />
                     </div>
 
-                    <div className="form-group">
+                    {/* <div className="form-group">
                         <label htmlFor="parentId">parentId</label>
                         <input
                             id="parentId"
@@ -165,21 +186,44 @@ export default function Modal({ open = false, onClose, parentIdDefault = 0, onCr
                             value={parentId}
                             onChange={(e) => setParentId(Number(e.target.value) || 0)}
                         />
-                    </div>
+                    </div> */}
 
                     <div className="form-group">
-                        <label htmlFor="image">Ảnh</label>
-                        <input
-                            id="image"
-                            className="form-control"
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => setImageFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
-                        />
-                        {previewToShow && (
-                            <div className="file-preview">
-                                <img src={previewToShow} alt="Xem trước" />
+                        <label htmlFor="image">Ảnh danh mục</label>
+                        {!previewToShow ? (
+                            <div className="image-upload-area">
+                                <input
+                                    id="image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageSelect}
+                                    className="image-input"
+                                />
+                                <label htmlFor="image" className="image-upload-label">
+                                    <Upload size={28} />
+                                    <span>Chọn hoặc kéo thả ảnh</span>
+                                    <span className="upload-hint">PNG, JPG, JPEG (tối đa 5MB)</span>
+                                </label>
                             </div>
+                        ) : (
+                            <div className="image-preview-container">
+                                <img src={previewToShow} alt="Xem trước" className="image-preview" />
+                                {imageFile && (
+                                    <button
+                                        type="button"
+                                        className="btn-remove-image"
+                                        onClick={handleRemoveImage}
+                                        title="Xóa ảnh vừa chọn"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                        {!imageFile && existingImageUrl && (
+                            <p className="current-image-hint">
+                                Đang sử dụng ảnh: {getFileNameFromUrl(existingImageUrl)}
+                            </p>
                         )}
                     </div>
 
