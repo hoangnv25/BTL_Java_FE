@@ -1,5 +1,6 @@
 import './Login.css';
 import anhTheLC from '../../assets/image/anh_the_LC.jpg';
+import imgLogin from '../../assets/image/imgLogin.jpg';
 import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -64,9 +65,9 @@ export default function Login() {
     return (
         <div className="login-container">
             {/* Left side - Image */}
-            {/* <div className="login-image">
-                <img src={anhTheLC} alt="Background" />
-            </div> */}
+            <div className="login-image">
+                <img src={imgLogin} alt="Background" />
+            </div>
             
             {/* Right side - Login Form */}
             <div className="login-form-container">

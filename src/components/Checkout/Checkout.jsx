@@ -28,6 +28,8 @@ export default function Checkout({
     return window.innerWidth <= 768;
   });
   const { message } = App.useApp();
+  const normalizePhoneInput = (value = '') => value.replace(/\D/g, '').slice(0, 10);
+  const isValidVietnamPhone = (phone) => /^0\d{9}$/.test(phone);
 
   const loadDefaultAddress = async () => {
     const token = localStorage.getItem('token');
@@ -70,9 +72,9 @@ export default function Checkout({
       });
 
       if (res.status === 200 && res.data) {
-        const phone = res.data.phoneNumber || res.data.phone || '';
+        const phone = normalizePhoneInput(res.data.phoneNumber || res.data.phone || '');
         setUserPhone(phone);
-        setShippingPhone(prev => prev || phone);
+        setShippingPhone(prev => (prev ? normalizePhoneInput(prev) : phone));
       } else {
         setUserPhone('');
         setShippingPhone('');
@@ -97,7 +99,7 @@ export default function Checkout({
   useEffect(() => {
     if (open) {
       setNote('');
-      setShippingPhone(prev => prev || userPhone || '');
+      setShippingPhone(prev => normalizePhoneInput(prev || userPhone || ''));
       setPaymentMethod(null);
     }
   }, [open, userPhone]);
@@ -134,8 +136,14 @@ export default function Checkout({
       return;
     }
 
-    if (!shippingPhone.trim()) {
+    const trimmedPhone = shippingPhone.trim();
+    if (!trimmedPhone) {
       message.error('Vui lòng nhập số điện thoại nhận hàng');
+      return;
+    }
+
+    if (!isValidVietnamPhone(trimmedPhone)) {
+      message.error('Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số.');
       return;
     }
 
@@ -151,7 +159,7 @@ export default function Checkout({
 
     const payload = {
       note: note || undefined,
-      phoneNumber: shippingPhone.trim(),
+      phoneNumber: trimmedPhone,
       items: items.map(it => ({
         variationId: it.product_variation_id,
         quantity: it.quantity,
@@ -182,7 +190,7 @@ export default function Checkout({
               `${base}/orders/${orderId}/update`,
               {
                 addressId: selectedAddress.address_id,
-                phoneNumber: shippingPhone.trim(),
+                phoneNumber: trimmedPhone,
                 note: note || undefined,
               },
               {
@@ -336,7 +344,7 @@ export default function Checkout({
                   <button
                     type="button"
                     className="checkout-link-btn"
-                    onClick={() => setShippingPhone(userPhone)}
+                    onClick={() => setShippingPhone(normalizePhoneInput(userPhone))}
                   >
                     Dùng số mặc định
                   </button>
@@ -345,9 +353,11 @@ export default function Checkout({
               <input
                 className="checkout-phone-input"
                 value={shippingPhone}
-                onChange={(e) => setShippingPhone(e.target.value)}
+                onChange={(e) => setShippingPhone(normalizePhoneInput(e.target.value))}
                 placeholder="Nhập số điện thoại nhận hàng"
                 type="tel"
+                inputMode="numeric"
+                maxLength={10}
               />
             </section>
 
