@@ -140,7 +140,7 @@
 	font-size: 14px;
 	color: #111827;
 	font-weight: 600;
-	text-align: right;
+	text-align: right !important;
 	flex: 1;
 }
 

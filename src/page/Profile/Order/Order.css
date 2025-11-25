@@ -156,6 +156,11 @@
     color: #92400e; 
     border: 1px solid #fde68a;
 }
+.profile-badge.payment-cod {
+    background: linear-gradient(135deg, #ecfccb 0%, #bbf7d0 100%);
+    color: #166534;
+    border: 1px solid #86efac;
+}
 .profile-badge.payment-none { 
     background: #f3f4f6; 
     color: #6b7280; 
