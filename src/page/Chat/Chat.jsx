@@ -4,8 +4,10 @@ import ChatSilebar from './ChatSidebar'
 import ChatFrame from './ChatFrame'
 import './Chat.css'
 import { Routes, Route } from 'react-router-dom'
+import { usePageTitle } from '../../hooks/usePageTitle'
 
 export default function Chat() {
+    usePageTitle('Chat');
     const token = localStorage.getItem('token')
     const isAdmin = localStorage.getItem('isAdmin') === 'true'
     const [isCompact, setIsCompact] = useState(typeof window !== 'undefined' ? window.innerWidth <= 740 : false)

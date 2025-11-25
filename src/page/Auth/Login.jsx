@@ -6,8 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { login } from '../../service/Auth';
 import { OAuthConfig } from '../../configurations/configuration';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function Login() {
+    usePageTitle('Đăng nhập');
     const { message } = App.useApp();
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
@@ -62,15 +64,16 @@ export default function Login() {
     return (
         <div className="login-container">
             {/* Left side - Image */}
-            <div className="login-image">
+            {/* <div className="login-image">
                 <img src={anhTheLC} alt="Background" />
-            </div>
+            </div> */}
             
             {/* Right side - Login Form */}
             <div className="login-form-container">
                 <div className="login-form">
-                    <h1 className="brand-name">LOK SHOP</h1>
-                    <h2 className="login-title">Đăng nhập</h2>        
+                    {/* <h1 className="brand-name">FASHCO SHOP</h1> */}
+                    <h1 className="login-title">Đăng nhập</h1> 
+                    <p className="login-description">Nhâp thông tin đăng nhập của bạn</p>
                     
                     <form className="login-form-element" onSubmit={handleLogin}>
                         <div className="login-input-group">
@@ -122,9 +125,8 @@ export default function Login() {
                             </button>
                         </div>
                         
-                        <div className="login-forgot-password">
-                            <a href="#" className="login-forgot-link">Quên mật khẩu?</a>
-                        </div>
+                      
+                        <p className="login-description">Bằng cách đăng nhập, bạn đồng ý với <a href="/terms" target="_blank" rel="noopener noreferrer">Điều khoản sử dụng</a> của chúng tôi</p>
                     </form>
                 </div>
             </div>

@@ -7,10 +7,12 @@ import { Trash2 } from "lucide-react";
 import Breadcrumb from "../../components/Breadcrumb";
 import { getToken, removeToken } from "../../service/LocalStorage";
 import Checkout from "../../components/Checkout/Checkout";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import "./Cart.css";
 
 
 export default function Cart() {
+    usePageTitle('Giỏ hàng');
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedItems, setSelectedItems] = useState(new Set());
@@ -347,6 +349,16 @@ export default function Cart() {
         setIsCheckoutOpen(false);
     };
 
+    const handleViewOrders = () => {
+        const token = getToken();
+        if (!token) {
+            message.error('Vui lòng đăng nhập để xem đơn hàng của bạn');
+            navigate('/login');
+            return;
+        }
+        navigate('/user#orders');
+    };
+
     if (loading) {
         return (
             <>
@@ -363,6 +375,12 @@ export default function Cart() {
             <>
                 <Breadcrumb items={breadcrumbItems} />
                 <div className="cart-container">
+				<div className="cart-header">
+					<h1>Giỏ hàng</h1>
+					<button className="view-orders-btn" onClick={handleViewOrders}>
+						Xem đơn hàng của bạn
+					</button>
+				</div>
                 <div className="empty-cart">
                     <div className="empty-cart-icon">
                         <div className="shopping-bag">🛍️</div>
@@ -388,7 +406,12 @@ export default function Cart() {
         <>
             <Breadcrumb items={breadcrumbItems} />
             <div className="cart-container">
-            <h1>Giỏ hàng</h1>
+            <div className="cart-header">
+                <h1>Giỏ hàng</h1>
+                <button className="view-orders-btn" onClick={handleViewOrders}>
+                    Xem đơn hàng của bạn
+                </button>
+            </div>
             
             <div className="cart-content">
                 <div className="cart-items">

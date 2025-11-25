@@ -140,7 +140,7 @@
 
 .chart-container-monthly {
     height: 400px;
-    overflow-x: auto;
+    /* overflow-x: auto; */
 }
 
 .chart-bars {
@@ -211,7 +211,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-    z-index: 10;
+    z-index: 10000000;
 }
 
 .chart-bar-tooltip::after {

@@ -25,9 +25,9 @@ function NavbarPC({
         </div>
 
         <ul className="navbar-menu">
-          <li><Link to="/" className="navbar-link"><strong style={{ textTransform: 'uppercase' }}>Trang chủ</strong></Link></li>
+          <li><Link to="/newArrivals" className="navbar-link"><strong style={{ textTransform: 'uppercase' }}>Sản phẩm mới</strong></Link></li>
           <li className="navbar-separator" aria-hidden="true"></li>
-          <li><Link to="/newArrivals" className="navbar-link"><strong style={{ textTransform: 'uppercase' }}>Hàng mới về</strong></Link></li>
+          <li><Link to="/sale" className="navbar-link"><strong style={{ textTransform: 'uppercase' }}>Giảm giá</strong></Link></li>
           <li className="navbar-separator" aria-hidden="true"></li>
           <li className="navbar-dropdown">
             <span className="navbar-link"><strong style={{ textTransform: 'uppercase' }}>Danh mục</strong></span>

@@ -157,6 +157,7 @@ export default function AdminOrder() {
 						<span>Tổng tiền</span>
 						<SortIcon field="totalAmount" />
 					</button>
+					<span>TT thanh toán</span>
 					<button className="head-cell sortable" onClick={() => toggleSort('status')}>
 						<span>Trạng thái</span>
 						<SortIcon field="status" />

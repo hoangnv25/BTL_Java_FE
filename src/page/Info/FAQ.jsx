@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import './FAQ.css';
 import Breadcrumb from '../../components/Breadcrumb';
 import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function FAQ() {
+    usePageTitle('Câu hỏi thường gặp');
     const [openIndex, setOpenIndex] = useState(null);
 
     const breadcrumbItems = [

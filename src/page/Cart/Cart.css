@@ -12,6 +12,36 @@
     color: #333;
 }
 
+.cart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.cart-header h1 {
+    margin: 0;
+}
+
+.view-orders-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid #111;
+    background: #111;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.view-orders-btn:hover {
+    background: #fff;
+    color: #111;
+}
+
 /* Loading state */
 .loading {
     text-align: center;

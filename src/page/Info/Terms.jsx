@@ -2,8 +2,10 @@ import React from 'react';
 import './Terms.css';
 import Breadcrumb from '../../components/Breadcrumb';
 import { FileText, Scale, AlertCircle, CheckCircle } from 'lucide-react';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function Terms() {
+    usePageTitle('Điều khoản sử dụng');
     const breadcrumbItems = [
         { label: "Trang chủ", path: "/" },
         { label: "Điều khoản sử dụng" }

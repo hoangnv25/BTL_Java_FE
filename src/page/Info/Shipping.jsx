@@ -2,8 +2,10 @@ import React from 'react';
 import './Shipping.css';
 import Breadcrumb from '../../components/Breadcrumb';
 import { Truck, Package, Clock, MapPin, DollarSign, Shield } from 'lucide-react';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export default function Shipping() {
+    usePageTitle('Chính sách vận chuyển');
     const breadcrumbItems = [
         { label: "Trang chủ", path: "/" },
         { label: "Chính sách vận chuyển" }

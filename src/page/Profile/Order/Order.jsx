@@ -175,7 +175,11 @@ export default function Order() {
 		}
 	};
 
-	const getPaymentStatusMeta = (paymentStatus, paymentMethod) => {
+	const getPaymentStatusMeta = (paymentStatus, paymentMethod, orderStatus) => {
+		if (orderStatus === 'CANCELED') {
+			return { label: 'Đã hủy', cls: 'payment-canceled', method: null, methodLabel: null };
+		}
+
 		if (!paymentStatus && !paymentMethod) {
 			return { label: 'Chưa thanh toán', cls: 'payment-none', method: null, methodLabel: null };
 		}
@@ -204,7 +208,7 @@ export default function Order() {
 	};
 
 	return (
-		<div className="profile-orders-section">
+		<div className="profile-orders-section" id="orders">
 			<h3 className="profile-orders-title">
 				<Package size={20} />
 				<span>Đơn hàng của bạn</span>
@@ -242,13 +246,22 @@ export default function Order() {
 					<div className="profile-orders-body">
 					{orders.map((o) => {
 						const statusMeta = getStatusMeta(o.status);
-						const paymentMeta = getPaymentStatusMeta(o.paymentStatus, o.paymentMethod);
+						const paymentMeta = getPaymentStatusMeta(o.paymentStatus, o.paymentMethod, o.status);
 						const isOpen = expandedId === o.id;
 						const firstItem = (o.orderDetails || [])[0];
 						const totalItems = (o.orderDetails || []).reduce((sum, d) => sum + (d.quantity || 0), 0);
 						const pendingPayment = pendingPayments[o.id];
 						const remainingMs = pendingPayment ? pendingPayment.expiresAt - now : 0;
-						const hasActivePaymentLink = Boolean(pendingPayment && remainingMs > 0);
+						const hasActivePaymentLink = Boolean(
+							pendingPayment &&
+							remainingMs > 0 &&
+							o.paymentStatus !== 'COMPLETED'
+						);
+						const showPayNowButton =
+							hasActivePaymentLink &&
+							o.paymentMethod === 'VNPAY' &&
+							o.paymentStatus === 'PENDING' &&
+							o.status === 'PENDING';
 						const remainingMinutes = hasActivePaymentLink ? Math.max(1, Math.ceil(remainingMs / 60000)) : 0;
 						// Đếm số sản phẩm chưa đánh giá trong đơn hàng đã hoàn thành
 						const unReviewedCount = o.status === 'COMPLETED' ? 
@@ -318,7 +331,7 @@ export default function Order() {
 								</button>
 
 									<div className={`profile-order-details ${isOpen ? 'open' : ''} profile-order-details-desktop`}>
-										{(canCancel || hasActivePaymentLink) && (
+										{(canCancel || showPayNowButton) && (
 											<div className="profile-order-actions">
 												{canCancel && (
 													<button
@@ -333,7 +346,7 @@ export default function Order() {
 														Hủy đơn
 													</button>
 												)}
-												{hasActivePaymentLink && (
+												{showPayNowButton && (
 													<div className="profile-order-pay-later">
 														<button
 															type="button"

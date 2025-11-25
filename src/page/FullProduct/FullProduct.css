@@ -123,6 +123,58 @@
 .na-price-sep {
 	color: #64748b;
 }
+.na-category-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.na-category-chip {
+	border: 1px solid #e5e7eb;
+	border-radius: 999px;
+	padding: 6px 14px;
+	font-size: 13px;
+	color: #0f172a;
+	background: #fff;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+.na-category-chip:hover {
+	border-color: #0f172a;
+}
+.na-category-chip.is-active {
+	background: #0f172a;
+	color: #fff;
+	border-color: #0f172a;
+	box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+}
+.na-category-chip--all {
+	align-self: flex-start;
+}
+.na-category-section {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.na-category-parent {
+	font-size: 13px;
+	font-weight: 600;
+	color: #475569;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+.na-category-children {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.na-category-empty {
+	font-size: 12px;
+	color: #94a3b8;
+	font-style: italic;
+}
 .na-content {
 	min-width: 0;
 }

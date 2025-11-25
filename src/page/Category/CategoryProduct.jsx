@@ -4,6 +4,7 @@ import axios from 'axios'
 import { base } from '../../service/Base.jsx'
 import ProductCard from '../../components/ProductCard.jsx'
 import Breadcrumb from '../../components/Breadcrumb.jsx'
+import { usePageTitle } from '../../hooks/usePageTitle'
 import './CategoryProduct.css'
 
 export default function CategoryProduct() {
@@ -16,6 +17,8 @@ export default function CategoryProduct() {
     const [category, setCategory] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    
+    usePageTitle(category?.categoryName || category?.name || state?.name || 'Danh mục');
 
     // Fetch category info
     useEffect(() => {

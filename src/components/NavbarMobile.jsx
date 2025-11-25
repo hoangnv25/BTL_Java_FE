@@ -54,8 +54,10 @@ function NavbarMobile({
             </Link>
 
             {/* Placeholder chiếm cột giữa để tránh chồng lấn với FAB */}
-            <span className="bottom-spacer" aria-hidden="true" />
-
+            <span>
+              <span className="bottom-spacer" aria-hidden="true" />
+              <span className="bottom-item-text">Trang chủ</span>
+            </span>
             <button className="fab" onClick={() => navigate('/')} aria-label="Trang chủ">
               <Home size={26} />
             </button>
@@ -95,7 +97,6 @@ function NavbarMobile({
 
             <button className="fab" onClick={() => navigate('/admin')} aria-label="Quản trị">
               <LayoutDashboard size={26} />
-                              
             </button>
 
             <Link className="bottom-item" to="/chat" aria-label="Chat">

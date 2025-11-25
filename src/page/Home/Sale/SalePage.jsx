@@ -1,15 +1,15 @@
-import { useParams } from 'react-router-dom';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { base } from '../../../service/Base.jsx';
 import ProductCard from '../../../components/ProductCard';
 import Breadcrumb from '../../../components/Breadcrumb';
+import { usePageTitle } from '../../../hooks/usePageTitle';
 import { Filter, X } from 'lucide-react';
 import './Sale.css';
 import '../NewArrivals/NewArrivals.css';
 
 export default function SalePage() {
-    const { saleId } = useParams();
+    usePageTitle('Khuyến mãi');
     const [sale, setSale] = useState(null);
     const [allProducts, setAllProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -58,23 +58,15 @@ export default function SalePage() {
         fetchProducts();
     }, []);
 
-    // Fetch sale information
+    // Fetch sale information (always pick the active one)
     useEffect(() => {
         const fetchSale = async () => {
-            if (!saleId) return;
-            
             try {
                 const response = await axios.get(`${base}/sales`);
                 if (response.status === 200 && response.data?.result) {
                     const sales = response.data.result;
-                    // Thử cả 'id' và 'saleId' field
-                    const currentSale = sales.find(s => 
-                        (s.id == saleId || s.saleId == saleId)
-                    );
-                    console.log('All sales:', sales);
-                    console.log('Looking for saleId:', saleId);
-                    console.log('Found sale:', currentSale);
-                    setSale(currentSale || null);
+                    const activeSale = sales.find((s) => s.active);
+                    setSale(activeSale || null);
                 }
             } catch (err) {
                 console.error('Error fetching sale:', err);
@@ -85,7 +77,7 @@ export default function SalePage() {
         };
 
         fetchSale();
-    }, [saleId]);
+    }, []);
 
     // Countdown timer
     useEffect(() => {

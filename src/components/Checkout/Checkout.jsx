@@ -230,6 +230,7 @@ export default function Checkout({
               addPendingPayment(orderId, paymentResponse.data.paymentUrl);
               // Mở trang thanh toán VNPAY ở tab mới để không mất trạng thái hiện tại
               window.open(paymentResponse.data.paymentUrl, '_blank', 'noopener,noreferrer');
+              onClose?.();
               return;
             }
           } catch (paymentError) {

@@ -11,6 +11,7 @@ import SalePage from './page/Home/Sale/SalePage.jsx'
 import ProductDetail from './page/ProductDetail/ProductDetail.jsx'
 import Cart from './page/Cart/Cart.jsx'
 import FloatingCartLink from './components/FloatingCartLink.jsx'
+import FloatingChatLink from './components/FloatingChatLink.jsx'
 import CategoryProduct from './page/Category/CategoryProduct.jsx'
 import FullProduct from './page/FullProduct/FullProduct.jsx'
 import Admin from './page/Admin/Admin.jsx'
@@ -34,7 +35,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/newArrivals" element={<NAinPage />} /> {/*tạm để ở đây*/}
-          <Route path="/sale/:saleId" element={<SalePage />} />
+          <Route path="/sale" element={<SalePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/category" element={<FullProduct />} />
           <Route path="/category/:id" element={<CategoryProduct />} />
@@ -58,6 +59,8 @@ function App() {
         </Routes>
       </main>
       <FloatingCartLink />
+      <FloatingChatLink />
+
     </>
   )
 }
