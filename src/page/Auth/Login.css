@@ -101,6 +101,7 @@
     background: transparent;
     transition: border-bottom-color 0.3s ease;
     box-sizing: border-box;
+    padding-left: 8px;
 }
 
 /* Password Input with Toggle */
@@ -110,6 +111,7 @@
 
 .login-password-input {
     padding-right: 2.5rem;
+    padding-left: 8px;
 }
 
 .login-password-toggle {
@@ -254,6 +256,7 @@
 @media (max-width: 768px) {
     .login-container {
         flex-direction: column;
+        border: none;
     }
     
     .login-image {

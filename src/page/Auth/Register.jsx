@@ -1,5 +1,6 @@
 import './Register.css';
 import anhTheLC from '../../assets/image/anh_the_LC.jpg';
+import imgRegister from '../../assets/image/imgLogin.jpg';
 import {Eye, EyeOff} from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +9,9 @@ import { setToken } from '../../service/LocalStorage';
 import { login as loginService, register as registerService } from '../../service/Auth';
 import { OAuthConfig } from '../../configurations/configuration';
 import { usePageTitle } from '../../hooks/usePageTitle';
+
+const normalizeVietnamPhone = (value = '') => value.replace(/\D/g, '').slice(0, 10);
+const isValidVietnamPhone = (phone) => /^0\d{9}$/.test(phone);
 
 export default function Register() {
     usePageTitle('Đăng ký');
@@ -58,7 +62,7 @@ export default function Register() {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [name]: name === 'phoneNumber' ? normalizeVietnamPhone(value) : value
         }));
     };
 
@@ -66,6 +70,11 @@ export default function Register() {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
             message.error('Mật khẩu xác nhận không khớp!');
+            return;
+        }
+
+        if (!isValidVietnamPhone(formData.phoneNumber)) {
+            message.error('Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số.');
             return;
         }
 
@@ -88,9 +97,9 @@ export default function Register() {
     return (
         <div className="register-container">
             {/* Left side - Image */}
-            {/* <div className="register-image">
-                <img src={anhTheLC} alt="Background" />
-            </div> */}
+            <div className="register-image">
+                <img src={imgRegister} alt="Background" />
+            </div>
             
             {/* Right side - Register Form */}
             <div className="register-form-container">

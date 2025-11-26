@@ -13,6 +13,7 @@ export default function AdminOrder() {
 	const [sortField, setSortField] = useState('orderDate');
 	const [sortDir, setSortDir] = useState('desc'); // 'asc' | 'desc'
 	const [statusFilter, setStatusFilter] = useState('ALL'); // ALL | PENDING | APPROVED | SHIPPING | COMPLETED | CANCELED
+	const [paymentStatusFilter, setPaymentStatusFilter] = useState('ALL'); // ALL | COMPLETED | PENDING_VNPAY | PENDING_CASH | FAILED | NONE | CANCELED
 
 	useEffect(() => {
 		let mounted = true;
@@ -82,9 +83,37 @@ export default function AdminOrder() {
 		}
 	};
 
+	const getPaymentStatusForFilter = (order) => {
+		// Nếu đơn bị hủy, payment status là CANCELED
+		if (order.status === 'CANCELED') {
+			return 'CANCELED';
+		}
+		// Nếu không có paymentStatus và paymentMethod, là chưa thanh toán
+		if (!order.paymentStatus && !order.paymentMethod) {
+			return 'NONE';
+		}
+		// Nếu paymentStatus là PENDING, phân biệt theo paymentMethod
+		if (order.paymentStatus === 'PENDING') {
+			if (order.paymentMethod === 'CASH') {
+				return 'PENDING_CASH'; // Thanh toán khi nhận hàng
+			}
+			if (order.paymentMethod === 'VNPAY') {
+				return 'PENDING_VNPAY'; // Chờ thanh toán VNPay
+			}
+			return 'PENDING'; // Trường hợp khác (fallback)
+		}
+		// Trả về paymentStatus nếu có (COMPLETED, FAILED)
+		return order.paymentStatus || 'NONE';
+	};
+
 	const filteredSorted = [...orders]
 		.filter((o) => matchesQuery(o, query))
 		.filter((o) => (statusFilter === 'ALL' ? true : o.status === statusFilter))
+		.filter((o) => {
+			if (paymentStatusFilter === 'ALL') return true;
+			const paymentStatus = getPaymentStatusForFilter(o);
+			return paymentStatus === paymentStatusFilter;
+		})
 		.sort((a, b) => {
 			const va = getSortValue(a, sortField);
 			const vb = getSortValue(b, sortField);
@@ -123,20 +152,6 @@ export default function AdminOrder() {
 						onChange={(e) => setQuery(e.target.value)}
 					/>
 				</div>
-				<div className="admin-filter">
-					<label>Trạng thái</label>
-					<select
-						value={statusFilter}
-						onChange={(e) => setStatusFilter(e.target.value)}
-					>
-						<option value="ALL">Tất cả</option>
-						<option value="PENDING">Chờ xử lý</option>
-						<option value="APPROVED">Đã xác nhận</option>
-						<option value="SHIPPING">Đang giao</option>
-						<option value="COMPLETED">Hoàn thành</option>
-						<option value="CANCELED">Đã hủy</option>
-					</select>
-				</div>
 			</div>
 
 			<div className="admin-orders-table">
@@ -157,11 +172,36 @@ export default function AdminOrder() {
 						<span>Tổng tiền</span>
 						<SortIcon field="totalAmount" />
 					</button>
-					<span>TT thanh toán</span>
-					<button className="head-cell sortable" onClick={() => toggleSort('status')}>
-						<span>Trạng thái</span>
-						<SortIcon field="status" />
-					</button>
+					<div className="head-cell head-cell-filter">
+						<label>TT thanh toán</label>
+						<select
+							value={paymentStatusFilter}
+							onChange={(e) => setPaymentStatusFilter(e.target.value)}
+							onClick={(e) => e.stopPropagation()}
+						>
+							<option value="ALL">Tất cả</option>
+							<option value="COMPLETED">Đã thanh toán</option>
+							<option value="PENDING_VNPAY">Chờ thanh toán</option>
+							<option value="PENDING_CASH">Thanh toán khi nhận hàng</option>
+							<option value="FAILED">Thanh toán thất bại</option>
+							<option value="CANCELED">Đã hủy</option>
+						</select>
+					</div>
+					<div className="head-cell head-cell-filter">
+						<label>Trạng thái</label>
+						<select
+							value={statusFilter}
+							onChange={(e) => setStatusFilter(e.target.value)}
+							onClick={(e) => e.stopPropagation()}
+						>
+							<option value="ALL">Tất cả</option>
+							<option value="PENDING">Chờ xử lý</option>
+							<option value="APPROVED">Đã xác nhận</option>
+							<option value="SHIPPING">Đang giao</option>
+							<option value="COMPLETED">Hoàn thành</option>
+							<option value="CANCELED">Đã hủy</option>
+						</select>
+					</div>
 					<span></span>
 				</div>
 

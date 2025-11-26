@@ -4,6 +4,7 @@ export const OAuthConfig = {
         redirectUri: [
             "http://localhost:5173/auth/OAuth",
             "https://lok-fe.vercel.app/auth/OAuth",
+            "https://fashco.vercel.app/auth/OAuth",
             "https://bephevch.up.railway.app/auth/OAuth",
             "https://befinal.up.railway.app/auth/OAuth"
         ],

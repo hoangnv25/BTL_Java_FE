@@ -19,7 +19,7 @@ export default function AdminOrderItem({ order, onDeleted }) {
 	const formatDateTime = (dt) => {
 		try {
 			const original = new Date(dt);
-			const adjusted = new Date(original.getTime() + 7 * 60 * 60 * 1000);
+			const adjusted = new Date(original.getTime() + 0 * 60 * 60 * 1000);
 			return adjusted.toLocaleString('vi-VN');
 		} catch {
 			return '—';
@@ -45,22 +45,46 @@ export default function AdminOrderItem({ order, onDeleted }) {
 
 	const getPaymentStatusMeta = (paymentStatus, paymentMethod, orderStatus) => {
 		if (orderStatus === 'CANCELED') {
-			return { label: 'Đã hủy', cls: 'payment-canceled', method: null };
+			return { label: 'Đã hủy', cls: 'payment-canceled', method: null, methodLabel: null };
 		}
 
 		if (!paymentStatus && !paymentMethod) {
-			return { label: 'Chưa thanh toán', cls: 'payment-none', method: null };
+			return { label: 'Chưa thanh toán', cls: 'payment-none', method: null, methodLabel: null };
 		}
 
 		if (paymentStatus === 'COMPLETED') {
-			return { label: 'Đã thanh toán', cls: 'payment-completed', method: paymentMethod };
+			const methodLabel = paymentMethod === 'VNPAY' ? 'VNPAY' : paymentMethod === 'CASH' ? 'Tiền mặt' : null;
+			return {
+				label: 'Đã thanh toán',
+				cls: 'payment-completed',
+				method: paymentMethod,
+				methodLabel: methodLabel
+			};
+		}
+
+		if (paymentStatus === 'FAILED') {
+			return { label: 'Thanh toán thất bại', cls: 'payment-failed', method: null, methodLabel: null };
 		}
 
 		if (paymentStatus === 'PENDING') {
-			return { label: 'Chờ thanh toán', cls: 'payment-pending', method: paymentMethod };
+			if (paymentMethod === 'CASH') {
+				return {
+					label: 'Thanh toán khi nhận hàng',
+					cls: 'payment-cod',
+					method: null,
+					methodLabel: null
+				};
+			}
+			const methodLabel = paymentMethod === 'VNPAY' ? 'VNPAY' : paymentMethod === 'CASH' ? 'Tiền mặt' : null;
+			return {
+				label: 'Chờ thanh toán',
+				cls: 'payment-pending',
+				method: paymentMethod,
+				methodLabel: methodLabel
+			};
 		}
 
-		return { label: 'Chưa thanh toán', cls: 'payment-none', method: null };
+		return { label: '_', cls: 'payment-none', method: null, methodLabel: null };
 	};
 
 	const statusMeta = getStatusMeta(localStatus);

@@ -22,7 +22,7 @@ export default function OrderDetailModal({
 	const formatDateTime = (dt) => {
 		try {
 			const original = new Date(dt);
-			const adjusted = new Date(original.getTime() + 7 * 60 * 60 * 1000);
+			const adjusted = new Date(original.getTime() + 0 * 60 * 60 * 1000);
 			return adjusted.toLocaleString('vi-VN');
 		} catch {
 			return '—';

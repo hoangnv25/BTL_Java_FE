@@ -195,7 +195,7 @@ export default function NAinPage() {
     });
 
     // Lấy 18 sản phẩm mới nhất
-    const top18 = sorted.slice(0, 18);
+    const top18 = sorted.slice(0, 36);
 
     // Transform data để phù hợp với ProductCard
     return top18.map(product => {

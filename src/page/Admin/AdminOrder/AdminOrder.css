@@ -104,6 +104,38 @@
 .admin-orders-head .head-cell:hover {
   color: #2563eb;
 }
+.admin-orders-head .head-cell-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  position: relative;
+}
+.admin-orders-head .head-cell-filter label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+}
+.admin-orders-head .head-cell-filter select {
+  width: 100%;
+  max-width: 140px;
+  padding: 4px 8px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+}
+.admin-orders-head .head-cell-filter select:hover {
+  border-color: #2563eb;
+}
+.admin-orders-head .head-cell-filter select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
 .admin-orders-empty {
   display: flex;
   flex-direction: column;
@@ -366,10 +398,12 @@
   align-items: center;
   justify-content: center;
 }
-.admin-payment-badge.payment-completed { background: #eefcf2; color: #047857; }
-.admin-payment-badge.payment-pending { background: #fff7ed; color: #c2410c; }
-.admin-payment-badge.payment-none { background: #f4f4f5; color: #52525b; }
-.admin-payment-badge.payment-canceled { background: #fdecec; color: #7f1d1d; }
+.admin-payment-badge.payment-completed { background: #eefcf2; color: #047857; border: 1px solid #bbf7d0; }
+.admin-payment-badge.payment-pending { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.admin-payment-badge.payment-cod { background: #ecfccb; color: #166534; border: 1px solid #a3e635; }
+.admin-payment-badge.payment-none { background: #f4f4f5; color: #52525b; border: 1px solid #e5e7eb; }
+.admin-payment-badge.payment-canceled { background: #fdecec; color: #7f1d1d; border: 1px solid #fecdd3; }
+.admin-payment-badge.payment-failed { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 .admin-payment-method {
   width: 24px;
   height: 24px;
@@ -385,7 +419,7 @@
   height: 12px;
 }
 .admin-payment-method-vnpay { background: #eef2ff; color: #4338ca; }
-.admin-payment-method-cash { background: #ecfdf5; color: #047857; }
+/* .admin-payment-method-cash { display: none; } */
 
 /* Responsive */
 @media (max-width: 960px) {

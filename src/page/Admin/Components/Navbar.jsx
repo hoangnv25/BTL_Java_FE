@@ -10,7 +10,7 @@ export default function AdminNavbar() {
                     <li><NavLink to="/admin/products" className={({ isActive }) => isActive ? 'active' : ''}>Products</NavLink></li>
                     <li><NavLink to="/admin/sales" className={({ isActive }) => isActive ? 'active' : ''}>Sales</NavLink></li>
                     <li><NavLink to="/admin/categories" className={({ isActive }) => isActive ? 'active' : ''}>Categories</NavLink></li>
-                    <li><NavLink to="/admin/feedback" className={({ isActive }) => isActive ? 'active' : ''}>Feedback</NavLink></li>
+                    {/* <li><NavLink to="/admin/feedback" className={({ isActive }) => isActive ? 'active' : ''}>Feedback</NavLink></li> */}
                     <li><NavLink to="/admin/reviews" className={({ isActive }) => isActive ? 'active' : ''}>Reviews</NavLink></li>
                     {/* <li><NavLink to="/admin/cart" className={({ isActive }) => isActive ? 'active' : ''}>Cart</NavLink></li> */}
                     <li><NavLink to="/admin/orders" className={({ isActive }) => isActive ? 'active' : ''}>Orders</NavLink></li>

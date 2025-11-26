@@ -1,17 +1,25 @@
 import './UpdateInformation.css'
 import axios from 'axios'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { base } from '../../../service/Base'
 import { Upload, X } from 'lucide-react'
 import { App } from 'antd'
+
+const normalizeVietnamPhone = (value = '') => value.replace(/\D/g, '').slice(0, 10)
+const isValidVietnamPhone = (phone) => /^0\d{9}$/.test(phone)
 
 export default function UpdateInformation({ open, onClose, user, onUpdated }) {
     const { message } = App.useApp()
     const token = localStorage.getItem('token')
     const [email, setEmail] = useState(user?.email || '')
-    const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '')
+    const [phoneNumber, setPhoneNumber] = useState(normalizeVietnamPhone(user?.phoneNumber || ''))
     const [avatarFile, setAvatarFile] = useState(null)
     const [submitting, setSubmitting] = useState(false)
+
+    useEffect(() => {
+        setEmail(user?.email || '')
+        setPhoneNumber(normalizeVietnamPhone(user?.phoneNumber || ''))
+    }, [user])
 
     const previewSrc = useMemo(() => {
         if (avatarFile) return URL.createObjectURL(avatarFile)
@@ -35,6 +43,11 @@ export default function UpdateInformation({ open, onClose, user, onUpdated }) {
         e.preventDefault()
         if (!token) {
             message.warning('Bạn chưa đăng nhập')
+            return
+        }
+
+        if (phoneNumber && !isValidVietnamPhone(phoneNumber)) {
+            window.alert('Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số.')
             return
         }
 
@@ -121,7 +134,14 @@ export default function UpdateInformation({ open, onClose, user, onUpdated }) {
                     </div>
                     <label className="uii-field">
                         <span>Điện thoại</span>
-                        <input type="text" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="Số điện thoại" />
+                        <input
+                            type="text"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(normalizeVietnamPhone(e.target.value))}
+                            placeholder="Số điện thoại"
+                            inputMode="numeric"
+                            maxLength={10}
+                        />
                     </label>
                     <label className="uii-field">
                         <span>Email</span>

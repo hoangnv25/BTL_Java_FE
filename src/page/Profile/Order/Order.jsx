@@ -151,14 +151,18 @@ export default function Order() {
 	const formatDateTime = (dt) => {
 		try {
 			const original = new Date(dt);
-			const adjusted = new Date(original.getTime() + 7 * 60 * 60 * 1000);
+			const adjusted = new Date(original.getTime() + 0 * 60 * 60 * 1000);
 			return adjusted.toLocaleString('vi-VN');
 		} catch {
 			return '—';
 		}
 	};
 
-	const getStatusMeta = (status) => {
+	const getStatusMeta = (status, paymentStatus) => {
+		if (paymentStatus === 'FAILED') {
+			return { label: 'Đã hủy', cls: 'canceled' };
+		}
+
 		switch (status) {
 			case 'PENDING':
 				return { label: 'Chờ xử lý', cls: 'pending' };
@@ -180,10 +184,6 @@ export default function Order() {
 			return { label: 'Đã hủy', cls: 'payment-canceled', method: null, methodLabel: null };
 		}
 
-		if (!paymentStatus && !paymentMethod) {
-			return { label: 'Chưa thanh toán', cls: 'payment-none', method: null, methodLabel: null };
-		}
-
 		if (paymentStatus === 'COMPLETED') {
 			const methodLabel = paymentMethod === 'VNPAY' ? 'VNPAY' : paymentMethod === 'CASH' ? 'Tiền mặt' : null;
 			return { 
@@ -194,17 +194,30 @@ export default function Order() {
 			};
 		}
 
+		if (paymentStatus === 'FAILED') {
+			return { label: 'Thanh toán thất bại', cls: 'payment-failed', method: null, methodLabel: null };
+		}
+
+
 		if (paymentStatus === 'PENDING') {
+			if (paymentMethod === 'CASH') {
+				return {
+					label: 'Thanh toán khi nhận hàng',
+					cls: 'payment-cod',
+					method: null,
+					methodLabel: null
+				};
+			}
 			const methodLabel = paymentMethod === 'VNPAY' ? 'VNPAY' : paymentMethod === 'CASH' ? 'Tiền mặt' : null;
-			return { 
-				label: 'Chờ thanh toán', 
+			return {
+				label: 'Chờ thanh toán',
 				cls: 'payment-pending',
 				method: paymentMethod,
 				methodLabel: methodLabel
 			};
 		}
 
-		return { label: 'Chưa thanh toán', cls: 'payment-none', method: null, methodLabel: null };
+		return { label: '_', cls: 'payment-none', method: null, methodLabel: null };
 	};
 
 	return (
@@ -245,7 +258,7 @@ export default function Order() {
 				{!loading && !error && orders.length > 0 && (
 					<div className="profile-orders-body">
 					{orders.map((o) => {
-						const statusMeta = getStatusMeta(o.status);
+						const statusMeta = getStatusMeta(o.status, o.paymentStatus);
 						const paymentMeta = getPaymentStatusMeta(o.paymentStatus, o.paymentMethod, o.status);
 						const isOpen = expandedId === o.id;
 						const firstItem = (o.orderDetails || [])[0];
@@ -267,7 +280,7 @@ export default function Order() {
 						const unReviewedCount = o.status === 'COMPLETED' ? 
 							(o.orderDetails || []).filter(d => !productFeedbackStatus[d.productId]).length : 0;
 						// Không cho hủy nếu đã xác nhận và đã thanh toán bằng VNPAY
-						const canCancel = (o.status === 'PENDING' || o.status === 'APPROVED') && 
+						const canCancel = (o.paymentStatus === 'PENDING') && (o.status === 'PENDING' || o.status === 'APPROVED') && 
 							!(o.status === 'APPROVED' && o.paymentStatus === 'COMPLETED' && o.paymentMethod === 'VNPAY');
 						return (
 							<div key={o.id} className="profile-orders-item">
@@ -309,15 +322,6 @@ export default function Order() {
 											<span className={`profile-badge ${paymentMeta.cls}`}>
 												{paymentMeta.label}
 											</span>
-											{paymentMeta.method && (
-												<span className={`profile-badge-method profile-badge-method-${paymentMeta.method?.toLowerCase()}`}>
-													{paymentMeta.method === 'VNPAY' ? (
-														<CreditCard size={14} />
-													) : paymentMeta.method === 'CASH' ? (
-														<Banknote size={14} />
-													) : null}
-												</span>
-											)}
 										</div>
 									</span>
 									<span>

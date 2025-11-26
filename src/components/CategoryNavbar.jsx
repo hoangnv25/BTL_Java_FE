@@ -48,9 +48,22 @@ export default function Category({ closeAll }) {
         )
     }
 
+    const handleAllClick = () => {
+        navigate('/category', { state: { name: 'Tất cả sản phẩm' } })
+        if (typeof closeAll === 'function') closeAll()
+    }
+
     return (
         <div>
             <ul>
+                <li
+                    key="all-products"
+                    onClick={handleAllClick}
+                    className="is-parent"
+                    style={{ cursor: 'pointer', fontWeight: 600 }}
+                >
+                    Tất cả sản phẩm
+                </li>
                 {parents.map((parent) => (
                     <Fragment key={`parent-${parent.categoryId}`}>
                         <li 
