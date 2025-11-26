@@ -277,6 +277,10 @@
 	box-shadow: 0 2px 6px rgba(244, 63, 94, 0.2);
 }
 
+.profile-payment-expire {
+	margin-left: 8px;
+}
+
 /* Desktop styles */
 @media (min-width: 769px) {
 	.order-detail-modal-backdrop {

@@ -29,7 +29,11 @@ export default function OrderDetailModal({
 		}
 	};
 
-	const getStatusMeta = (status) => {
+	const getStatusMeta = (status, paymentStatus) => {
+		if (paymentStatus === 'FAILED') {
+			return { label: 'Đã hủy', cls: 'canceled' };
+		}
+
 		switch (status) {
 			case 'PENDING':
 				return { label: 'Chờ xử lý', cls: 'pending' };
@@ -46,9 +50,9 @@ export default function OrderDetailModal({
 		}
 	};
 
-	const getPaymentStatusMeta = (paymentStatus, paymentMethod) => {
-		if (!paymentStatus && !paymentMethod) {
-			return { label: 'Chưa thanh toán', cls: 'payment-none', method: null, methodLabel: null };
+	const getPaymentStatusMeta = (paymentStatus, paymentMethod, orderStatus) => {
+		if (orderStatus === 'CANCELED') {
+			return { label: 'Đã hủy', cls: 'payment-canceled', method: null, methodLabel: null };
 		}
 
 		if (paymentStatus === 'COMPLETED') {
@@ -61,23 +65,44 @@ export default function OrderDetailModal({
 			};
 		}
 
+		if (paymentStatus === 'FAILED') {
+			return { label: 'Thanh toán thất bại', cls: 'payment-failed', method: null, methodLabel: null };
+		}
+
 		if (paymentStatus === 'PENDING') {
+			if (paymentMethod === 'CASH') {
+				return {
+					label: 'Thanh toán khi nhận hàng',
+					cls: 'payment-cod',
+					method: null,
+					methodLabel: null
+				};
+			}
 			const methodLabel = paymentMethod === 'VNPAY' ? 'VNPAY' : paymentMethod === 'CASH' ? 'Tiền mặt' : null;
-			return { 
-				label: 'Chờ thanh toán', 
+			return {
+				label: 'Chờ thanh toán',
 				cls: 'payment-pending',
 				method: paymentMethod,
 				methodLabel: methodLabel
 			};
 		}
 
-		return { label: 'Chưa thanh toán', cls: 'payment-none', method: null, methodLabel: null };
+		return { label: '_', cls: 'payment-none', method: null, methodLabel: null };
 	};
 
-	const statusMeta = getStatusMeta(order.status);
-	const paymentMeta = getPaymentStatusMeta(order.paymentStatus, order.paymentMethod);
+	const statusMeta = getStatusMeta(order.status, order.paymentStatus);
+	const paymentMeta = getPaymentStatusMeta(order.paymentStatus, order.paymentMethod, order.status);
 	const totalItems = (order.orderDetails || []).reduce((sum, d) => sum + (d.quantity || 0), 0);
-	const hasActivePaymentLink = Boolean(pendingPayment && remainingMs > 0);
+	const hasActivePaymentLink = Boolean(
+		pendingPayment &&
+		remainingMs > 0 &&
+		order.paymentStatus !== 'COMPLETED'
+	);
+	const showPayNowButton =
+		hasActivePaymentLink &&
+		order.paymentMethod === 'VNPAY' &&
+		order.paymentStatus === 'PENDING' &&
+		order.status === 'PENDING';
 	const remainingMinutes = hasActivePaymentLink ? Math.max(1, Math.ceil(remainingMs / 60000)) : 0;
 
 	return (
@@ -214,14 +239,13 @@ export default function OrderDetailModal({
 						</div>
 					)}
 
-					{hasActivePaymentLink && (
+					{showPayNowButton && (
 						<div className="order-detail-card order-detail-card-payment-reminder">
 							<div className="order-detail-card-header">
 								<CreditCard size={20} />
 								<h3>Thanh toán đang chờ</h3>
 							</div>
 							<div className="order-detail-card-body order-detail-pay-later">
-								<p>Liên kết thanh toán sẽ hết hạn trong khoảng {remainingMinutes} phút.</p>
 								<button
 									type="button"
 									className="profile-btn profile-btn-primary"
@@ -231,6 +255,9 @@ export default function OrderDetailModal({
 								>
 									Thanh toán ngay
 								</button>
+								<span className="profile-payment-expire">
+									Hết hạn trong khoảng {remainingMinutes} phút
+								</span>
 							</div>
 						</div>
 					)}
