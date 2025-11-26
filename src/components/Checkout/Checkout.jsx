@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { base } from '../../service/Base';
 import { addPendingPayment } from '../../utils/pendingPayment';
 import AddressManager from '../../page/Profile/Address/Address';
 import './Checkout.css';
 import { App } from 'antd';
-import { CreditCard, Banknote, ChevronLeft } from 'lucide-react';
+import { CreditCard, Banknote, ChevronLeft, Package } from 'lucide-react';
 
 export default function Checkout({
   open,
@@ -27,6 +28,8 @@ export default function Checkout({
     if (typeof window === 'undefined') return false;
     return window.innerWidth <= 768;
   });
+  const [showViewOrderBtn, setShowViewOrderBtn] = useState(false);
+  const navigate = useNavigate();
   const { message } = App.useApp();
   const normalizePhoneInput = (value = '') => value.replace(/\D/g, '').slice(0, 10);
   const isValidVietnamPhone = (phone) => /^0\d{9}$/.test(phone);
@@ -101,6 +104,7 @@ export default function Checkout({
       setNote('');
       setShippingPhone(prev => normalizePhoneInput(prev || userPhone || ''));
       setPaymentMethod(null);
+      setShowViewOrderBtn(false);
     }
   }, [open, userPhone]);
 
@@ -263,6 +267,15 @@ export default function Checkout({
         message.success('Đặt hàng thành công!');
         onOrderSuccess?.(items);
         setNote('');
+        
+        // Hiển thị nút xem đơn hàng trong 5 giây nếu thanh toán bằng CASH
+        if (paymentMethod === 'CASH') {
+          setShowViewOrderBtn(true);
+          setTimeout(() => {
+            setShowViewOrderBtn(false);
+          }, 5000);
+        }
+        
         onClose?.();
         return;
       }
@@ -275,10 +288,14 @@ export default function Checkout({
     }
   };
 
-  if (!open || typeof document === 'undefined') return null;
+  if (typeof document === 'undefined') return null;
+  
+  // Render nút xem đơn hàng ngay cả khi modal đóng
+  if (!open && !showViewOrderBtn) return null;
 
   return createPortal(
     <>
+      {open && (
       <div className="checkout-modal-backdrop" onClick={onClose}>
         <div className="checkout-modal" onClick={(e) => e.stopPropagation()}>
           <div className="checkout-modal-header">
@@ -469,7 +486,9 @@ export default function Checkout({
           </div>
         </div>
       </div>
+      )}
 
+      {open && (
       <AddressManager
         open={showAddressModal}
         onClose={() => setShowAddressModal(false)}
@@ -479,6 +498,22 @@ export default function Checkout({
         }}
         selectedId={selectedAddress?.address_id}
       />
+      )}
+
+      {showViewOrderBtn && (
+        <div className="checkout-view-order-notification">
+          <button
+            className="checkout-view-order-btn"
+            onClick={() => {
+              setShowViewOrderBtn(false);
+              navigate('/user#orders');
+            }}
+          >
+            <Package size={20} />
+            <span>Xem đơn hàng</span>
+          </button>
+        </div>
+      )}
     </>,
     document.body
   );

@@ -115,16 +115,21 @@
   width: 100%;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-  max-height: 72vh;
+  max-height: 85vh;
   padding: 16px;
   position: relative;
   animation: slideUp 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .mb-sheet-header {
   font-weight: 600;
   font-size: 16px;
   margin-bottom: 8px;
+  flex-shrink: 0;
+  padding-right: 40px;
 }
 
 .mb-sheet-close {
@@ -139,6 +144,29 @@
 
 .mb-sheet-content {
   padding-top: 8px;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+  /* Tùy chỉnh scrollbar cho webkit browsers */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
+.mb-sheet-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mb-sheet-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mb-sheet-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+.mb-sheet-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 /* Danh sách danh mục mobile theo phong cách CategoryNavbar */

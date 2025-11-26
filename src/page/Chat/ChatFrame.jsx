@@ -192,7 +192,7 @@ export default function ChatFrame() {
         return String(name).trim().slice(0, 2).toUpperCase()
     }
 
-    const headerTitle = messages.find(m => !m.me)?.senderSummary?.displayName || `Liên hệ trực tiếp với Admin Hoàng Culus`
+    const headerTitle = messages.find(m => !m.me)?.senderSummary?.senderName || `Người dùng`
 
     return (
         <div className="chat-frame">

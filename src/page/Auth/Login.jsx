@@ -81,7 +81,7 @@ export default function Login() {
                             <input 
                                 type="text" 
                                 name="fullName"
-                                placeholder="Fullname" 
+                                placeholder="Tên tài khoản" 
                                 className="login-form-input"
                                 value={formData.fullName}
                                 onChange={handleInputChange}
@@ -92,7 +92,7 @@ export default function Login() {
                             <input 
                                 type={showPassword ? "text" : "password"} 
                                 name="password"
-                                placeholder="Password" 
+                                placeholder="Mật khẩu" 
                                 className="login-form-input login-password-input"
                                 value={formData.password}
                                 onChange={handleInputChange}

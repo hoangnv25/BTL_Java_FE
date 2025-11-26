@@ -486,3 +486,67 @@
   }
 }
 
+/* View Order Notification Button */
+.checkout-view-order-notification {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 1200;
+  animation: slideInFromRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checkout-view-order-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
+  color: #fff;
+  border: none;
+  border-radius: 28px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(22, 119, 255, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.checkout-view-order-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 12px 32px rgba(22, 119, 255, 0.5);
+  background: linear-gradient(135deg, #0958d9 0%, #003eb3 100%);
+}
+
+.checkout-view-order-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.checkout-view-order-btn svg {
+  flex-shrink: 0;
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .checkout-view-order-notification {
+    bottom: 100px;
+    left: 16px;
+    right: 16px;
+  }
+
+  .checkout-view-order-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

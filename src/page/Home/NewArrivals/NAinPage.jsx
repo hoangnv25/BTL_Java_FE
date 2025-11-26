@@ -244,7 +244,7 @@ export default function NAinPage() {
 
   const breadcrumbItems = [
     { label: "Trang chủ", path: "/" },
-    { label: "NEW ARRIVALS" }
+    { label: "SẢN PHẨM MỚI" }
   ];
 
   // Giá min/max để gợi ý
@@ -293,8 +293,8 @@ export default function NAinPage() {
     <>
       {showBreadcrumb && <Breadcrumb items={breadcrumbItems} />}
       <section className="na-section na-page">
-        <h2 className="na-title">New Arrivals</h2>
-        <p className="na-desc">Các sản phẩm mới nhất dành cho bạn</p>
+        <h2 className="na-title">SẢN PHẨM MỚI</h2>
+        <p className="na-desc">Các sản phẩm mới nhất được cập nhật hàng ngày</p>
         
         {loading ? (
           <div className="na-loading">Đang tải sản phẩm mới...</div>

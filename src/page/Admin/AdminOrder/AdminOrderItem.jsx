@@ -2,9 +2,11 @@ import { useState } from 'react';
 import axios from 'axios';
 import { base } from '../../../service/Base';
 import { ChevronDown, ChevronUp, CreditCard, Banknote } from 'lucide-react';
+import { App } from 'antd';
 
 export default function AdminOrderItem({ order, onDeleted }) {
 	const [open, setOpen] = useState(false);
+	const { message } = App.useApp();
 	const [updating, setUpdating] = useState(false);
 	const [error, setError] = useState('');
 	const [localStatus, setLocalStatus] = useState(order.status);
@@ -107,7 +109,9 @@ export default function AdminOrderItem({ order, onDeleted }) {
 					params: { status: localStatus },
 				}
 			);
+			message.success('Cập nhật trạng thái thành công');
 		} catch (e) {
+			message.error(e.response.data.message);
 			setError('Cập nhật trạng thái thất bại. Vui lòng thử lại.');
 		} finally {
 			setUpdating(false);
