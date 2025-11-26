@@ -92,6 +92,7 @@
     background: transparent;
     transition: border-bottom-color 0.3s ease;
     box-sizing: border-box;
+    padding-left: 8px;
 }
 
 /* Password Input with Toggle */
@@ -227,13 +228,14 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
     .register-container {
-        max-height: 70vh;
+        /* max-height: 70vh; */
     }
 }
 
 @media (max-width: 768px) {
     .register-container {
         flex-direction: column;
+        border: none;
     }
     
     .register-image {
