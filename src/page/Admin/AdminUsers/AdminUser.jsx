@@ -44,40 +44,11 @@ export default function AdminUser() {
                     })
                     : []
 
-                // Step 2: Fetch detailed info (including avatar) for each user
-                const usersWithAvatars = await Promise.all(
-                    filteredData.map(async (user) => {
-                        const userId = user.id || user.userId
-                        if (!userId) return user
-
-                        try {
-                            const detailResponse = await axios.get(`${base}/users/${userId}`, {
-                                headers: {
-                                    'Authorization': `Bearer ${token}`
-                                }
-                            })
-
-                            if (detailResponse.status === 200) {
-                                const userDetail = detailResponse.data?.result || detailResponse.data?.data || detailResponse.data
-                                // Merge avatar from detail into user object
-                                return {
-                                    ...user,
-                                    avatar: userDetail?.avatar || userDetail?.imageUrl || userDetail?.image || userDetail?.user_img || user.avatar,
-                                    // Also update other fields if they exist in detail
-                                    email: userDetail?.email || user.email,
-                                    phoneNumber: userDetail?.phoneNumber || userDetail?.phone || user.phoneNumber || user.phone,
-                                    userName: userDetail?.userName || userDetail?.fullName || user.userName || user.fullName
-                                }
-                            }
-                        } catch (detailError) {
-                            // If fetch detail fails, return original user data
-                            console.warn(`Failed to fetch detail for user ${userId}:`, detailError)
-                            return user
-                        }
-                    })
-                )
-
-                setUsers(usersWithAvatars)
+                // Không fetch avatar nữa vì:
+                // - API /users trả về avatar: null cho tất cả users
+                // - API /users/${userId} chỉ cho phép xem thông tin của chính mình
+                // → Hiển thị fallback icon cho tất cả users
+                setUsers(filteredData)
             } else {
                 message.error('Không thể tải danh sách người dùng')
                 setUsers([])
