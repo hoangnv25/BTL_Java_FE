@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { base } from './Base';
+import { setToken } from './LocalStorage';
 
 const getErrorMessage = (error, fallbackMessage) =>
   error?.response?.data?.message || fallbackMessage;
@@ -15,7 +16,7 @@ export const login = async ({ fullName, password }) => {
     if (response.status === 200) {
       const token = response.data?.result?.token;
       if (token) {
-        localStorage.setItem('token', token);
+        setToken(token); // Sử dụng setToken để dispatch event
       }
     }
 
@@ -47,12 +48,16 @@ export const logout = async (token) => {
   try {
     const response = await axios.post(`${base}/auth/logout`, { token: currentToken });
 
-    if (response.status === 200) {
-      localStorage.clear();
-    }
+    // Luôn clear localStorage và dispatch event, bất kể API response
+    localStorage.clear();
+    window.dispatchEvent(new Event('tokenChanged'));
 
     return response;
   } catch (error) {
+    // Ngay cả khi API thất bại, vẫn clear localStorage và dispatch event
+    localStorage.clear();
+    window.dispatchEvent(new Event('tokenChanged'));
+    
     throw new Error(getErrorMessage(error, 'Đăng xuất thất bại'));
   }
 };
