@@ -9,10 +9,11 @@ import Address from './Address/Address';
 import Order from './Order/Order';
 import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
+import { Modal, App } from 'antd';
 
 import ReviewList from './Review/ReviewList';
 import { PaymentNotificationModal } from '../Payment/PaymentResult';
-import { getToken, removeToken } from '../../service/LocalStorage';
+import { getToken } from '../../service/LocalStorage';
 import { User, Phone, Mail, UserCircle, Lock, LogOut, MessageSquare, MapPin } from 'lucide-react';
 import { logout } from '../../service/Auth';
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -23,6 +24,7 @@ export default function Information() {
     const token = getToken()
     const [searchParams] = useSearchParams()
     const navigate = useNavigate();
+    const { modal } = App.useApp();
     
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -171,18 +173,29 @@ export default function Information() {
                                 <span>Địa chỉ</span>
                             </button>
                                 
-                            <button className="logout" onClick={async () => {
-                                try {
-                                    await logout();
-                                } catch (error) {
-                                    console.error(error);
-                                } finally {
-                                    window.location.href = '/';
-                                }
+                            <button className="logout" onClick={() => {
+                                modal.confirm({
+                                    title: 'Xác nhận đăng xuất',
+                                    content: 'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?',
+                                    okText: 'Đăng xuất',
+                                    cancelText: 'Hủy',
+                                    okButtonProps: {
+                                        danger: true,
+                                    },
+                                    centered: true,
+                                    onOk: async () => {
+                                        try {
+                                            await logout();
+                                        } catch (error) {
+                                            console.error(error);
+                                        } finally {
+                                            window.location.href = '/';
+                                        }
+                                    }
+                                });
                             }}>
                                 <LogOut size={18} />
                                 <span>Đăng xuất</span>
-
                             </button>
                         </nav>
                     </aside>
