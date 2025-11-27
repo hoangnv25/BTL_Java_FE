@@ -214,7 +214,7 @@ export default function Page() {
                             <div className="review-separator"></div>
                             <div className="reviewer-info">
                                 <div className="reviewer-name">{prevReviewData.user_fullName}</div>
-                                <div className="reviewer-role">Customer</div>
+                                <div className="reviewer-role">Người dùng</div>
                             </div>
                         </div>
                     </div>
@@ -239,7 +239,7 @@ export default function Page() {
                             <div className="review-separator"></div>
                             <div className="reviewer-info">
                                 <div className="reviewer-name">{nextReviewData.user_fullName}</div>
-                                <div className="reviewer-role">Customer</div>
+                                <div className="reviewer-role">Người dùng</div>
                             </div>
                         </div>
                     </div>
@@ -264,7 +264,7 @@ export default function Page() {
                             <div className="review-separator"></div>
                             <div className="reviewer-info">
                                 <div className="reviewer-name">{currentReviewData.user_fullName}</div>
-                                <div className="reviewer-role">Customer</div>
+                                <div className="reviewer-role">Người dùng</div>
                             </div>
                         </div>
                     </div>
