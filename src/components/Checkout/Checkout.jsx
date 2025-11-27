@@ -53,7 +53,7 @@ export default function Checkout({
       } else {
         setSelectedAddress((prev) => prev || null);
       }
-    } catch (error) {
+    } catch {
       setSelectedAddress((prev) => prev || null);
       setAddressError('Không thể tải địa chỉ mặc định. Vui lòng thử lại.');
     } finally {
@@ -240,9 +240,9 @@ export default function Checkout({
               
               message.success('Đang chuyển đến trang thanh toán...');
               addPendingPayment(orderId, paymentResponse.data.paymentUrl);
-              // Mở trang thanh toán VNPAY ở tab mới để không mất trạng thái hiện tại
-              window.open(paymentResponse.data.paymentUrl, '_blank', 'noopener,noreferrer');
-              onClose?.();
+              
+              // Chuyển hướng đến trang thanh toán VNPAY trong tab hiện tại
+              window.location.href = paymentResponse.data.paymentUrl;
               return;
             }
           } catch (paymentError) {
@@ -264,19 +264,11 @@ export default function Checkout({
           console.error('Failed to clean up cart items', cleanupError);
         }
 
-        message.success('Đặt hàng thành công!');
         onOrderSuccess?.(items);
-        setNote('');
         
-        // Hiển thị nút xem đơn hàng trong 5 giây nếu thanh toán bằng CASH
-        if (paymentMethod === 'CASH') {
-          setShowViewOrderBtn(true);
-          setTimeout(() => {
-            setShowViewOrderBtn(false);
-          }, 5000);
-        }
-        
-        onClose?.();
+        // Redirect đến trang profile với payment notification
+        const orderCode = res.data?.result?.orderCode || res.data?.orderCode || orderId;
+        navigate(`/user?payment=success&orderCode=${orderCode}#orders`);
         return;
       }
 

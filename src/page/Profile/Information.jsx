@@ -11,6 +11,7 @@ import UpdateInformation from './UpdateInformation/UpdateInformation';
 import UpdatePassword from './UpdatePassword/UpdatePassword';
 
 import ReviewList from './Review/ReviewList';
+import { PaymentNotificationModal } from '../Payment/PaymentResult';
 import { getToken, removeToken } from '../../service/LocalStorage';
 import { User, Phone, Mail, UserCircle, Lock, LogOut, MessageSquare, MapPin } from 'lucide-react';
 import { logout } from '../../service/Auth';
@@ -30,13 +31,30 @@ export default function Information() {
     const [showUpdatePassword, setShowUpdatePassword] = useState(false);
     const [showReview, setShowReview] = useState(false);
     const [showAddress, setShowAddress] = useState(false);
+    const [paymentNotification, setPaymentNotification] = useState(null);
     const location = useLocation();
 
-    // Check query params để tự động mở tab
+    // Check query params để tự động mở tab hoặc hiển thị payment notification
     useEffect(() => {
         const tab = searchParams.get('tab');
+        const payment = searchParams.get('payment');
+        const orderCode = searchParams.get('orderCode');
+        
         if (tab === 'review') {
             setShowReview(true);
+        }
+        
+        // Kiểm tra payment status
+        if (payment === 'success') {
+            setPaymentNotification({
+                isSuccess: true,
+                orderInfo: orderCode ? { orderCode } : null
+            });
+        } else if (payment === 'failed') {
+            setPaymentNotification({
+                isSuccess: false,
+                orderInfo: null
+            });
         }
     }, [searchParams]);
 
@@ -254,6 +272,20 @@ export default function Information() {
                     onClose={() => setShowAddress(false)}
                 />
             )}
+
+            <PaymentNotificationModal
+                open={!!paymentNotification}
+                isSuccess={paymentNotification?.isSuccess}
+                orderInfo={paymentNotification?.orderInfo}
+                onClose={() => {
+                    setPaymentNotification(null);
+                    // Xóa payment params khỏi URL
+                    const newSearchParams = new URLSearchParams(searchParams);
+                    newSearchParams.delete('payment');
+                    newSearchParams.delete('orderCode');
+                    navigate(`/user?${newSearchParams.toString()}`, { replace: true });
+                }}
+            />
         </>
     ))
 }

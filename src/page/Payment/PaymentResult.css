@@ -1,0 +1,520 @@
+.payment-result-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-result-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: backgroundMove 20s linear infinite;
+}
+
+@keyframes backgroundMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
+.payment-result-loading {
+  text-align: center;
+  color: white;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.payment-result-modal {
+  background: white;
+  border-radius: 24px;
+  padding: 50px 40px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  animation: modalSlideIn 0.5s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.payment-result-icon-wrapper {
+  margin-bottom: 30px;
+  animation: iconBounce 0.6s ease-out 0.3s both;
+}
+
+@keyframes iconBounce {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.payment-result-icon {
+  width: 100px;
+  height: 100px;
+  stroke-width: 2;
+}
+
+.success-icon {
+  color: #10b981;
+  filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.3));
+}
+
+.failed-icon {
+  color: #ef4444;
+  filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.3));
+}
+
+.payment-result-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1f2937;
+}
+
+.payment-result-modal.success .payment-result-title {
+  color: #10b981;
+}
+
+.payment-result-modal.failed .payment-result-title {
+  color: #ef4444;
+}
+
+.payment-result-message {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.payment-result-order-info {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  border: 1px solid #e5e7eb;
+}
+
+.order-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.order-info-item:not(:last-child) {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.order-info-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.order-info-value {
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.payment-result-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.payment-result-btn {
+  flex: 1;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-result-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.payment-result-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.payment-result-btn.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.payment-result-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.payment-result-btn.secondary {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.payment-result-btn.secondary:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+.payment-result-footer {
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.payment-result-note {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .payment-result-modal {
+    padding: 40px 30px;
+  }
+
+  .payment-result-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .payment-result-title {
+    font-size: 26px;
+  }
+
+  .payment-result-message {
+    font-size: 15px;
+  }
+
+  .payment-result-actions {
+    flex-direction: column;
+  }
+
+  .payment-result-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-result-container {
+    padding: 15px;
+  }
+
+  .payment-result-modal {
+    padding: 30px 20px;
+  }
+
+  .payment-result-icon {
+    width: 70px;
+    height: 70px;
+  }
+
+  .payment-result-title {
+    font-size: 24px;
+  }
+
+  .payment-result-message {
+    font-size: 14px;
+  }
+
+  .payment-result-btn {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+}
+
+/* ========================================
+   PAYMENT NOTIFICATION MODAL (cho Profile)
+   ======================================== */
+
+.payment-notification-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.payment-notification-modal {
+  background: white;
+  border-radius: 20px;
+  padding: 40px 35px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  position: relative;
+  animation: notificationSlideIn 0.4s ease-out;
+}
+
+@keyframes notificationSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.payment-notification-icon-wrapper {
+  margin-bottom: 24px;
+  animation: notificationIconBounce 0.5s ease-out 0.2s both;
+}
+
+@keyframes notificationIconBounce {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.payment-notification-icon {
+  width: 70px;
+  height: 70px;
+  stroke-width: 2.5;
+}
+
+.payment-notification-icon.success-icon {
+  color: #10b981;
+  filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.3));
+}
+
+.payment-notification-icon.failed-icon {
+  color: #ef4444;
+  filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.3));
+}
+
+.payment-notification-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #1f2937;
+}
+
+.payment-notification-modal.success .payment-notification-title {
+  color: #10b981;
+}
+
+.payment-notification-modal.failed .payment-notification-title {
+  color: #ef4444;
+}
+
+.payment-notification-message {
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.payment-notification-order-info {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-notification-order-info .order-info-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.payment-notification-order-info .order-info-value {
+  font-size: 15px;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.payment-notification-btn {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-notification-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.payment-notification-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.payment-notification-btn.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.payment-notification-btn.success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+}
+
+.payment-notification-btn.failed {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.payment-notification-btn.failed:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+}
+
+/* Responsive cho notification modal */
+@media (max-width: 768px) {
+  .payment-notification-modal {
+    padding: 35px 28px;
+    max-width: 380px;
+  }
+
+  .payment-notification-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .payment-notification-title {
+    font-size: 23px;
+  }
+
+  .payment-notification-message {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-notification-backdrop {
+    padding: 15px;
+  }
+
+  .payment-notification-modal {
+    padding: 30px 24px;
+  }
+
+  .payment-notification-icon {
+    width: 55px;
+    height: 55px;
+  }
+
+  .payment-notification-title {
+    font-size: 21px;
+  }
+
+  .payment-notification-message {
+    font-size: 13px;
+  }
+
+  .payment-notification-btn {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+}
+
