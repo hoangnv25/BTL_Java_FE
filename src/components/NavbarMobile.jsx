@@ -9,6 +9,7 @@ function NavbarMobile({
   isAdmin,
   handleLogout,
   navigate,
+  unreviewedCount,
 }) {
   const [showCategories, setShowCategories] = useState(false)
   const location = useLocation()
@@ -66,8 +67,13 @@ function NavbarMobile({
               <span>Chat</span>
             </Link>
 
-            <Link className="bottom-item" to="/user" aria-label="Cá nhân">
-              <User size={22} />
+            <Link className="bottom-item bottom-item-profile" to="/user" aria-label="Cá nhân">
+              <div className="bottom-item-icon-wrapper">
+                <User size={22} />
+                {unreviewedCount > 0 && (
+                  <span className="bottom-item-badge"></span>
+                )}
+              </div>
               <span>Cá nhân</span>
             </Link>
           </>
@@ -98,8 +104,13 @@ function NavbarMobile({
               <span>Chat</span>
             </Link>
 
-            <Link className="bottom-item" to="/user" aria-label="Cá nhân">
-              <User size={22} />
+            <Link className="bottom-item bottom-item-profile" to="/user" aria-label="Cá nhân">
+              <div className="bottom-item-icon-wrapper">
+                <User size={22} />
+                {unreviewedCount > 0 && (
+                  <span className="bottom-item-badge"></span>
+                )}
+              </div>
               <span>Cá nhân</span>
             </Link>
           </>

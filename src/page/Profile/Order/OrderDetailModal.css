@@ -187,12 +187,32 @@
 	border: 1px solid #e5e7eb;
 }
 
+.order-detail-product-image-wrapper {
+	position: relative;
+	width: 80px;
+	height: 80px;
+	flex-shrink: 0;
+}
+
 .order-detail-product-image {
 	width: 80px;
 	height: 80px;
 	border-radius: 8px;
 	object-fit: cover;
 	flex-shrink: 0;
+}
+
+.order-detail-review-dot {
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	width: 16px;
+	height: 16px;
+	background: #ef4444;
+	border-radius: 50%;
+	border: 3px solid white;
+	box-shadow: 0 2px 8px rgba(239, 68, 68, 0.6);
+	z-index: 10;
 }
 
 .order-detail-product-info {

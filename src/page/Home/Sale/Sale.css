@@ -352,6 +352,13 @@
 
 .sale-page-products {
     padding: 20px 0;
+    width: 100%;
+}
+
+.sale-page-products .na-layout {
+    display: flex;
+    gap: 32px;
+    width: 100%;
 }
 
 .sale-page-products .na-grid {
@@ -376,6 +383,11 @@
 
 /* Responsive for SalePage */
 @media (max-width: 1024px) {
+    .sale-page-products .na-layout {
+        flex-direction: column;
+        gap: 24px;
+    }
+    
     .sale-page-products .na-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 20px;

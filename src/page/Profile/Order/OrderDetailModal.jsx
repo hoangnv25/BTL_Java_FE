@@ -272,11 +272,16 @@ export default function OrderDetailModal({
 							<div className="order-detail-products">
 								{(order.orderDetails || []).map((d, idx) => (
 									<div key={`${order.id}-${idx}`} className="order-detail-product">
-										<img
-											src={d.image}
-											alt={d.productName}
-											className="order-detail-product-image"
-										/>
+										<div className="order-detail-product-image-wrapper">
+											<img
+												src={d.image}
+												alt={d.productName}
+												className="order-detail-product-image"
+											/>
+											{order.status === 'COMPLETED' && !productFeedbackStatus?.[d.productId] && (
+												<span className="order-detail-review-dot" title="Chưa đánh giá"></span>
+											)}
+										</div>
 										<div className="order-detail-product-info">
 											<div className="order-detail-product-name">{d.productName}</div>
 											<div className="order-detail-product-variant">

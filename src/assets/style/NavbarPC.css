@@ -9,4 +9,22 @@
   .navbar-pc { display: block; }
 }
 
+/* Profile badge */
+.navbar-profile-link {
+  position: relative;
+}
+
+.navbar-badge {
+  position: absolute;
+  top: -9px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.5);
+  z-index: 10;
+}
+
 

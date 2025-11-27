@@ -3,11 +3,13 @@ import axios from 'axios'
 import { useMemo, useState, useEffect } from 'react'
 import { base } from '../../../service/Base'
 import { Upload, X } from 'lucide-react'
+import { App } from 'antd'
 
 const normalizeVietnamPhone = (value = '') => value.replace(/\D/g, '').slice(0, 10)
 const isValidVietnamPhone = (phone) => /^0\d{9}$/.test(phone)
 
 export default function UpdateInformation({ open, onClose, user, onUpdated }) {
+    const { message } = App.useApp()
     const token = localStorage.getItem('token')
     const [email, setEmail] = useState(user?.email || '')
     const [phoneNumber, setPhoneNumber] = useState(normalizeVietnamPhone(user?.phoneNumber || ''))
@@ -40,7 +42,7 @@ export default function UpdateInformation({ open, onClose, user, onUpdated }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!token) {
-            window.alert('Bạn chưa đăng nhập')
+            message.warning('Bạn chưa đăng nhập')
             return
         }
 
@@ -65,14 +67,15 @@ export default function UpdateInformation({ open, onClose, user, onUpdated }) {
             })
 
             if (response?.status === 200) {
-                window.alert('Cập nhật thành công!')
+                message.success('Cập nhật thành công!')
                 onUpdated && onUpdated(response.data)
+                onClose()
             } else {
-                window.alert('Cập nhật thất bại!')
+                message.error('Cập nhật thất bại!')
             }
         } catch (err) {
             console.error('Update user error:', err)
-            window.alert(err?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật')
+            message.error(err?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật')
         } finally {
             setSubmitting(false)
         }

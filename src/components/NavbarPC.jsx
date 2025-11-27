@@ -15,6 +15,7 @@ function NavbarPC({
   handleSearchSubmit,
   handleLogout,
   navigate,
+  unreviewedCount,
 }) {
   return (
     <header className="navbar-header navbar-pc">
@@ -47,7 +48,14 @@ function NavbarPC({
             </button>
           </li>
 
-          <li><Link to="/user" className="navbar-link" aria-label="Tài khoản" title="Tài khoản"><User size={22} strokeWidth={2} /></Link></li>
+          <li>
+            <Link to="/user" className="navbar-link navbar-profile-link" aria-label="Tài khoản" title="Tài khoản">
+              <User size={22} strokeWidth={2} />
+              {unreviewedCount > 0 && (
+                <span className="navbar-badge"></span>
+              )}
+            </Link>
+          </li>
           <li><Link to="/cart" className="navbar-link" aria-label="Giỏ hàng" title="Giỏ hàng"><ShoppingCart size={22} strokeWidth={2} /></Link></li>
           <li><Link to="/chat" className="navbar-link" aria-label="Chat" title="Chat"><MessageCircle size={22} strokeWidth={2} /></Link></li>
 

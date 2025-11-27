@@ -2,8 +2,10 @@ import './UpdatePassword.css'
 import axios from 'axios'
 import { useState } from 'react'
 import { base } from '../../../service/Base'
+import { App } from 'antd'
 
 export default function UpdatePassword({ open, onClose, user }) {
+    const { message } = App.useApp()
     const token = localStorage.getItem('token')
     const [oldPassword, setOldPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
@@ -48,7 +50,7 @@ export default function UpdatePassword({ open, onClose, user }) {
         }
         
         if (!token) {
-            window.alert('Bạn chưa đăng nhập')
+            message.warning('Bạn chưa đăng nhập')
             return
         }
 
@@ -67,21 +69,21 @@ export default function UpdatePassword({ open, onClose, user }) {
             })
 
             if (response?.status === 200) {
-                window.alert('Đổi mật khẩu thành công!')
+                message.success('Đổi mật khẩu thành công!')
                 setOldPassword('')
                 setNewPassword('')
                 setConfirmPassword('')
                 setErrors({})
                 onClose && onClose()
             } else {
-                window.alert('Đổi mật khẩu thất bại!')
+                message.error('Đổi mật khẩu thất bại!')
             }
         } catch (err) {
             console.error('Update password error:', err)
             const errorMsg = err?.response?.data?.message || 
                            err?.response?.data?.result?.message ||
                            'Có lỗi xảy ra khi đổi mật khẩu'
-            window.alert(errorMsg)
+            message.error(errorMsg)
         } finally {
             setSubmitting(false)
         }

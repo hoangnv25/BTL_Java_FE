@@ -108,6 +108,7 @@ export default function ProductFeedback({ productId }) {
                                 id: fb.id,
                                 userId: fb.userId,
                                 userFullName: fb.userFullName || 'Khách hàng',
+                                avatar: fb.avatar || '/ava_user.webp',
                                 productId: fb.productId || productIdParam,
                                 productName: fb.productName || result.productName || '',
                                 rating: Number(fb.rating) || 0,
@@ -522,7 +523,20 @@ export default function ProductFeedback({ productId }) {
                                             <div className="pf-feedback-header">
                                                 <div className="pf-feedback-user">
                                                     <div className="pf-feedback-avatar">
-                                                        <span className="pf-feedback-avatar-placeholder">
+                                                        {item.avatar && item.avatar !== '/ava_user.webp' ? (
+                                                            <img 
+                                                                src={item.avatar} 
+                                                                alt={item.userFullName || 'User'}
+                                                                onError={(e) => {
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.nextElementSibling.style.display = 'flex';
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        <span 
+                                                            className="pf-feedback-avatar-placeholder"
+                                                            style={item.avatar && item.avatar !== '/ava_user.webp' ? { display: 'none' } : {}}
+                                                        >
                                                             {(item.userFullName || "KH")[0]?.toUpperCase() || "KH"}
                                                         </span>
                                                     </div>

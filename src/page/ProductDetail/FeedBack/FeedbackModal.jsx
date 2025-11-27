@@ -49,6 +49,8 @@ export default function FeedbackModal({ productId, productName, onClose, onSucce
 
             if (response.status === 200 || response.status === 201) {
                 message.success('Đã gửi đánh giá thành công!');
+                // Dispatch event để cập nhật badge trên navbar
+                window.dispatchEvent(new Event('feedbackChanged'));
                 if (onSuccess) onSuccess();
                 onClose();
             } else {

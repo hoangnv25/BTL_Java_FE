@@ -7,6 +7,7 @@ import { logout } from '../service/Auth'
 import NavbarPC from './NavbarPC'
 import NavbarMobile from './NavbarMobile'
 import { getToken, removeToken } from '../service/LocalStorage'
+import { useUnreviewedCount } from '../hooks/useUnreviewedCount'
 
 
 function Navbar() {
@@ -20,6 +21,7 @@ function Navbar() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const navigate = useNavigate()
+  const { unreviewedCount } = useUnreviewedCount()
 
   const handleLogout = () => {
     setIsLogoutModalOpen(true)
@@ -115,6 +117,7 @@ function Navbar() {
           isAdmin={isAdmin}
           handleLogout={handleLogout}
           navigate={navigate}
+          unreviewedCount={unreviewedCount}
         />
       ) : (
         <NavbarPC
@@ -127,6 +130,7 @@ function Navbar() {
           handleSearchSubmit={handleSearchSubmit}
           handleLogout={handleLogout}
           navigate={navigate}
+          unreviewedCount={unreviewedCount}
         />
       )}
       <Modal
