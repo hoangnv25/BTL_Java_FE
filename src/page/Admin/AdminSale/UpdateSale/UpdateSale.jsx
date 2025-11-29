@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { base } from '../../../../service/Base'
 import { App } from 'antd'
-import { Search, Package, Eye, X } from 'lucide-react'
+import { Package, Eye, X } from 'lucide-react'
 import './UpdateSale.css'
 
 export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale, existingSales = [] }) {
@@ -277,7 +277,6 @@ export default function UpdateSaleModal({ open = false, onClose, onUpdated, sale
                         <label>Chọn sản phẩm cho khuyến mãi ({selectedProducts.length} đã chọn)</label>
                         
                         <div className="search-box">
-                            <Search size={18} className="search-icon" />
                             <input
                                 type="text"
                                 className="search-input"

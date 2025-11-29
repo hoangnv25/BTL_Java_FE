@@ -51,24 +51,19 @@
 .search-box {
     position: relative;
     margin-bottom: 0.8rem;
+    background: white; /* Background trắng cho search box */
 }
 
-.search-icon {
-    position: absolute;
-    left: 0.8rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #6c757d;
-    pointer-events: none;
-}
+/* Icon đã bỏ */
 
 .search-input {
     width: 100%;
-    padding: 0.6rem 0.8rem 0.6rem 2.5rem;
+    padding: 0.6rem 0.8rem; /* Padding đều 2 bên */
     border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 0.95rem;
     transition: border-color 0.2s ease;
+    background: white;
 }
 
 .search-input:focus {
