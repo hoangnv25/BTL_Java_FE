@@ -396,6 +396,20 @@ useEffect(() => {
 
 			if (response.status === 200 || response.status === 201) {
 				message.success('Đã thêm sản phẩm vào giỏ hàng!');
+
+				// Thông báo cho Navbar (và các component khác) cập nhật số lượng giỏ hàng
+				try {
+					if (typeof window !== 'undefined') {
+						window.dispatchEvent(
+							new CustomEvent('cart-updated', {
+								detail: { delta: qty || 1 },
+							})
+						);
+					}
+				} catch {
+					// ignore event errors
+				}
+
 				// Reset quantity after successful add
 				setQty(1);
 			} else {

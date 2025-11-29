@@ -1,4 +1,8 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { base } from '../service/Base'
+import { getToken } from '../service/LocalStorage'
 import '../assets/style/Navbar.css'
 import '../assets/style/NavbarPC.css'
 import Brand from './Brand'
@@ -17,6 +21,58 @@ function NavbarPC({
   navigate,
   unreviewedCount,
 }) {
+  const [cartCount, setCartCount] = useState(0)
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      const token = getToken()
+
+      if (!token) {
+        setCartCount(0)
+        return
+      }
+
+      try {
+        const cartResponse = await axios.get(`${base}/cart`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (cartResponse.status === 200 && cartResponse.data?.result) {
+          const cartData = cartResponse.data.result
+          const cartArray = Array.isArray(cartData) ? cartData : cartData.result || []
+          setCartCount(cartArray.length)
+        } else {
+          setCartCount(0)
+        }
+      } catch (error) {
+        console.error('Error fetching cart count:', error)
+        setCartCount(0)
+      }
+    }
+
+    fetchCartCount()
+  }, [isLoggedIn])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleCartUpdated = (event) => {
+      try {
+        const delta = event?.detail?.delta ?? 1
+        setCartCount((prev) => Math.max(0, prev + delta))
+      } catch {
+        setCartCount((prev) => prev + 1)
+      }
+    }
+
+    window.addEventListener('cart-updated', handleCartUpdated)
+
+    return () => {
+      window.removeEventListener('cart-updated', handleCartUpdated)
+    }
+  }, [])
   return (
     <header className="navbar-header navbar-pc">
       <nav className="navbar">
@@ -56,7 +112,21 @@ function NavbarPC({
               )}
             </Link>
           </li>
-          <li><Link to="/cart" className="navbar-link" aria-label="Giỏ hàng" title="Giỏ hàng"><ShoppingCart size={22} strokeWidth={2} /></Link></li>
+          <li>
+            <Link
+              to="/cart"
+              className="navbar-link navbar-cart-link"
+              aria-label="Giỏ hàng"
+              title="Giỏ hàng"
+            >
+              <ShoppingCart size={22} strokeWidth={2} />
+              {cartCount > 0 && (
+                <span className="navbar-badge-count">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          </li>
           <li><Link to="/chat" className="navbar-link" aria-label="Chat" title="Chat"><MessageCircle size={22} strokeWidth={2} /></Link></li>
 
           {isLoggedIn ? (
