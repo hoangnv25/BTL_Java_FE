@@ -7,8 +7,11 @@
 //     ? '/api' // Sử dụng proxy trong development
 //     : 'https://befinal.up.railway.app'; // Direct URL trong production
 
-export const base = 'https://befinal.up.railway.app'
-export const localhost = 'http://befinal.up.railway.app'
-
 // export const base = 'https://bephevch.up.railway.app'
 // export const localhost = 'http://bephevch.up.railway.app'
+
+// export const base = 'https://befinal.up.railway.app'
+// export const localhost = 'http://befinal.up.railway.app'
+
+export const base = 'http://localhost:8080'
+export const localhost = 'http://localhost:8080'

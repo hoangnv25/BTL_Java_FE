@@ -18,7 +18,7 @@ export default function HomePage() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-
+    
     return (
         <div className="home-page">
             <div className="homeimg-container">
